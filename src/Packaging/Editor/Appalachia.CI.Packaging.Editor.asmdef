@@ -1,0 +1,23 @@
+{
+    "name": "Appalachia.CI.Packaging.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:56ca8901b63fd204692a4a27f67b605e",
+        "GUID:c7f2f2911de381941be7186214305448"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "860BB79D.Tomlyn.dll",
+        "Newtonsoft.Json.dll",
+        "SharpZipLib.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

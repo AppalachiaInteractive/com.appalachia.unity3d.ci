@@ -1,0 +1,19 @@
+{
+  "allowUnsafeCode": false,
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "excludePlatforms": [],
+  "includePlatforms": [],
+  "name": "Appalachia.CI.Integration",
+  "noEngineReferences": false,
+  "optionalUnityReferences": [],
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "references": [
+    "GUID:a03736e1d95a0ed4c8a44e1ee02df53f",
+    "GUID:28ae00157ecf0354981e730179f52cc3",        
+    "GUID:75469ad4d38634e559750d17036d5f7c"
+  ],
+  "rootNamespace": "",
+  "versionDefines": []
+}

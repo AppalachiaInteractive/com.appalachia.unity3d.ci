@@ -1,0 +1,18 @@
+{
+    "name": "Appalachia.CI.SemVer.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c7f2f2911de381941be7186214305448"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,18 @@
+{
+    "name": "Appalachia.CI.Compilation",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a03736e1d95a0ed4c8a44e1ee02df53f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
