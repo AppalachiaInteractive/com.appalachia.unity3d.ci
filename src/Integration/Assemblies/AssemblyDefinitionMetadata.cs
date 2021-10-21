@@ -6,6 +6,7 @@ using Appalachia.CI.Integration.Analysis;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
+using Appalachia.CI.Integration.Rider;
 using Newtonsoft.Json;
 using Unity.Profiling;
 using UnityEditor;
@@ -17,8 +18,8 @@ namespace Appalachia.CI.Integration.Assemblies
     [Serializable]
     public class AssemblyDefinitionMetadata : IComparable<AssemblyDefinitionMetadata>,
                                               IComparable,
-                                              IAnalysisColorable,
-                                              IEquatable<AssemblyDefinitionMetadata>
+                                              IEquatable<AssemblyDefinitionMetadata>,
+                                              IAnalysisTarget
     {
         private const string _PRF_PFX = nameof(AssemblyDefinitionMetadata) + ".";
         private static Dictionary<string, AssemblyDefinitionMetadata> _instances;
@@ -35,30 +36,29 @@ namespace Appalachia.CI.Integration.Assemblies
 
         private static bool _allPrepared;
 
+        public AppaDirectoryInfo directory;
+
         public AssemblyDefinitionAnalysisMetadata analysis;
         public AssemblyDefinitionAsset asset;
         public AssemblyDefinitionImporter importer;
         public AssemblyDefinitionModel assetModel;
 
         public bool readOnly;
+        public DotSettings dotSettings;
         public List<AssemblyDefinitionReferenceMetadata> opportunities;
         public List<AssemblyDefinitionReferenceMetadata> references;
         public List<RepositoryDependencyMetadata> dependencies;
         public List<string> referenceStrings;
 
         public RepositoryDirectoryMetadata repository;
-        public AppaDirectoryInfo directory;
         public string assembly_current;
         public string assembly_ideal;
+        public string csProjPath;
         public string filename_current;
-        public string filename_ideal;
         public string guid;
         public string path;
         public string root_namespace_current;
         public string root_namespace_ideal;
-        public string csProjPath;
-        public string dotSettingsPath => $"{csProjPath}.dotSettings";
-        public DotSettings dotSettings;
 
         public Color IssueColor { get; set; }
 
@@ -67,25 +67,39 @@ namespace Appalachia.CI.Integration.Assemblies
         public bool IsLibrary => path.StartsWith("Library");
 
         public bool IsPackage => path.StartsWith("Package");
+        public string dotSettingsPath => $"{csProjPath}.dotSettings";
+        public string filename_ideal => assembly_current + ".asmdef";
+        public string Name => assembly_current;
 
+        public int GetOpportunityCutoffLevel()
+        {
+            return 50;
+        }
+        
         public int GetAssemblyDependencyLevel()
         {
             var name = assembly_current;
             var result = 0;
 
-            if (name.EndsWith(".Tests"))
+            if (name.EndsWith("Tests") || name.EndsWith("Tests.Playmode") || name.EndsWith("CodeGen"))
             {
-                result += 1000;
+                result += 10000;
             }
 
             if (name.EndsWith(".Editor"))
             {
-                result += 50;
+                result += 100;
             }
 
             if (name.StartsWith("Unity."))
             {
-                result += 900;
+                result += 0;
+                return result;
+            }
+
+            if (name.StartsWith("UnityEditor."))
+            {
+                result += 50;
                 return result;
             }
 
@@ -157,11 +171,10 @@ namespace Appalachia.CI.Integration.Assemblies
                     return result;
                 }
 
-                result += 800;
+                result += 250;
                 return result;
             }
 
-            result += 1000;
             return result;
         }
 
@@ -172,6 +185,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 _partExclusions = new[] {"src", "dist", "asmdef", "Runtime", "Scripts"};
             }
 
+            IssueColor = Color.clear;
             readOnly = !assemblyDefinitionPath.StartsWith("Assets");
 
             path = assemblyDefinitionPath;
@@ -217,22 +231,13 @@ namespace Appalachia.CI.Integration.Assemblies
             }
 
             assembly_ideal = _asmdefNameBuilder.ToString().Trim('.');
-            filename_ideal = assembly_ideal + ".asmdef";
             root_namespace_ideal = null;
 
             assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
 
             csProjPath = $"{assetModel.name}.csproj";
 
-            if (!AppaFile.Exists(dotSettingsPath))
-            {
-                dotSettings = new DotSettings(null);
-            }
-            else
-            {
-                var dotSettingsText = AppaFile.ReadAllLines(dotSettingsPath);
-                dotSettings = new DotSettings(dotSettingsText);
-            }
+            LoadDotSettings();
 
             assembly_current = assetModel.name;
             root_namespace_current = assetModel.rootNamespace;
@@ -246,14 +251,19 @@ namespace Appalachia.CI.Integration.Assemblies
             analysis = new AssemblyDefinitionAnalysisMetadata(this);
         }
 
-        private static string GetFilePath(string path, bool testFile)
+        public void Reanalyze()
         {
-            if (testFile)
-            {
-                path += ".test";
-            }
+            ClearAnalysisResults();
+            InitializeAnalysis();
+        }
 
-            return path;
+        public void SaveDotSettingsFile(bool testFile)
+        {
+            var outputPath = GetFilePath(dotSettingsPath, testFile);
+
+            var newContent = dotSettings.ToXml();
+
+            AppaFile.WriteAllText(outputPath, newContent);
         }
 
         public void SaveFile(bool testFile, bool reimport)
@@ -262,7 +272,7 @@ namespace Appalachia.CI.Integration.Assemblies
             settings.NullValueHandling = NullValueHandling.Include;
 
             var outputPath = GetFilePath(path, testFile);
-            
+
             assetModel.CheckBeforeWrite();
 
             var text = JsonConvert.SerializeObject(assetModel, settings);
@@ -275,15 +285,6 @@ namespace Appalachia.CI.Integration.Assemblies
             {
                 AssetDatabaseManager.ImportAsset(outputPath);
             }
-        }
-
-        public void SaveDotSettingsFile(bool testFile)
-        {
-            var outputPath = GetFilePath(dotSettingsPath, testFile);
-
-            var newContent = dotSettings.ToXml();
-
-            AppaFile.WriteAllText(outputPath, newContent);
         }
 
         public void SetReferences()
@@ -308,6 +309,18 @@ namespace Appalachia.CI.Integration.Assemblies
 
                 references.Add(reference);
             }
+        }
+
+        public void ClearAnalysisResults()
+        {
+            IssueColor = Color.clear;
+            LoadDotSettings();
+
+            repository.ClearAnalysisResults();
+
+            references.Clear();
+            dependencies.Clear();
+            opportunities?.Clear();
         }
 
         public int CompareTo(object obj)
@@ -432,6 +445,19 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
+        private void LoadDotSettings()
+        {
+            if (!AppaFile.Exists(dotSettingsPath))
+            {
+                dotSettings = new DotSettings(null);
+            }
+            else
+            {
+                var dotSettingsText = AppaFile.ReadAllLines(dotSettingsPath);
+                dotSettings = new DotSettings(dotSettingsText);
+            }
+        }
+
         public static AssemblyDefinitionMetadata CreateNew(string path, bool preparing = false)
         {
             if (_instances == null)
@@ -497,6 +523,16 @@ namespace Appalachia.CI.Integration.Assemblies
             }
 
             _allPrepared = true;
+        }
+
+        private static string GetFilePath(string path, bool testFile)
+        {
+            if (testFile)
+            {
+                path += ".test";
+            }
+
+            return path;
         }
 
         public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)

@@ -22,7 +22,11 @@ namespace Appalachia.CI.Integration.Repositories
         private const string VERSION = "version";
 
         public List<AssemblyDefinitionMetadata> assemblies;
+        public string npmPackagePath => AppaPath.Combine(root.FullPath, "package.json");
         public NpmPackage npmPackage;
+
+        public UnityEngine.Object PackageAsset =>
+            AssetDatabaseManager.LoadAssetAtPath(npmPackagePath, typeof(TextAsset));
 
         private static bool _allPrepared;
         private static Dictionary<string, RepositoryDirectoryMetadata> _instances;
@@ -271,20 +275,20 @@ namespace Appalachia.CI.Integration.Repositories
 
         public void SavePackageJson(bool useTestFiles, bool reimport)
         {
-            var packageJsonPath = AppaPath.Combine(root.FullPath, "package.json");
-
+            var savePath = npmPackagePath;
+            
             if (useTestFiles)
             {
-                packageJsonPath += ".test";
+                savePath += ".test";
             }
 
             var json = npmPackage.ToJson();
 
-            AppaFile.WriteAllText(packageJsonPath, json);
+            AppaFile.WriteAllText(savePath, json);
 
             if (reimport)
             {
-                AssetDatabaseManager.ImportAsset(packageJsonPath);
+                AssetDatabaseManager.ImportAsset(savePath);
             }
         }
 
@@ -383,18 +387,18 @@ namespace Appalachia.CI.Integration.Repositories
 
             NpmPackage package = null;
 
-            var packageJsonPath = AppaPath.Combine(directory.FullPath, "package.json");
+            var npmPackagePath = AppaPath.Combine(directory.FullPath, "package.json");
 
-            if (AppaFile.Exists(packageJsonPath))
+            if (AppaFile.Exists(npmPackagePath))
             {
-                var text = AppaFile.ReadAllText(packageJsonPath);
+                var text = AppaFile.ReadAllText(npmPackagePath);
                 try
                 {
                     package = NpmPackage.FromJson(text);
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Failed to parse package.json at [{packageJsonPath}]: {ex.Message}");
+                    Debug.LogError($"Failed to parse package.json at [{npmPackagePath}]: {ex.Message}");
                     throw;
                 }
             }
@@ -442,6 +446,10 @@ namespace Appalachia.CI.Integration.Repositories
             }
 
             _allPrepared = true;
+        }
+
+        public void ClearAnalysisResults()
+        {
         }
     }
 }

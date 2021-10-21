@@ -1,7 +1,8 @@
-namespace Appalachia.CI.Integration.Analysis
+namespace Appalachia.CI.Integration.Assemblies
 {
-    public enum AnalysisType
+    public enum AssemblyAnalysisType
     {
+        All = 00000,
         DependencyLevel = 00010,
         DependencyOpportunity = 00020,
         DependencyPresence = 00030,
@@ -14,6 +15,7 @@ namespace Appalachia.CI.Integration.Analysis
         Sorting = 00100,
         ReferenceDuplicates = 00110,
         DependencyValidity = 00120,
-        NamespaceFolders = 00130,
+        NamespaceFoldersExclusions = 00130,
+        NamespaceFoldersEncoding = 00140,
     }
 }

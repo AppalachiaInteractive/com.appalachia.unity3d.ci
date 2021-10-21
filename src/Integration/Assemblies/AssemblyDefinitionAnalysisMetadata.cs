@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Appalachia.CI.Integration.Analysis;
 using Appalachia.CI.Integration.Assets;
-using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
-using Appalachia.Utility.Colors;
-using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assemblies
 {
     [Serializable]
-    public class AssemblyDefinitionAnalysisMetadata : IAnalysisColorable
+    public class
+        AssemblyDefinitionAnalysisMetadata : AnalysisMetadata<AssemblyDefinitionMetadata,
+            AssemblyAnalysisType>
     {
         static AssemblyDefinitionAnalysisMetadata()
         {
@@ -19,272 +18,49 @@ namespace Appalachia.CI.Integration.Assemblies
             AssemblyDefinitionMetadata.PrepareAll();
         }
 
-        public AssemblyDefinitionAnalysisMetadata(AssemblyDefinitionMetadata assembly)
+        public AssemblyDefinitionAnalysisMetadata(AssemblyDefinitionMetadata assembly) : base(assembly)
         {
-            _assembly = assembly;
-
-            AllIssues = new List<AnalysisResult>();
-
-            NameAssembly = new AnalysisResult(
-                "Assembly Naming",
-                AnalysisType.NameAssembly,
-                CheckNameAssembly,
-                FixNameAssembly
-            );
-
-            NameFile = new AnalysisResult("File Naming", AnalysisType.NameFile, CheckNameFile, FixNameFile);
-
-            Namespace = new AnalysisResult("Namespace", AnalysisType.Namespace, CheckNamespace, FixNamespace);
-
-            NamespaceFolders = new AnalysisResult(
-                "Namespace Folders",
-                AnalysisType.NamespaceFolders,
-                CheckNamespaceFolders,
-                FixNamespaceFolders
-            );
-
-            ReferenceValidity = new AnalysisResult(
-                "Reference Validity",
-                AnalysisType.ReferenceValidity,
-                CheckReferenceValidity,
-                FixReferenceValidity
-            );
-
-            ReferenceStyle = new AnalysisResult(
-                "Reference Style",
-                AnalysisType.ReferenceStyle,
-                CheckReferenceStyle,
-                FixReferenceStyle
-            );
-
-            DependencyPresence = new AnalysisResult(
-                "Dependency Presence",
-                AnalysisType.DependencyPresence,
-                CheckDependencyPresence,
-                FixDependencyPresence
-            );
-
-            DependencyValidity = new AnalysisResult(
-                "Dependency Validity",
-                AnalysisType.DependencyPresence,
-                CheckDependencyValidity,
-                FixDependencyValidity
-            );
-
-            DependencyLevel = new AnalysisResult(
-                "Dependency Level",
-                AnalysisType.DependencyLevel,
-                CheckDependencyLevel,
-                FixDependencyLevel
-            );
-
-            DependencyVersions = new AnalysisResult(
-                "Dependency Versions",
-                AnalysisType.DependencyVersions,
-                CheckDependencyVersions,
-                FixDependencyVersions
-            );
-
-            DependencyOpportunity = new AnalysisResult(
-                "Dependency Opportunity",
-                AnalysisType.DependencyOpportunity,
-                CheckDependencyOpportunity,
-                FixDependencyOpportunity
-            );
-
-            Sorting = new AnalysisResult("Sorting", AnalysisType.Sorting, CheckSorting, FixSorting);
-
-            ReferenceDuplicates = new AnalysisResult(
-                "Reference Duplicates",
-                AnalysisType.ReferenceDuplicates,
-                CheckReferenceDuplicates,
-                FixReferenceDuplicates
-            );
-
-            AllIssues.Add(NameAssembly);
-            AllIssues.Add(NameFile);
-            AllIssues.Add(Namespace);
-            AllIssues.Add(NamespaceFolders);
-            AllIssues.Add(ReferenceValidity);
-            AllIssues.Add(ReferenceDuplicates);
-            AllIssues.Add(ReferenceStyle);
-            AllIssues.Add(DependencyValidity);
-            AllIssues.Add(DependencyPresence);
-            AllIssues.Add(DependencyLevel);
-            AllIssues.Add(DependencyVersions);
-            AllIssues.Add(DependencyOpportunity);
-            AllIssues.Add(Sorting);
-
-            var colors = ColorPalette.Default.GetBadMultiple(AllIssues.Count);
-
-            for (var index = 0; index < AllIssues.Count; index++)
-            {
-                var issue = AllIssues[index];
-                issue.color = colors[index];
-            }
-            
-            Analyze();
         }
 
-        public readonly AnalysisResult DependencyLevel;
-        public readonly AnalysisResult DependencyOpportunity;
-        public readonly AnalysisResult DependencyPresence;
-        public readonly AnalysisResult DependencyValidity;
-        public readonly AnalysisResult DependencyVersions;
-        public readonly AnalysisResult NameAssembly;
-        public readonly AnalysisResult NameFile;
-        public readonly AnalysisResult Namespace;
-        public readonly AnalysisResult NamespaceFolders;
-        public readonly AnalysisResult ReferenceDuplicates;
-        public readonly AnalysisResult ReferenceStyle;
-        public readonly AnalysisResult ReferenceValidity;
-        public readonly AnalysisResult Sorting;
+        public AnalysisResult<AssemblyAnalysisType> DependencyLevel;
+        public AnalysisResult<AssemblyAnalysisType> DependencyOpportunity;
+        public AnalysisResult<AssemblyAnalysisType> DependencyPresence;
+        public AnalysisResult<AssemblyAnalysisType> DependencyValidity;
+        public AnalysisResult<AssemblyAnalysisType> DependencyVersions;
+        public AnalysisResult<AssemblyAnalysisType> NameAssembly;
+        public AnalysisResult<AssemblyAnalysisType> NameFile;
+        public AnalysisResult<AssemblyAnalysisType> Namespace;
+        public AnalysisResult<AssemblyAnalysisType> NamespaceFoldersExclusions;
+        public AnalysisResult<AssemblyAnalysisType> NamespaceFoldersEncoding;
+        public AnalysisResult<AssemblyAnalysisType> ReferenceDuplicates;
+        public AnalysisResult<AssemblyAnalysisType> ReferenceStyle;
+        public AnalysisResult<AssemblyAnalysisType> ReferenceValidity;
+        public AnalysisResult<AssemblyAnalysisType> Sorting;
 
-        public List<AnalysisResult> AllIssues;
-
-        private AssemblyDefinitionMetadata _assembly;
-
-        [NonSerialized] private bool _dependenciesAnalyzed;
-        [NonSerialized] private bool _dependenciesAnalyzing;
-
-        public Color IssueColor { get; set; }
-
-        public bool AnyIssues => AllIssues.Any(a => a.HasIssue);
-        public int IssueDisplayColumns => 4;
-
-        public AnalysisResult IssueByType(AnalysisType type)
+        protected override void OnAnalyze()
         {
-            switch (type)
-            {
-                case AnalysisType.DependencyLevel:
-                    return DependencyLevel;
-                case AnalysisType.DependencyOpportunity:
-                    return DependencyOpportunity;
-                case AnalysisType.DependencyPresence:
-                    return DependencyPresence;
-                case AnalysisType.DependencyVersions:
-                    return DependencyVersions;
-                case AnalysisType.NameAssembly:
-                    return NameAssembly;
-                case AnalysisType.NameFile:
-                    return NameFile;
-                case AnalysisType.Namespace:
-                    return Namespace;
-                case AnalysisType.ReferenceStyle:
-                    return ReferenceStyle;
-                case AnalysisType.ReferenceValidity:
-                    return ReferenceValidity;
-                case AnalysisType.Sorting:
-                    return Sorting;
-                case AnalysisType.ReferenceDuplicates:
-                    return ReferenceDuplicates;
-                case AnalysisType.DependencyValidity:
-                    return DependencyValidity;
-                case AnalysisType.NamespaceFolders:
-                    return NamespaceFolders;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-        }
-
-        private bool CheckDependencyLevel()
-        {
-            return _assembly.references.Any(d => d.isLevelIssue);
-        }
-
-        private bool CheckDependencyOpportunity()
-        {
-            return _assembly.opportunities.Any();
-        }
-
-        private bool CheckDependencyPresence()
-        {
-            return _assembly.dependencies.Any(d => d.IsMissing);
-        }
-
-        private bool CheckDependencyValidity()
-        {
-            return _assembly.dependencies.Any(d => d.IsValid);
-        }
-
-        private bool CheckDependencyVersions()
-        {
-            return _assembly.dependencies.Any(d => d.IsOutOfDate);
-        }
-
-        private bool CheckNameAssembly()
-        {
-            return _assembly.assembly_current != _assembly.assembly_ideal;
-        }
-
-        private bool CheckNameFile()
-        {
-            return _assembly.filename_current != _assembly.filename_ideal;
-        }
-
-        private bool CheckNamespace()
-        {
-            var ns1 = _assembly.root_namespace_current;
-            var ns2 = _assembly.root_namespace_ideal;
-
-            var bothNull = string.IsNullOrWhiteSpace(ns1) && string.IsNullOrWhiteSpace(ns2);
-
-            return !bothNull && (ns1 != ns2);
-        }
-
-        private bool CheckNamespaceFolders()
-        {
-            return _assembly.dotSettings?.missingNamspaceFolderExclusions ?? false;
-        }
-
-        private bool CheckReferenceDuplicates()
-        {
-            return _assembly.references?.Any(r => r.isDuplicate) ?? false;
-        }
-
-        private bool CheckReferenceStyle()
-        {
-            return _assembly.references?.Any(s => !s.IsGuidReference) ?? false;
-        }
-
-        private bool CheckReferenceValidity()
-        {
-            return _assembly.references?.Any(r => r.assembly == null) ?? false;
-        }
-
-        private bool CheckSorting()
-        {
-            return _assembly.references.Any(d => d.outOfSorts);
-        }
-
-        private void Analyze()
-        {
-            if (_dependenciesAnalyzed || _dependenciesAnalyzing)
-            {
-                return;
-            }
-
-            _dependenciesAnalyzing = true;
-
-            if (_assembly == null)
-            {
-                return;
-            }
-
             var uniqueDependencies = new Dictionary<string, RepositoryDependencyMetadata>();
             var uniqueReferences = new HashSet<AssemblyDefinitionMetadata>();
             var uniqueReferenceStrings = new HashSet<string>();
             var uniqueOpportunities = new HashSet<AssemblyDefinitionMetadata>();
-            
-            InitializeAnalysis(this, _assembly);
-            
-            AnalyzeProject(this, _assembly, NameAssembly, NameFile, Namespace, NamespaceFolders);
-            
-            AnalzyeRepository(_assembly.repository, uniqueDependencies);
-            
+
+            InitializeAnalysis(this, Target);
+
+            AnalyzeProject(
+                this,
+                Target,
+                NameAssembly,
+                NameFile,
+                Namespace,
+                NamespaceFoldersExclusions,
+                NamespaceFoldersEncoding
+            );
+
+            AnalzyeRepository(Target.repository, uniqueDependencies);
+
             AnalyzeReferences(
                 this,
-                _assembly,
+                Target,
                 uniqueDependencies,
                 uniqueReferences,
                 uniqueReferenceStrings,
@@ -297,7 +73,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
             AnalyzeDependencies(
                 this,
-                _assembly,
+                Target,
                 uniqueDependencies,
                 uniqueReferences,
                 uniqueReferenceStrings,
@@ -307,131 +83,442 @@ namespace Appalachia.CI.Integration.Assemblies
                 DependencyVersions,
                 DependencyOpportunity
             );
-
-            _dependenciesAnalyzed = true;
-            _dependenciesAnalyzing = false;
         }
 
-        private static void InitializeAnalysis(
-            AssemblyDefinitionAnalysisMetadata analysis,
-            AssemblyDefinitionMetadata assembly)
+        protected override void RegisterAllAnalysis()
         {
-            if (assembly.dependencies == null)
+            NameAssembly = RegisterAnalysis(
+                "Assembly Naming",
+                AssemblyAnalysisType.NameAssembly,
+                CheckNameAssembly,
+                FixNameAssembly
+            );
+
+            NameFile = RegisterAnalysis(
+                "File Naming",
+                AssemblyAnalysisType.NameFile,
+                CheckNameFile,
+                FixNameFile
+            );
+
+            Namespace = RegisterAnalysis(
+                "Namespace",
+                AssemblyAnalysisType.Namespace,
+                CheckNamespace,
+                FixNamespace
+            );
+            
+            NamespaceFoldersExclusions = RegisterAnalysis(
+                "Namespace Folders Exclusions",
+                AssemblyAnalysisType.NamespaceFoldersExclusions,
+                CheckNamespaceFoldersExclusions,
+                FixNamespaceFoldersExclusions
+            );
+            
+            NamespaceFoldersEncoding = RegisterAnalysis(
+                "Namespace Folders Formatting",
+                AssemblyAnalysisType.NamespaceFoldersEncoding,
+                CheckNamespaceFoldersEncoding,
+                FixNamespaceFoldersEncoding
+            );
+
+            ReferenceValidity = RegisterAnalysis(
+                "Reference Validity",
+                AssemblyAnalysisType.ReferenceValidity,
+                CheckReferenceValidity,
+                FixReferenceValidity
+            );
+
+            ReferenceStyle = RegisterAnalysis(
+                "Reference Style",
+                AssemblyAnalysisType.ReferenceStyle,
+                CheckReferenceStyle,
+                FixReferenceStyle
+            );
+
+            DependencyPresence = RegisterAnalysis(
+                "Dependency Presence",
+                AssemblyAnalysisType.DependencyPresence,
+                CheckDependencyPresence,
+                FixDependencyPresence
+            );
+
+            DependencyValidity = RegisterAnalysis(
+                "Dependency Validity",
+                AssemblyAnalysisType.DependencyValidity,
+                CheckDependencyValidity,
+                FixDependencyValidity
+            );
+
+            DependencyLevel = RegisterAnalysis(
+                "Dependency Level",
+                AssemblyAnalysisType.DependencyLevel,
+                CheckDependencyLevel,
+                FixDependencyLevel
+            );
+
+            DependencyVersions = RegisterAnalysis(
+                "Dependency Versions",
+                AssemblyAnalysisType.DependencyVersions,
+                CheckDependencyVersions,
+                FixDependencyVersions
+            );
+
+            DependencyOpportunity = RegisterAnalysis(
+                "Dependency Opportunity",
+                AssemblyAnalysisType.DependencyOpportunity,
+                CheckDependencyOpportunity,
+                FixDependencyOpportunity
+            );
+
+            Sorting = RegisterAnalysis("Sorting", AssemblyAnalysisType.Sorting, CheckSorting, FixSorting);
+
+            ReferenceDuplicates = RegisterAnalysis(
+                "Reference Duplicates",
+                AssemblyAnalysisType.ReferenceDuplicates,
+                CheckReferenceDuplicates,
+                FixReferenceDuplicates
+            );
+        }
+
+        private bool CheckDependencyLevel()
+        {
+            return Target.references.Any(d => d.isLevelIssue);
+        }
+
+        private bool CheckDependencyOpportunity()
+        {
+            return Target.opportunities.Any();
+        }
+
+        private bool CheckDependencyPresence()
+        {
+            return Target.dependencies.Any(d => d.IsMissing);
+        }
+
+        private bool CheckDependencyValidity()
+        {
+            return Target.dependencies.Any(d => !d.IsValid);
+        }
+
+        private bool CheckDependencyVersions()
+        {
+            return Target.dependencies.Any(d => d.IsOutOfDate);
+        }
+
+        private bool CheckNameAssembly()
+        {
+            if (!Target.Name.StartsWith("Appalachia"))
             {
-                assembly.dependencies = new List<RepositoryDependencyMetadata>();
-            }
-            else
-            {
-                assembly.dependencies.Clear();
+                return false;
             }
 
-            if (assembly.opportunities == null)
+            return Target.assembly_current != Target.assembly_ideal;
+        }
+
+        private bool CheckNameFile()
+        {
+            return Target.filename_current != Target.filename_ideal;
+        }
+
+        private bool CheckNamespace()
+        {
+            if (!Target.Name.StartsWith("Appalachia"))
             {
-                assembly.opportunities = new List<AssemblyDefinitionReferenceMetadata>();
+                return false;
             }
-            else
+
+            var ns1 = Target.root_namespace_current;
+            var ns2 = Target.root_namespace_ideal;
+
+            var bothNull = string.IsNullOrWhiteSpace(ns1) && string.IsNullOrWhiteSpace(ns2);
+
+            return !bothNull && (ns1 != ns2);
+        }
+
+        private bool CheckNamespaceFoldersExclusions()
+        {
+            return Target.dotSettings?.AllFolders.Any(f => !f.excluded || f.encodingIssue) ?? false;
+        }
+        
+        private bool CheckNamespaceFoldersEncoding()
+        {
+            return Target.dotSettings?.AllFolders.Any(f => !f.excluded || f.encodingIssue) ?? false;
+        }
+        
+        private bool CheckReferenceDuplicates()
+        {
+            return Target.references?.Any(r => r.isDuplicate) ?? false;
+        }
+
+        private bool CheckReferenceStyle()
+        {
+            return Target.references?.Any(s => !s.IsGuidReference) ?? false;
+        }
+
+        private bool CheckReferenceValidity()
+        {
+            return Target.references?.Any(r => r.assembly == null) ?? false;
+        }
+
+        private bool CheckSorting()
+        {
+            return Target.references.Any(d => d.outOfSorts);
+        }
+
+        private void FixDependencyLevel(bool useTestFiles, bool reimport)
+        {
+            for (var index = Target.references.Count - 1; index >= 0; index--)
             {
-                assembly.opportunities.Clear();
+                var reference = Target.references[index];
+
+                if (reference.isLevelIssue)
+                {
+                    Target.references.RemoveAt(index);
+                }
+            }
+
+            WriteReferences();
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixDependencyOpportunity(bool useTestFiles, bool reimport)
+        {
+            var referenceLookup = Target.references.Select(r => r.guid).ToHashSet();
+
+            for (var index = 0; index < Target.opportunities.Count; index++)
+            {
+                var opportunity = Target.opportunities[index];
+                if (!referenceLookup.Contains(opportunity.guid))
+                {
+                    Target.references.Add(opportunity);
+                }
+            }
+
+            WriteReferences();
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixDependencyPresence(bool useTestFiles, bool reimport)
+        {
+            var changed = false;
+
+            var npmPackage = Target.repository.npmPackage;
+
+            for (var index = Target.dependencies.Count - 1; index >= 0; index--)
+            {
+                var dependency = Target.dependencies[index];
+                var refRepo = dependency.repository;
+
+                if (refRepo != null)
+                {
+                    var packageName = refRepo.PackageName;
+                    var packageVersion = refRepo.PackageVersion;
+
+                    if (npmPackage.Dependencies == null)
+                    {
+                        npmPackage.Dependencies = new Dictionary<string, string>();
+                    }
+
+                    if (!npmPackage.Dependencies.ContainsKey(packageName))
+                    {
+                        changed = true;
+                        npmPackage.Dependencies.Add(packageName, packageVersion);
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                Target.repository.SavePackageJson(useTestFiles, reimport);
             }
         }
 
-        private static void AnalyzeProject(
-            AssemblyDefinitionAnalysisMetadata analysis,
-            AssemblyDefinitionMetadata assembly,
-            AnalysisResult nameAssembly,
-            AnalysisResult nameFile,
-            AnalysisResult ns,
-            AnalysisResult namespaceFolders)
+        private void FixDependencyValidity(bool useTestFiles, bool reimport)
         {
-            if (nameAssembly.HasIssue)
-            {
-                SetColor(analysis, assembly, nameAssembly);
-            }
+            var changed = false;
 
-            if (nameFile.HasIssue)
-            {
-                SetColor(analysis, assembly, nameFile);
-            }
+            var npmPackage = Target.repository.npmPackage;
 
-            if (ns.HasIssue)
+            for (var index = Target.dependencies.Count - 1; index >= 0; index--)
             {
-                SetColor(analysis, assembly, ns);
-            }
+                var dependency = Target.dependencies[index];
 
-            if (namespaceFolders.HasIssue)
-            {
-                SetColor(analysis, assembly, namespaceFolders);
-            }
-
-            var exclusions = new HashSet<string>
-            {
-                "assets",
-                "thirdparty",
-                "third-party",
-                "assemblies",
-                "runtime",
-                "editor",
-                "test",
-                "tests",
-                "src",
-                "dist",
-                "asset",
-                "data"
-            };
-
-            var dir = assembly.directory;
-            var first = true;
-
-            do
-            {
-                if (dir.Parent == null)
+                if (!dependency.IsValid)
                 {
-                    throw new NotSupportedException(assembly.ToString());
+                    changed = true;
+                    Target.dependencies.RemoveAt(index);
+                    npmPackage.Dependencies.Remove(dependency.name);
                 }
+            }
 
-                if (!first)
-                {
-                    dir = dir.Parent;
-                }
-
-                first = false;
-
-                if (exclusions.Contains(dir.Name.ToLowerInvariant()))
-                {
-                    assembly.dotSettings.CheckIfExcludingFolder(dir.RelativePath);
-                }
-            } while ((dir != null) &&
-                     (dir.Name != "Assets") &&
-                     (dir.Name != "Packages") &&
-                     (dir.Name != "Library"));
+            if (changed)
+            {
+                Target.repository.SavePackageJson(useTestFiles, reimport);
+            }
         }
 
-        private static void AnalzyeRepository(RepositoryDirectoryMetadata repository, Dictionary<string, RepositoryDependencyMetadata> uniqueDependencies)
+        private void FixDependencyVersions(bool useTestFiles, bool reimport)
         {
-            var npmPackage = repository.npmPackage;
+            var changed = false;
 
-            if (npmPackage == null)
+            var npmPackage = Target.repository.npmPackage;
+
+            for (var index = Target.dependencies.Count - 1; index >= 0; index--)
             {
-                return;
-            }
+                var dependency = Target.dependencies[index];
+                var refRepo = dependency.repository;
 
-            if (npmPackage.Dependencies == null)
-            {
-                return;
-            }
-
-            foreach (var dependency in npmPackage.Dependencies)
-            {
-                var newDep = new RepositoryDependencyMetadata(dependency.Key, dependency.Value);
-                uniqueDependencies.Add(dependency.Key, newDep);
-
-                var repoMatch = RepositoryDirectoryMetadata.Find(dependency.Key);
-
-                if (repoMatch != null)
+                if (refRepo != null)
                 {
-                    newDep.repository = repoMatch;
+                    var packageName = refRepo.PackageName;
+                    var packageVersion = refRepo.PackageVersion;
+
+                    if (npmPackage.Dependencies.ContainsKey(packageName))
+                    {
+                        var currentVersion = npmPackage.Dependencies[packageName];
+
+                        if (currentVersion != packageVersion)
+                        {
+                            changed = true;
+                            npmPackage.Dependencies[packageName] = packageVersion;
+                        }
+                    }
                 }
             }
+
+            if (changed)
+            {
+                Target.repository.SavePackageJson(useTestFiles, reimport);
+            }
+        }
+
+        private void FixNameAssembly(bool useTestFiles, bool reimport)
+        {
+            Target.assetModel.name = Target.assembly_ideal;
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixNameFile(bool useTestFiles, bool reimport)
+        {
+            AssetDatabaseManager.RenameAsset(Target.path, Target.filename_ideal);
+        }
+
+        private void FixNamespace(bool useTestFiles, bool reimport)
+        {
+            Target.assetModel.rootNamespace = Target.root_namespace_ideal;
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixNamespaceFoldersExclusions(bool useTestFiles, bool reimport)
+        {
+            Target.dotSettings.AddMissingFolders();
+            Target.SaveDotSettingsFile(useTestFiles);
+        }
+
+
+        private void FixNamespaceFoldersEncoding(bool useTestFiles, bool reimport)
+        {
+            Target.dotSettings.FixEncodingIssues();
+            Target.SaveDotSettingsFile(useTestFiles);
+        }
+
+        private void FixReferenceDuplicates(bool useTestFiles, bool reimport)
+        {
+            WriteReferences();
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixReferenceStyle(bool useTestFiles, bool reimport)
+        {
+            var allAssemblies = AssemblyDefinitionMetadata.Instances.ToList();
+
+            var changed = false;
+
+            Target.referenceStrings.Clear();
+
+            for (var i = 0; i < Target.references.Count; i++)
+            {
+                var reference = Target.references[i];
+
+                if (reference.IsGuidReference)
+                {
+                    continue;
+                }
+
+                changed = true;
+
+                if (reference.assembly == null)
+                {
+                    for (var index = 0; index < allAssemblies.Count; index++)
+                    {
+                        var assemblyToCheck = allAssemblies[index];
+
+                        if (assemblyToCheck.assembly_current == reference.guid)
+                        {
+                            reference.assembly = assemblyToCheck;
+                            break;
+                        }
+                    }
+                }
+
+                reference.guid = reference.assembly?.guid;
+                Target.referenceStrings.Add(reference.assembly?.guid);
+            }
+
+            WriteReferences();
+
+            if (changed)
+            {
+                Target.SaveFile(useTestFiles, reimport);
+            }
+        }
+
+        private void FixReferenceValidity(bool useTestFiles, bool reimport)
+        {
+            for (var i = Target.references.Count - 1; i >= 0; i--)
+            {
+                var reference = Target.references[i];
+
+                if (reference.assembly == null)
+                {
+                    Target.references.RemoveAt(i);
+                }
+            }
+
+            WriteReferences();
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void FixSorting(bool useTestFiles, bool reimport)
+        {
+            Target.references.Sort();
+
+            WriteReferences();
+
+            Target.SaveFile(useTestFiles, reimport);
+        }
+
+        private void WriteReferences()
+        {
+            Target.referenceStrings.Clear();
+            Target.references.Sort();
+            Target.references = Target.references.Distinct().ToList();
+
+            for (var i = 0; i < Target.references.Count; i++)
+            {
+                var reference = Target.references[i];
+
+                Target.referenceStrings.Add(reference.guid);
+            }
+
+            Target.assetModel.references = Target.referenceStrings.ToArray();
         }
 
         private static void AnalyzeDependencies(
@@ -441,10 +528,10 @@ namespace Appalachia.CI.Integration.Assemblies
             HashSet<AssemblyDefinitionMetadata> uniqueReferences,
             HashSet<string> uniqueReferenceStrings,
             HashSet<AssemblyDefinitionMetadata> uniqueOpportunities,
-            AnalysisResult dependencyValidity,
-            AnalysisResult dependencyPresence,
-            AnalysisResult dependencyVersions,
-            AnalysisResult dependencyOpportunity)
+            AnalysisResult<AssemblyAnalysisType> dependencyValidity,
+            AnalysisResult<AssemblyAnalysisType> dependencyPresence,
+            AnalysisResult<AssemblyAnalysisType> dependencyVersions,
+            AnalysisResult<AssemblyAnalysisType> dependencyOpportunity)
         {
             assembly.dependencies.AddRange(uniqueDependencies.Values);
 
@@ -472,14 +559,25 @@ namespace Appalachia.CI.Integration.Assemblies
 
             foreach (var instance in AssemblyDefinitionMetadata.Instances)
             {
+                if (!assembly.Name.StartsWith("Appalachia") || (thisLevel > 1000))
+                {
+                    break;
+                }
+
+                if (!instance.Name.StartsWith("Appalachia"))
+                {
+                    continue;
+                }
+
                 if (uniqueReferences.Contains(instance) || uniqueOpportunities.Contains(instance))
                 {
                     continue;
                 }
 
                 var instanceLevel = instance.GetAssemblyDependencyLevel();
+                var oportunityCutoffLevel = instance.GetOpportunityCutoffLevel();
 
-                if ((instanceLevel < 50) && (instanceLevel < thisLevel))
+                if ((instanceLevel < oportunityCutoffLevel) && (instanceLevel < thisLevel))
                 {
                     uniqueOpportunities.Add(instance);
                     var oppReff = new AssemblyDefinitionReferenceMetadata(instance);
@@ -490,21 +588,59 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
+        private static void AnalyzeProject(
+            AssemblyDefinitionAnalysisMetadata analysis,
+            AssemblyDefinitionMetadata assembly,
+            AnalysisResult<AssemblyAnalysisType> nameAssembly,
+            AnalysisResult<AssemblyAnalysisType> nameFile,
+            AnalysisResult<AssemblyAnalysisType> ns,
+            AnalysisResult<AssemblyAnalysisType> namespaceFoldersExclusions,
+            AnalysisResult<AssemblyAnalysisType> namespaceFoldersFormatting)
+        {
+            if (nameAssembly.HasIssue)
+            {
+                SetColor(analysis, assembly, nameAssembly);
+            }
+
+            if (nameFile.HasIssue)
+            {
+                SetColor(analysis, assembly, nameFile);
+            }
+
+            if (ns.HasIssue)
+            {
+                SetColor(analysis, assembly, ns);
+            }
+
+            assembly.dotSettings.CheckNamespaceFolderIssues(assembly);
+
+            if (namespaceFoldersExclusions.HasIssue)
+            {
+                SetColor(analysis, assembly, namespaceFoldersExclusions);
+            }
+            
+            if (namespaceFoldersFormatting.HasIssue)
+            {
+                SetColor(analysis, assembly, namespaceFoldersFormatting);
+            }
+        }
+
         private static void AnalyzeReferences(
             AssemblyDefinitionAnalysisMetadata analysis,
             AssemblyDefinitionMetadata assembly,
             Dictionary<string, RepositoryDependencyMetadata> uniqueDependencies,
             HashSet<AssemblyDefinitionMetadata> uniqueReferences,
             HashSet<string> uniqueReferenceStringss,
+
             //HashSet<AssemblyDefinitionMetadata> uniqueOpportunities,
-            AnalysisResult referenceDuplicates,
-            AnalysisResult referenceValidity,
-            AnalysisResult dependencyLevel,
-            AnalysisResult referenceStyle,
-            AnalysisResult sorting)
+            AnalysisResult<AssemblyAnalysisType> referenceDuplicates,
+            AnalysisResult<AssemblyAnalysisType> referenceValidity,
+            AnalysisResult<AssemblyAnalysisType> dependencyLevel,
+            AnalysisResult<AssemblyAnalysisType> referenceStyle,
+            AnalysisResult<AssemblyAnalysisType> sorting)
         {
             assembly.SetReferences();
-            
+
             for (var index = 0; index < assembly.references.Count; index++)
             {
                 var reference = assembly.references[index];
@@ -584,291 +720,57 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        private void FixDependencyLevel(bool useTestFiles, bool reimport)
+        private static void AnalzyeRepository(
+            RepositoryDirectoryMetadata repository,
+            Dictionary<string, RepositoryDependencyMetadata> uniqueDependencies)
         {
-            for (var index = _assembly.references.Count - 1; index >= 0; index--)
-            {
-                var reference = _assembly.references[index];
+            var npmPackage = repository.npmPackage;
 
-                if (reference.isLevelIssue)
+            if (npmPackage == null)
+            {
+                return;
+            }
+
+            if (npmPackage.Dependencies == null)
+            {
+                return;
+            }
+
+            foreach (var dependency in npmPackage.Dependencies)
+            {
+                var newDep = new RepositoryDependencyMetadata(dependency.Key, dependency.Value);
+                uniqueDependencies.Add(dependency.Key, newDep);
+
+                var repoMatch = RepositoryDirectoryMetadata.Find(dependency.Key);
+
+                if (repoMatch != null)
                 {
-                    _assembly.references.RemoveAt(index);
+                    newDep.repository = repoMatch;
                 }
             }
-
-            WriteReferences();
-
-            _assembly.SaveFile(useTestFiles, reimport);
         }
 
-        private void FixDependencyOpportunity(bool useTestFiles, bool reimport)
+        private static void InitializeAnalysis(
+            AssemblyDefinitionAnalysisMetadata analysis,
+            AssemblyDefinitionMetadata assembly)
         {
-            var referenceLookup = _assembly.references.Select(r => r.guid).ToHashSet();
-
-            for (var index = 0; index < _assembly.opportunities.Count; index++)
+            if (assembly.dependencies == null)
             {
-                var opportunity = _assembly.opportunities[index];
-                if (!referenceLookup.Contains(opportunity.guid))
-                {
-                    _assembly.references.Add(opportunity);
-                }
+                assembly.dependencies = new List<RepositoryDependencyMetadata>();
+            }
+            else
+            {
+                assembly.dependencies.Clear();
             }
 
-            WriteReferences();
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private void FixDependencyPresence(bool useTestFiles, bool reimport)
-        {
-            var changed = false;
-
-            var npmPackage = _assembly.repository.npmPackage;
-
-            for (var index = _assembly.dependencies.Count - 1; index >= 0; index--)
+            if (assembly.opportunities == null)
             {
-                var dependency = _assembly.dependencies[index];
-                var refRepo = dependency.repository;
-
-                if (refRepo != null)
-                {
-                    var packageName = refRepo.PackageName;
-                    var packageVersion = refRepo.PackageVersion;
-
-                    if (!npmPackage.Dependencies.ContainsKey(packageName))
-                    {
-                        changed = true;
-                        npmPackage.Dependencies.Add(packageName, packageVersion);
-                    }
-                }
+                assembly.opportunities = new List<AssemblyDefinitionReferenceMetadata>();
             }
-
-            if (changed)
+            else
             {
-                _assembly.repository.SavePackageJson(useTestFiles, reimport);
+                assembly.opportunities.Clear();
             }
-        }
-
-        private void FixDependencyValidity(bool useTestFiles, bool reimport)
-        {
-            var changed = false;
-
-            var npmPackage = _assembly.repository.npmPackage;
-
-            for (var index = _assembly.dependencies.Count - 1; index >= 0; index--)
-            {
-                var dependency = _assembly.dependencies[index];
-
-                if (!dependency.IsValid)
-                {
-                    changed = true;
-                    _assembly.dependencies.RemoveAt(index);
-                    npmPackage.Dependencies.Remove(dependency.name);
-                }
-            }
-
-            if (changed)
-            {
-                _assembly.repository.SavePackageJson(useTestFiles, reimport);
-            }
-        }
-
-        private void FixDependencyVersions(bool useTestFiles, bool reimport)
-        {
-            var changed = false;
-
-            var npmPackage = _assembly.repository.npmPackage;
-
-            for (var index = _assembly.dependencies.Count - 1; index >= 0; index--)
-            {
-                var dependency = _assembly.dependencies[index];
-                var refRepo = dependency.repository;
-
-                if (refRepo != null)
-                {
-                    var packageName = refRepo.PackageName;
-                    var packageVersion = refRepo.PackageVersion;
-
-                    if (npmPackage.Dependencies.ContainsKey(packageName))
-                    {
-                        var currentVersion = npmPackage.Dependencies[packageName];
-
-                        if (currentVersion != packageVersion)
-                        {
-                            changed = true;
-                            npmPackage.Dependencies[packageName] = packageVersion;
-                        }
-                    }
-                }
-            }
-
-            if (changed)
-            {
-                _assembly.repository.SavePackageJson(useTestFiles, reimport);
-            }
-        }
-
-        private void FixNameAssembly(bool useTestFiles, bool reimport)
-        {
-            _assembly.assetModel.name = _assembly.assembly_ideal;
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private void FixNameFile(bool useTestFiles, bool reimport)
-        {
-            AssetDatabaseManager.RenameAsset(_assembly.path, _assembly.filename_ideal);
-        }
-
-        private void FixNamespace(bool useTestFiles, bool reimport)
-        {
-            _assembly.assetModel.rootNamespace = _assembly.root_namespace_ideal;
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private void FixNamespaceFolders(bool useTestFiles, bool reimport)
-        {
-            _assembly.dotSettings.AddMissingFolders();
-            _assembly.SaveDotSettingsFile(useTestFiles);
-        }
-
-        private void FixReferenceDuplicates(bool useTestFiles, bool reimport)
-        {
-            WriteReferences();
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private void FixReferenceStyle(bool useTestFiles, bool reimport)
-        {
-            var allAssemblies = AssemblyDefinitionMetadata.Instances.ToList();
-
-            var changed = false;
-
-            _assembly.referenceStrings.Clear();
-
-            for (var i = 0; i < _assembly.references.Count; i++)
-            {
-                var reference = _assembly.references[i];
-
-                if (reference.IsGuidReference)
-                {
-                    continue;
-                }
-
-                changed = true;
-
-                if (reference.assembly == null)
-                {
-                    for (var index = 0; index < allAssemblies.Count; index++)
-                    {
-                        var assemblyToCheck = allAssemblies[index];
-
-                        if (assemblyToCheck.assembly_current == reference.guid)
-                        {
-                            reference.assembly = assemblyToCheck;
-                            break;
-                        }
-                    }
-                }
-
-                reference.guid = reference.assembly?.guid;
-                _assembly.referenceStrings.Add(reference.assembly?.guid);
-            }
-
-            WriteReferences();
-
-            if (changed)
-            {
-                _assembly.SaveFile(useTestFiles, reimport);
-            }
-        }
-
-        private void FixReferenceValidity(bool useTestFiles, bool reimport)
-        {
-            for (var i = _assembly.references.Count - 1; i >= 0; i--)
-            {
-                var reference = _assembly.references[i];
-
-                if (reference.assembly == null)
-                {
-                    _assembly.references.RemoveAt(i);
-                }
-            }
-
-            WriteReferences();
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private void FixSorting(bool useTestFiles, bool reimport)
-        {
-            _assembly.references.Sort();
-
-            WriteReferences();
-
-            _assembly.SaveFile(useTestFiles, reimport);
-        }
-
-        private static void SetColor(
-            IAnalysisColorable colorable1,
-            IAnalysisColorable colorable2,
-            IAnalysisColorable colorable3,
-            IAnalysisColorable colorable4,
-            AnalysisResult analysis,
-            bool overwrite = false)
-        {
-            SetColor(colorable1, analysis, overwrite);
-            SetColor(colorable2, analysis, overwrite);
-            SetColor(colorable3, analysis, overwrite);
-            SetColor(colorable4, analysis, overwrite);
-        }
-
-        private static void SetColor(
-            IAnalysisColorable colorable1,
-            IAnalysisColorable colorable2,
-            IAnalysisColorable colorable3,
-            AnalysisResult analysis,
-            bool overwrite = false)
-        {
-            SetColor(colorable1, analysis, overwrite);
-            SetColor(colorable2, analysis, overwrite);
-            SetColor(colorable3, analysis, overwrite);
-        }
-
-        private static void SetColor(
-            IAnalysisColorable colorable1,
-            IAnalysisColorable colorable2,
-            AnalysisResult analysis,
-            bool overwrite = false)
-        {
-            SetColor(colorable1, analysis, overwrite);
-            SetColor(colorable2, analysis, overwrite);
-        }
-
-        private static void SetColor(IAnalysisColorable colorable, AnalysisResult analysis, bool overwrite = false)
-        {
-            if (overwrite || (colorable.IssueColor == default))
-            {
-                colorable.IssueColor = analysis.color;
-            }
-        }
-
-        private void WriteReferences()
-        {
-            _assembly.referenceStrings.Clear();
-            _assembly.references.Sort();
-            _assembly.references = _assembly.references.Distinct().ToList();
-
-            for (var i = 0; i < _assembly.references.Count; i++)
-            {
-                var reference = _assembly.references[i];
-
-                _assembly.referenceStrings.Add(reference.guid);
-            }
-
-            _assembly.assetModel.references = _assembly.referenceStrings.ToArray();
         }
     }
 }

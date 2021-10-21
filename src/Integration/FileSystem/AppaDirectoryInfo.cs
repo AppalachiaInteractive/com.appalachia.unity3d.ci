@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -98,7 +99,30 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     "\\server\share").
         /// </returns>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public override AppaDirectoryInfo Parent => _directoryInfo.Parent;
+        public override AppaDirectoryInfo Parent
+        {
+            get
+            {
+                var parent = _directoryInfo.Parent;
+
+                if (parent == null)
+                {
+                    return null;
+                }
+
+                var parentPath = parent.FullName.CleanFullPath();
+                
+                var projectRoot = ProjectLocations.GetProjectDirectoryPath();
+
+                if (!parentPath.Contains(projectRoot))
+                {
+                    throw new NotSupportedException(parentPath);
+                    return null;
+                }
+                
+                return parent;
+            }
+        }
 
         /// <summary>Gets a value indicating whether the directory exists.</summary>
         /// <returns>

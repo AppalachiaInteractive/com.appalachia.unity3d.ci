@@ -6,40 +6,30 @@ namespace Appalachia.CI.Integration.Analysis
     [Serializable]
     public class AnalysisResult
     {
-        public Color color;
-        public string name;
-        public AnalysisType type;
-        private Action<bool, bool> _correction;
-
-        private bool? _hasIssue;
-
-        private Func<bool> _issueChecker;
-
-        public AnalysisResult(
-            string name,
-            AnalysisType type,
-            Func<bool> issueChecker,
-            Action<bool, bool> correction)
+        protected AnalysisResult(string name, Func<bool> issueChecker, Action<bool, bool> correction)
         {
             this.name = name;
-            this.type = type;
             _issueChecker = issueChecker;
             _correction = correction;
         }
-        
-        public AnalysisResult(
+
+        protected AnalysisResult(
             string name,
-            AnalysisType type,
             Color color,
             Func<bool> issueChecker,
             Action<bool, bool> correction)
         {
             this.name = name;
-            this.type = type;
             this.color = color;
             _issueChecker = issueChecker;
             _correction = correction;
         }
+
+        public Color color;
+        public string name;
+        protected Action<bool, bool> _correction;
+        protected bool? _hasIssue;
+        protected Func<bool> _issueChecker;
 
         public bool HasIssue
         {
@@ -63,5 +53,27 @@ namespace Appalachia.CI.Integration.Analysis
 
             _correction(useTestFiles, reimport);
         }
+    }
+
+    [Serializable]
+    public class AnalysisResult<T> : AnalysisResult
+    {
+        public AnalysisResult(string name, T type, Func<bool> issueChecker, Action<bool, bool> correction) :
+            base(name, issueChecker, correction)
+        {
+            this.type = type;
+        }
+
+        public AnalysisResult(
+            string name,
+            T type,
+            Color color,
+            Func<bool> issueChecker,
+            Action<bool, bool> correction) : base(name, color, issueChecker, correction)
+        {
+            this.type = type;
+        }
+
+        public T type;
     }
 }

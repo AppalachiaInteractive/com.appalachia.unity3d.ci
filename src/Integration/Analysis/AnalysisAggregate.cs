@@ -1,17 +1,19 @@
+using System;
 using System.Collections.Generic;
 
 namespace Appalachia.CI.Integration.Analysis
 {
-    public class AnalysisAggregate
+    public class AnalysisAggregate<T>
+    where T: Enum
     {
-        private Dictionary<AnalysisType, int> _counts;
+        private Dictionary<T, int> _counts;
 
         public AnalysisAggregate()
         {
-            _counts = new Dictionary<AnalysisType, int>();
+            _counts = new Dictionary<T, int>();
         }
 
-        public int this[AnalysisType type]
+        public int this[T type]
         {
             get
             {
@@ -24,12 +26,12 @@ namespace Appalachia.CI.Integration.Analysis
             }
         }
 
-        public bool HasIssues(AnalysisType type)
+        public bool HasIssues(T type)
         {
             return this[type] > 0;
         }
 
-        public void Add(IEnumerable<AnalysisResult> results)
+        public void Add(IEnumerable<AnalysisResult<T>> results)
         {
             foreach (var issue in results)
             {

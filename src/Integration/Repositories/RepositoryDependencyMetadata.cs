@@ -40,6 +40,8 @@ namespace Appalachia.CI.Integration.Repositories
         public bool IsMissing => !IsValid || (name != repository.PackageName);
         public bool IsOutOfDate => !IsValid || (version != repository.PackageVersion);
 
+        public bool HasIssue => !IsValid || IsMissing || IsOutOfDate;
+
         public string Name => repository?.PackageName ?? name;
         public string Version => version;
         public Color IssueColor { get; set; }

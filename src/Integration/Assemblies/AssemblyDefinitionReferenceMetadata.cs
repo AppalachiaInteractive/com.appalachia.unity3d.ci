@@ -32,11 +32,50 @@ namespace Appalachia.CI.Integration.Assemblies
             this.assembly = assembly;
             guid = assembly.guid;
         }
-
+        
         public AssemblyDefinitionMetadata assembly;
-        public bool isDuplicate;
-        public bool isLevelIssue;
-        public bool outOfSorts;
+        private bool _isDuplicate;
+        private bool _isLevelIssue;
+        private bool _outOfSorts;
+
+        public bool HasIssue => isDuplicate || isLevelIssue || outOfSorts;
+        
+        public bool isDuplicate 
+        {
+            get     
+            {
+                return _isDuplicate;
+            }
+            set 
+            {
+                _isDuplicate = value;
+            }
+        }
+        
+        public bool isLevelIssue 
+        {
+            get     
+            {
+                return _isLevelIssue;
+            }
+            set 
+            {
+                _isLevelIssue = value;
+            }
+        }
+        
+        public bool outOfSorts 
+        {
+            get     
+            {
+                return _outOfSorts;
+            }
+            set 
+            {
+                _outOfSorts = value;
+            }
+        }
+        
         public string guid;
         public Color IssueColor { get; set; }
 
