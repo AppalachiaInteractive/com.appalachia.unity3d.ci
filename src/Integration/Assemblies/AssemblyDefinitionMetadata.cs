@@ -71,22 +71,23 @@ namespace Appalachia.CI.Integration.Assemblies
         public string filename_ideal => assembly_current + ".asmdef";
         public string Name => assembly_current;
 
-        public int GetOpportunityCutoffLevel()
-        {
-            return 50;
-        }
-        
         public int GetAssemblyDependencyLevel()
         {
             var name = assembly_current;
             var result = 0;
 
-            if (name.EndsWith("Tests") || name.EndsWith("Tests.Playmode") || name.EndsWith("CodeGen"))
+            if (name.EndsWith("Examples") ||
+                name.EndsWith("Example") ||
+                name.EndsWith("Tests") ||
+                name.EndsWith("Tests.Playmode") ||
+                name.EndsWith("CodeGen"))
             {
                 result += 10000;
             }
 
-            if (name.EndsWith(".Editor"))
+            if ((name.StartsWith("Appalachia.Editor") || name.EndsWith(".Editor")) &&
+                (name != "Unity.EditorCoroutines.Editor") &&
+                (name != "Amplify.Shader.Editor"))
             {
                 result += 100;
             }
@@ -108,6 +109,12 @@ namespace Appalachia.CI.Integration.Assemblies
                 if (name.StartsWith("Appalachia.Utility"))
                 {
                     result += 0;
+                    return result;
+                }
+
+                if (name.StartsWith("Appalachia.CI.Integration"))
+                {
+                    result += 1;
                     return result;
                 }
 
@@ -175,7 +182,13 @@ namespace Appalachia.CI.Integration.Assemblies
                 return result;
             }
 
+            result += 2;
             return result;
+        }
+
+        public int GetOpportunityCutoffLevel()
+        {
+            return 50;
         }
 
         public void Initialize(string assemblyDefinitionPath)

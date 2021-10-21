@@ -1,6 +1,6 @@
 using System;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.NPM
+namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 {
     [Serializable]
     internal class NPMLoginRequest

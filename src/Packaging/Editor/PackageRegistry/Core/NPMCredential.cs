@@ -1,6 +1,6 @@
 using System;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.Core
+namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     [Serializable]
     public class NPMCredential

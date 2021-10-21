@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.UI
+namespace Appalachia.CI.Packaging.PackageRegistry.UI
 {
     public class BulkAddPackages : EditorWindow
     {

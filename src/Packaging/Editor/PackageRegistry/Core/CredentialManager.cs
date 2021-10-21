@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Appalachia.CI.Integration;
 using Appalachia.CI.Integration.FileSystem;
 using Newtonsoft.Json;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.Core
+namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     public class CredentialManager
     {

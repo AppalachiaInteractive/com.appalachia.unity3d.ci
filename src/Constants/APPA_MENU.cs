@@ -1,4 +1,4 @@
-namespace Appalachia.Core.Constants
+namespace Appalachia.CI.Constants
 {
     public static partial class APPA_MENU
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.NPM
+namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 {
     public class ExpectContinueAware : WebClient
     {

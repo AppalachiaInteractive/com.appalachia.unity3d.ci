@@ -4,7 +4,7 @@ using System.Net;
 using System.Text;
 using UnityEngine;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.NPM
+namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 {
     public class NPMLogin
     {

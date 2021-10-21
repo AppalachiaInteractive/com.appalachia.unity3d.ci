@@ -1,13 +1,12 @@
 using System;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Appalachia.CI.Integration;
 using Appalachia.CI.Integration.FileSystem;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.NPM
+namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 {
     /// <summary>
     ///     Helper class to create the JSON data to upload to the package server

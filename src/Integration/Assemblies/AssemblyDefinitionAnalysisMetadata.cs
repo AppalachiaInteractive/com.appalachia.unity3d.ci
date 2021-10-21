@@ -208,7 +208,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
         private bool CheckNameAssembly()
         {
-            if (!Target.Name.StartsWith("Appalachia"))
+            if (!Target.IsAppalachia)
             {
                 return false;
             }
@@ -223,7 +223,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
         private bool CheckNamespace()
         {
-            if (!Target.Name.StartsWith("Appalachia"))
+            if (!Target.IsAppalachia)
             {
                 return false;
             }
@@ -694,7 +694,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
                 var refLevel = reference.assembly.GetAssemblyDependencyLevel();
 
-                if (refLevel > thisLevel)
+                if (assembly.IsAppalachia && (refLevel > thisLevel))
                 {
                     reference.isLevelIssue = true;
                     SetColor(analysis, assembly, reference, dependencyLevel);

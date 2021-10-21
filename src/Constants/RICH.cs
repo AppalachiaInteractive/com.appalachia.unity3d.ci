@@ -1,4 +1,4 @@
-using Appalachia.Utility.Colors;
+using Appalachia.Utility.src.Colors;
 using UnityEngine;
 
 namespace Appalachia.CI.Constants

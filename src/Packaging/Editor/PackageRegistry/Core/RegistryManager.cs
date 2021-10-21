@@ -6,7 +6,7 @@ using Appalachia.CI.Integration.FileSystem;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.Core
+namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     public class RegistryManager
     {

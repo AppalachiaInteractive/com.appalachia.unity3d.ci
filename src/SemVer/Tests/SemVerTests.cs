@@ -2,16 +2,17 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Appalachia.CI.SemVer;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace Appalachia.CI.SemVer
+namespace Appalachia.CI.src.SemVer.Tests
 {
     [TestFixture]
     internal class SemVerTests
     {
         [TestCaseSource(typeof(Data), nameof(Data.ValidVersionsTestCases))]
-        public void MajorMinorPatchTest(SemVer semVer)
+        public void MajorMinorPatchTest(CI.SemVer.SemVer semVer)
         {
             Assert.That(semVer.major, Is.Not.Negative);
             Assert.That(semVer.minor, Is.Not.Negative);
@@ -19,7 +20,7 @@ namespace Appalachia.CI.SemVer
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.ValidVersionsTestCases))]
-        public void PreReleaseTest(SemVer semVer)
+        public void PreReleaseTest(CI.SemVer.SemVer semVer)
         {
             foreach (var identifier in semVer.preRelease.Split('.'))
             {
@@ -33,7 +34,7 @@ namespace Appalachia.CI.SemVer
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.ValidVersionsTestCases))]
-        public void BuildTest(SemVer semVer)
+        public void BuildTest(CI.SemVer.SemVer semVer)
         {
             foreach (var identifier in semVer.Build.Split('.'))
             {
@@ -42,7 +43,7 @@ namespace Appalachia.CI.SemVer
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.ValidateTestCases))]
-        public ReadOnlyCollection<string> ValidateTest(SemVer invalid, SemVer corrected)
+        public ReadOnlyCollection<string> ValidateTest(CI.SemVer.SemVer invalid, CI.SemVer.SemVer corrected)
         {
             var original = invalid.Clone();
             var result = invalid.Validate();
@@ -58,51 +59,51 @@ namespace Appalachia.CI.SemVer
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.EqualsTestCases))]
-        public void EqualsTest(SemVer left, SemVer right)
+        public void EqualsTest(CI.SemVer.SemVer left, CI.SemVer.SemVer right)
         {
             Assert.That(left, Is.EqualTo(right));
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.NotEqualTestCases))]
-        public void NotEqualTest(SemVer left, SemVer right)
+        public void NotEqualTest(CI.SemVer.SemVer left, CI.SemVer.SemVer right)
         {
             Assert.That(left, Is.Not.EqualTo(right));
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.CompareTestCases))]
-        public void CompareTest(SemVer big, SemVer small)
+        public void CompareTest(CI.SemVer.SemVer big, CI.SemVer.SemVer small)
         {
             Assert.That(big,   Is.GreaterThan(small));
             Assert.That(small, Is.LessThan(big));
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.ConvertToStringTestCases))]
-        public string ConvertToStringTest(SemVer semVer)
+        public string ConvertToStringTest(CI.SemVer.SemVer semVer)
         {
             return semVer;
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.ConvertFromStringTestCases))]
-        public SemVer ConvertFromStringTest(string semVer)
+        public CI.SemVer.SemVer ConvertFromStringTest(string semVer)
         {
             return semVer;
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.AutoBuildTestCases))]
-        public string AutoBuildTest(SemVer semVer)
+        public string AutoBuildTest(CI.SemVer.SemVer semVer)
         {
             Assert.That(SemVerAutoBuild.Instances.Keys, Does.Contain(semVer.autoBuild));
             return semVer.Build;
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.CoreTestCases))]
-        public string CoreTest(SemVer semVer)
+        public string CoreTest(CI.SemVer.SemVer semVer)
         {
             return semVer.Core;
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.AndroidBundleVersionCode))]
-        public int AndroidBundleVersionCodeTest(SemVer semVer)
+        public int AndroidBundleVersionCodeTest(CI.SemVer.SemVer semVer)
         {
             return semVer.AndroidBundleVersionCode;
         }
@@ -110,20 +111,20 @@ namespace Appalachia.CI.SemVer
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private class Data
         {
-            private static IEnumerable<SemVer> ValidVersions
+            private static IEnumerable<CI.SemVer.SemVer> ValidVersions
             {
                 get
                 {
-                    yield return new SemVer();
-                    yield return new SemVer {major = 1, minor = 2, patch = 3};
-                    yield return new SemVer
+                    yield return new CI.SemVer.SemVer();
+                    yield return new CI.SemVer.SemVer {major = 1, minor = 2, patch = 3};
+                    yield return new CI.SemVer.SemVer
                     {
                         major = 1,
                         minor = 2,
                         patch = 3,
                         preRelease = "alpha"
                     };
-                    yield return new SemVer
+                    yield return new CI.SemVer.SemVer
                     {
                         major = 1,
                         minor = 2,
@@ -131,7 +132,7 @@ namespace Appalachia.CI.SemVer
                         preRelease = "alpha",
                         Build = "CustomBuild1"
                     };
-                    yield return new SemVer
+                    yield return new CI.SemVer.SemVer
                     {
                         major = 1,
                         minor = 2,
@@ -139,11 +140,11 @@ namespace Appalachia.CI.SemVer
                         preRelease = "alpha",
                         Build = "CustomBuild2"
                     };
-                    yield return new SemVer {preRelease = "ALPHA"};
-                    yield return new SemVer {preRelease = "alpha.1"};
-                    yield return new SemVer {preRelease = "0.3.7", Build = "20130313144700"};
-                    yield return new SemVer {preRelease = "x.7.z.92", Build = "exp.sha.5114f85"};
-                    yield return new SemVer
+                    yield return new CI.SemVer.SemVer {preRelease = "ALPHA"};
+                    yield return new CI.SemVer.SemVer {preRelease = "alpha.1"};
+                    yield return new CI.SemVer.SemVer {preRelease = "0.3.7", Build = "20130313144700"};
+                    yield return new CI.SemVer.SemVer {preRelease = "x.7.z.92", Build = "exp.sha.5114f85"};
+                    yield return new CI.SemVer.SemVer
                     {
                         major = 1,
                         minor = 0,
@@ -164,24 +165,24 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer {preRelease = ".", Build = "."},
-                        new SemVer()
+                        new CI.SemVer.SemVer {preRelease = ".", Build = "."},
+                        new CI.SemVer.SemVer()
                     ).Returns(new[] {SemVerErrorMessage.Empty, SemVerErrorMessage.Empty});
                     yield return new TestCaseData(
-                        new SemVer {preRelease = "a..a", Build = "a..a"},
-                        new SemVer {preRelease = "a.a", Build = "a.a"}
+                        new CI.SemVer.SemVer {preRelease = "a..a", Build = "a..a"},
+                        new CI.SemVer.SemVer {preRelease = "a.a", Build = "a.a"}
                     ).Returns(new[] {SemVerErrorMessage.Empty, SemVerErrorMessage.Empty});
                     yield return new TestCaseData(
-                        new SemVer {preRelease = "a a", Build = "a a"},
-                        new SemVer {preRelease = "a-a", Build = "a-a"}
+                        new CI.SemVer.SemVer {preRelease = "a a", Build = "a a"},
+                        new CI.SemVer.SemVer {preRelease = "a-a", Build = "a-a"}
                     ).Returns(new[] {SemVerErrorMessage.Invalid, SemVerErrorMessage.Invalid});
                     yield return new TestCaseData(
-                        new SemVer {preRelease = "$", Build = "$"},
-                        new SemVer {preRelease = "-", Build = "-"}
+                        new CI.SemVer.SemVer {preRelease = "$", Build = "$"},
+                        new CI.SemVer.SemVer {preRelease = "-", Build = "-"}
                     ).Returns(new[] {SemVerErrorMessage.Invalid, SemVerErrorMessage.Invalid});
                     yield return new TestCaseData(
-                        new SemVer {preRelease = "01"},
-                        new SemVer {preRelease = "1"}
+                        new CI.SemVer.SemVer {preRelease = "01"},
+                        new CI.SemVer.SemVer {preRelease = "1"}
                     ).Returns(new[] {SemVerErrorMessage.LeadingZero});
                 }
             }
@@ -196,7 +197,7 @@ namespace Appalachia.CI.SemVer
                     }
 
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 7,
@@ -204,7 +205,7 @@ namespace Appalachia.CI.SemVer
                             preRelease = "alpha",
                             Build = "001"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 7,
@@ -234,26 +235,26 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer {major = 2, minor = 1, patch = 1},
-                        new SemVer {major = 2, minor = 1, patch = 0}
+                        new CI.SemVer.SemVer {major = 2, minor = 1, patch = 1},
+                        new CI.SemVer.SemVer {major = 2, minor = 1, patch = 0}
                     );
                     yield return new TestCaseData(
-                        new SemVer {major = 2, minor = 1, patch = 0},
-                        new SemVer {major = 2, minor = 0, patch = 0}
+                        new CI.SemVer.SemVer {major = 2, minor = 1, patch = 0},
+                        new CI.SemVer.SemVer {major = 2, minor = 0, patch = 0}
                     );
                     yield return new TestCaseData(
-                        new SemVer {major = 2, minor = 0, patch = 0},
-                        new SemVer {major = 1, minor = 0, patch = 0}
+                        new CI.SemVer.SemVer {major = 2, minor = 0, patch = 0},
+                        new CI.SemVer.SemVer {major = 1, minor = 0, patch = 0}
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 7,
                             patch = 3,
                             preRelease = string.Empty
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 7,
@@ -262,8 +263,8 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer {major = 1, minor = 0, patch = 0},
-                        new SemVer
+                        new CI.SemVer.SemVer {major = 1, minor = 0, patch = 0},
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -272,14 +273,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "rc.1"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -288,14 +289,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "beta.11"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -304,14 +305,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "beta.2"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -320,14 +321,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "beta"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -336,14 +337,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "alpha.beta"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -352,14 +353,14 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
                             patch = 0,
                             preRelease = "alpha.1"
                         },
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 0,
@@ -375,7 +376,7 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 2,
@@ -384,7 +385,7 @@ namespace Appalachia.CI.SemVer
                             Build = "b"
                         }
                     ).Returns("1.2.3-pr+b");
-                    yield return new TestCaseData(new SemVer {preRelease = "pre-alpha"}).Returns(
+                    yield return new TestCaseData(new CI.SemVer.SemVer {preRelease = "pre-alpha"}).Returns(
                         "0.1.0-pre-alpha"
                     );
                 }
@@ -395,7 +396,7 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData("1.2.3-pr+b").Returns(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 2,
@@ -405,7 +406,7 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData("1.2.3+b").Returns(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 2,
@@ -414,7 +415,7 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData("1.2.3-pr").Returns(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 2,
@@ -423,7 +424,7 @@ namespace Appalachia.CI.SemVer
                         }
                     );
                     yield return new TestCaseData("0.1.0-pre-alpha").Returns(
-                        new SemVer {preRelease = "pre-alpha"}
+                        new CI.SemVer.SemVer {preRelease = "pre-alpha"}
                     );
                 }
             }
@@ -433,7 +434,7 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer {autoBuild = SemVerAutoBuild.Type.Manual, Build = "auto-build"}
+                        new CI.SemVer.SemVer {autoBuild = SemVerAutoBuild.Type.Manual, Build = "auto-build"}
                     ).Returns("auto-build");
                 }
             }
@@ -443,7 +444,7 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 4,
                             minor = 5,
@@ -460,7 +461,7 @@ namespace Appalachia.CI.SemVer
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer
+                        new CI.SemVer.SemVer
                         {
                             major = 1,
                             minor = 2,

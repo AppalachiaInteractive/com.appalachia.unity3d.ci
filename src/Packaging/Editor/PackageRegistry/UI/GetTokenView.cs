@@ -1,9 +1,9 @@
-using Appalachia.CI.Packaging.Editor.PackageRegistry.Core;
-using Appalachia.CI.Packaging.Editor.PackageRegistry.NPM;
+using Appalachia.CI.Packaging.PackageRegistry.Core;
+using Appalachia.CI.Packaging.PackageRegistry.NPM;
 using UnityEditor;
 using UnityEngine;
 
-namespace Appalachia.CI.Packaging.Editor.PackageRegistry.UI
+namespace Appalachia.CI.Packaging.PackageRegistry.UI
 {
     internal class GetTokenView : EditorWindow
     {

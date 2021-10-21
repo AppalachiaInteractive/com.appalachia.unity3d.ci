@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Appalachia.Utility.Colors;
+using Appalachia.Utility.src.Colors;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.Analysis
