@@ -9,9 +9,13 @@ namespace Appalachia.CI.Integration.Rider
     {
         public bool encodingIssue;
         public bool excluded;
+        public bool shouldExclude;
         public string encoded;
         public string path;
-        public bool HasIssue => encodingIssue || !excluded;
+        
+        public bool HasIssue => HasExclusionIssue || HasExclusionIssue;
+        public bool HasExclusionIssue => shouldExclude && !excluded;
+        public bool HasEncodingIssue => encodingIssue;
 
         public int CompareTo(object obj)
         {

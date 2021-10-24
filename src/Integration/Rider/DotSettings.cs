@@ -74,6 +74,7 @@ namespace Appalachia.CI.Integration.Rider
 
             foreach (var folder in MissingFolders)
             {
+                folder.shouldExclude = true;
                 folder.excluded = true;
             }
         }
@@ -133,6 +134,7 @@ namespace Appalachia.CI.Integration.Rider
                 {
                     var folder = Create(exclusion, encoded);
 
+                    folder.shouldExclude = true;
                     folder.excluded = false;
                 }
             }

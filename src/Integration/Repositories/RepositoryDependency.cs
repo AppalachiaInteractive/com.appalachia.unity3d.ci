@@ -52,5 +52,6 @@ namespace Appalachia.CI.Integration.Repositories
                 return $"{Name} : {Version}";
             }
         }
+        
     }
 }

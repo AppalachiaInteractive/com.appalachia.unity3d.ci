@@ -26,7 +26,7 @@ namespace Appalachia.CI.Constants
         {
             size = Mathf.Clamp(size, 1, 100);
 
-            return $"<size={size}{value}</size>";
+            return $"<size={size}>{value}</size>";
         }
 
         public static void SupportRichText(this GUIStyle style)

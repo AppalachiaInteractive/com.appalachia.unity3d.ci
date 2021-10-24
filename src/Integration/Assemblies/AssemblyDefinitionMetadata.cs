@@ -71,7 +71,7 @@ namespace Appalachia.CI.Integration.Assemblies
         public string FilenameIdeal => AssemblyCurrent + ".asmdef";
         public string guid => id;
 
-        public int GetAssemblyAssemblyReferenceLevel()
+        public int GetAssemblyReferenceLevel()
         {
             var name = AssemblyCurrent;
             var result = 0;

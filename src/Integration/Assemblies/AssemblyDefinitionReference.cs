@@ -38,31 +38,38 @@ namespace Appalachia.CI.Integration.Assemblies
         public AssemblyDefinitionMetadata assembly;
 
         public string guid;
-        private bool _isDuplicate;
-        private bool _isLevelIssue;
-        private bool _outOfSorts;
+        private bool _isDuplicated;
+        private bool _hasReferenceLevelIssue;
+        private bool _hasSortingIssue;
+
+        public string DisplayName => assembly?.Name ?? guid;
         public Color IssueColor { get; set; }
 
-        public bool HasIssue => isDuplicate || isLevelIssue || outOfSorts;
+        public bool HasIssue => IsDuplicated || HasReferenceLevelIssue || HasSortingIssue;
 
         public bool IsGuidReference => guid.StartsWith(AssemblyDefinitionModel.GUID_PREFIX);
 
-        public bool isDuplicate
+        public bool IsDuplicated
         {
-            get => _isDuplicate;
-            set => _isDuplicate = value;
+            get => _isDuplicated;
+            set => _isDuplicated = value;
         }
 
-        public bool isLevelIssue
+        public bool HasReferenceLevelIssue
         {
-            get => _isLevelIssue;
-            set => _isLevelIssue = value;
+            get => _hasReferenceLevelIssue;
+            set => _hasReferenceLevelIssue = value;
         }
 
-        public bool outOfSorts
+        public bool HasSortingIssue
         {
-            get => _outOfSorts;
-            set => _outOfSorts = value;
+            get => _hasSortingIssue;
+            set => _hasSortingIssue = value;
+        }
+
+        public bool IsValid
+        {
+            get => assembly != null;
         }
 
         public int CompareTo(object obj)

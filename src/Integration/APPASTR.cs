@@ -14,6 +14,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Appalachia = "Appalachia";
         public const string Appalachia_Only = Appalachia + " " + Only;
         public const string ASMDEFBUTTON = "ASMDEFBUTTON";
+        public const string Assemblies = "Assemblies";
         public const string Assembly = "Assembly";
         public const string Assembly_Current = Assembly + " (" + Current + ")";
         public const string Assembly_Definitions = Assembly + " " + Definitions;
@@ -55,6 +56,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Issues = "Issues";
         public const string Level = "Level";
         public const string Metadata = "Metadata";
+        public const string Name = "Name";
         public const string Namespace = "Namespace";
         public const string Only = "Only";
         public const string Only_Issues = Only + " " + Issues;
@@ -71,6 +73,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Package_Review = Package + " " + Review;
         public const string Package_Search = Package + " " + Search;
         public const string Packages = "Packages";
+        public const string Path = "Path";
         public const string Presence = "Presence";
         public const string Reanalyze = "Reanalyze";
         public const string Ref_ = "Ref.";
@@ -90,6 +93,7 @@ namespace Appalachia.CI.Integration.Core
         public const string url = "url";
         public const string Validity = "Validity";
         public const string version = "version";
+        public const string Version = "Version";
         public const string Versions = "Versions";
 
         public static class PREF

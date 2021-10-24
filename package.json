@@ -22,10 +22,10 @@
     "registry": "http://35.211.123.13:4873/"
   },
   "dependencies": {
-    "com.appalachia.unity3d.utility": "0.1.1",
+    "com.appalachia.unity3d.utility": "0.1.2",
     "com.unity.inputsystem": "1.1.1",
     "com.unity.test-framework": "1.1.29",
-    "com.appalachia.unity3d.core": "0.1.4"
+    "com.appalachia.unity3d.core": "0.1.5"
   },
   "scripts": {
     "preversion": "bash ~/com.appalachia/appa/appa package unity3d preversion",

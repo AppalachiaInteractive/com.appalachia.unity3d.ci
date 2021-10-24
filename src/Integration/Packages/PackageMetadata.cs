@@ -16,7 +16,7 @@ namespace Appalachia.CI.Integration.Packages
 #endif
     public class PackageMetadata : IntegrationMetadata<PackageMetadata>
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(PackageMetadata) + ".";
 
@@ -35,7 +35,7 @@ namespace Appalachia.CI.Integration.Packages
         private static readonly ProfilerMarker _PRF_FinalizeInternal =
             new(_PRF_PFX + nameof(FinalizeInternal));
 
-#endregion
+        #endregion
 
         public static PackageCollection Packages
         {
@@ -83,12 +83,12 @@ namespace Appalachia.CI.Integration.Packages
         public override string Name => packageInfo.name;
         public override string Path => packageInfo.assetPath;
 
-        public string NameAndVersion => $"{packageInfo.name}@{packageInfo.version}";
+        public bool IsOutOfDate => (packageInfo != null) && (Version != LatestVersion);
+        public string LatestVersion => packageInfo?.versions.latest ?? string.Empty;
 
-        public override string ToString()
-        {
-            return NameAndVersion;
-        }
+        public string NameAndVersion => $"{Name}@{Version}";
+
+        public string Version => packageInfo?.version ?? string.Empty;
 
         public override int CompareTo(PackageMetadata other)
         {
@@ -164,6 +164,11 @@ namespace Appalachia.CI.Integration.Packages
 
         public override void InitializeForAnalysis()
         {
+        }
+
+        public override string ToString()
+        {
+            return NameAndVersion;
         }
 
         protected override IEnumerable<string> GetIds()

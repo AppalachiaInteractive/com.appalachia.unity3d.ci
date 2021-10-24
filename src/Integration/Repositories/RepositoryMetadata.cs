@@ -19,7 +19,7 @@ namespace Appalachia.CI.Integration.Repositories
 #endif
     public class RepositoryMetadata : IntegrationMetadata<RepositoryMetadata>
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(RepositoryMetadata) + ".";
 
@@ -31,7 +31,7 @@ namespace Appalachia.CI.Integration.Repositories
         private static readonly ProfilerMarker _PRF_FinalizeInternal =
             new(_PRF_PFX + nameof(FinalizeInternal));
 
-#endregion
+        #endregion
 
         static RepositoryMetadata()
         {
@@ -258,6 +258,33 @@ namespace Appalachia.CI.Integration.Repositories
             set => _srcDirectory = value;
         }
 
+        public void PopulateDependencies()
+        {
+            if (dependencies == null)
+            {
+                dependencies = new HashSet<RepositoryDependency>();
+            }
+
+            dependencies.Clear();
+
+            if (npmPackage?.Dependencies != null)
+            {
+                foreach (var dependency in npmPackage.Dependencies)
+                {
+                    var newDep = new RepositoryDependency(dependency.Key, dependency.Value);
+
+                    var repoMatch = FindById(dependency.Key);
+
+                    if (repoMatch != null)
+                    {
+                        newDep.repository = repoMatch;
+                    }
+
+                    dependencies.Add(newDep);
+                }
+            }
+        }
+
         public void SavePackageJson(bool useTestFiles, bool reimport)
         {
             var savePath = NpmPackagePath;
@@ -399,8 +426,6 @@ namespace Appalachia.CI.Integration.Repositories
                 DataDirectory = new AppaDirectoryInfo(AppaPath.Combine(directory.FullPath,   APPASTR.data));
                 SrcDirectory = new AppaDirectoryInfo(AppaPath.Combine(directory.FullPath,    APPASTR.src));
 
-                NpmPackage package = null;
-
                 var npmPackagePath = AppaPath.Combine(directory.FullPath, "package.json");
 
                 if (AppaFile.Exists(npmPackagePath))
@@ -408,7 +433,7 @@ namespace Appalachia.CI.Integration.Repositories
                     var text = AppaFile.ReadAllText(npmPackagePath);
                     try
                     {
-                        package = NpmPackage.FromJson(text);
+                        npmPackage = NpmPackage.FromJson(text);
                     }
                     catch (Exception ex)
                     {
@@ -416,8 +441,8 @@ namespace Appalachia.CI.Integration.Repositories
                         throw;
                     }
                 }
-
-                npmPackage = package;
+                
+                PopulateDependencies();
             }
         }
 
