@@ -33,10 +33,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                     true
                 )
                 {
-                    drawHeaderCallback = rect =>
-                    {
-                        GUI.Label(rect, "User Credentials on this computer");
-                    },
+                    drawHeaderCallback = rect => { GUI.Label(rect, "User Credentials on this computer"); },
                     drawElementCallback = (rect, index, active, focused) =>
                     {
                         var credential = credentialList.list[index] as NPMCredential;
@@ -62,11 +59,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                     },
                     onAddCallback = reorderableList =>
                     {
-                        var credentialEditor = GetWindow<CredentialEditorView>(
-                            true,
-                            "Add credential",
-                            true
-                        );
+                        var credentialEditor = GetWindow<CredentialEditorView>(true, "Add credential", true);
                         credentialEditor.CreateNew(credentialManager);
                     },
                     onRemoveCallback = reorderableList =>

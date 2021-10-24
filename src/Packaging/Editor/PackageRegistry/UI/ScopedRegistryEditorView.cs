@@ -7,27 +7,56 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
 {
     internal class ScopedRegistryEditorView : EditorWindow
     {
-        private RegistryManager controller;
-
         private bool createNew;
         private bool initialized;
 
-        private ScopedRegistry registry;
+        private int tokenMethod;
+        private RegistryManager controller;
 
         private ReorderableList scopeList;
 
-        private int tokenMethod;
+        private ScopedRegistry registry;
+
+        public void CreateNew(RegistryManager controller)
+        {
+            this.controller = controller;
+            createNew = true;
+            registry = new ScopedRegistry();
+            initialized = true;
+        }
+
+        public void Edit(ScopedRegistry registry, RegistryManager controller)
+        {
+            this.controller = controller;
+            this.registry = registry;
+            createNew = false;
+            initialized = true;
+        }
+
+        private void Add()
+        {
+            if (registry.isValid())
+            {
+                controller.Save(registry);
+                Close();
+                GUIUtility.ExitGUI();
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("Invalid", "Invalid settings for registry.", "Ok");
+            }
+        }
+
+        private void OnDisable()
+        {
+            initialized = false;
+        }
 
         private void OnEnable()
         {
             tokenMethod = 0;
 
             minSize = new Vector2(480, 320);
-        }
-
-        private void OnDisable()
-        {
-            initialized = false;
         }
 
         private void OnGUI()
@@ -37,10 +66,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                 EditorGUILayout.Space();
                 if (createNew)
                 {
-                    EditorGUILayout.LabelField(
-                        "Add scoped registry ",
-                        EditorStyles.whiteLargeLabel
-                    );
+                    EditorGUILayout.LabelField("Add scoped registry ", EditorStyles.whiteLargeLabel);
                     registry.name = EditorGUILayout.TextField("Name", registry.name);
 
                     EditorGUI.BeginChangeCheck();
@@ -52,35 +78,24 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                 }
                 else
                 {
-                    EditorGUILayout.LabelField(
-                        "Edit scoped registry",
-                        EditorStyles.whiteLargeLabel
-                    );
-                    EditorGUILayout.LabelField("Name", registry.name);
-                    EditorGUILayout.LabelField("URL",  registry.url);
+                    EditorGUILayout.LabelField("Edit scoped registry", EditorStyles.whiteLargeLabel);
+                    EditorGUILayout.LabelField("Name",                 registry.name);
+                    EditorGUILayout.LabelField("URL",                  registry.url);
                 }
 
                 if (scopeList == null)
                 {
-                    scopeList =
-                        new ReorderableList(
-                            registry.scopes,
-                            typeof(string),
-                            true,
-                            false,
-                            true,
-                            true
-                        )
+                    scopeList = new ReorderableList(registry.scopes, typeof(string), true, false, true, true)
+                    {
+                        drawElementCallback = (rect, index, active, focused) =>
                         {
-                            drawElementCallback = (rect, index, active, focused) =>
-                            {
-                                registry.scopes[index] = EditorGUI.TextField(
-                                    rect,
-                                    registry.scopes[index]
-                                );
-                            },
-                            onAddCallback = list => { registry.scopes.Add(""); }
-                        };
+                            registry.scopes[index] = EditorGUI.TextField(
+                                rect,
+                                registry.scopes[index]
+                            );
+                        },
+                        onAddCallback = list => { registry.scopes.Add(""); }
+                    };
                 }
 
                 EditorGUILayout.BeginHorizontal();
@@ -91,10 +106,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField(
-                    "Authentication / Credentials",
-                    EditorStyles.whiteLargeLabel
-                );
+                EditorGUILayout.LabelField("Authentication / Credentials", EditorStyles.whiteLargeLabel);
 
                 registry.auth = EditorGUILayout.Toggle("Always auth", registry.auth);
                 registry.token = EditorGUILayout.TextField("Token", registry.token);
@@ -137,37 +149,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             }
         }
 
-        public void CreateNew(RegistryManager controller)
-        {
-            this.controller = controller;
-            createNew = true;
-            registry = new ScopedRegistry();
-            initialized = true;
-        }
-
-        public void Edit(ScopedRegistry registry, RegistryManager controller)
-        {
-            this.controller = controller;
-            this.registry = registry;
-            createNew = false;
-            initialized = true;
-        }
-
         private void Save()
-        {
-            if (registry.isValid())
-            {
-                controller.Save(registry);
-                Close();
-                GUIUtility.ExitGUI();
-            }
-            else
-            {
-                EditorUtility.DisplayDialog("Invalid", "Invalid settings for registry.", "Ok");
-            }
-        }
-
-        private void Add()
         {
             if (registry.isValid())
             {

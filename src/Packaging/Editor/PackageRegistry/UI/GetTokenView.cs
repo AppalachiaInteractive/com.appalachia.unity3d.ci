@@ -18,22 +18,34 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
         private static string error;
 
         private bool initialized;
-        private string password;
 
         private ScopedRegistry registry;
-
-        private TokenMethod tokenMethod;
+        private string password;
 
         private string username;
 
-        private void OnEnable()
+        private TokenMethod tokenMethod;
+
+        private void CloseWindow()
         {
             error = null;
+            foreach (var view in Resources.FindObjectsOfTypeAll<CredentialEditorView>())
+            {
+                view.Repaint();
+            }
+
+            Close();
+            GUIUtility.ExitGUI();
         }
 
         private void OnDisable()
         {
             initialized = false;
+        }
+
+        private void OnEnable()
+        {
+            error = null;
         }
 
         private void OnGUI()
@@ -64,10 +76,18 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             }
         }
 
+        private void SetRegistry(TokenMethod tokenMethod, ScopedRegistry registry)
+        {
+            this.tokenMethod = tokenMethod;
+            this.registry = registry;
+            initialized = true;
+        }
+
         internal static int CreateGUI(int selectedIndex, ScopedRegistry registry)
         {
             EditorGUILayout.LabelField("Generate token", EditorStyles.whiteLargeLabel);
             EditorGUILayout.BeginHorizontal();
+
             // ReSharper disable once CoVariantArrayConversion
             selectedIndex = EditorGUILayout.Popup(new GUIContent("Method"), selectedIndex, methods);
 
@@ -81,23 +101,19 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             return selectedIndex;
         }
 
-        private void SetRegistry(TokenMethod tokenMethod, ScopedRegistry registry)
-        {
-            this.tokenMethod = tokenMethod;
-            this.registry = registry;
-            initialized = true;
-        }
-
         private static void CreateWindow(TokenMethod method, ScopedRegistry registry)
         {
             var getTokenView = GetWindow<GetTokenView>(true, "Get token", true);
             getTokenView.SetRegistry(method, registry);
         }
 
-        private static bool GetNPMLoginToken(
-            ScopedRegistry registry,
-            string username,
-            string password)
+        private static bool GetBintrayToken(ScopedRegistry registry, string username, string password)
+        {
+            registry.token = NPMLogin.GetBintrayToken(username, password);
+            return !string.IsNullOrEmpty(registry.token);
+        }
+
+        private static bool GetNPMLoginToken(ScopedRegistry registry, string username, string password)
         {
             var response = NPMLogin.GetLoginToken(registry.url, username, password);
 
@@ -110,27 +126,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
 
             registry.token = response.token;
             return true;
-        }
-
-        private static bool GetBintrayToken(
-            ScopedRegistry registry,
-            string username,
-            string password)
-        {
-            registry.token = NPMLogin.GetBintrayToken(username, password);
-            return !string.IsNullOrEmpty(registry.token);
-        }
-
-        private void CloseWindow()
-        {
-            error = null;
-            foreach (var view in Resources.FindObjectsOfTypeAll<CredentialEditorView>())
-            {
-                view.Repaint();
-            }
-
-            Close();
-            GUIUtility.ExitGUI();
         }
     }
 }

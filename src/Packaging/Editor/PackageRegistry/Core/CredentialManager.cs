@@ -8,13 +8,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     public class CredentialManager
     {
-        private readonly List<NPMCredential> credentials = new();
-
-        private readonly string upmconfigFile = AppaPath.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".upmconfig.toml"
-        );
-
         public CredentialManager()
         {
             if (AppaFile.Exists(upmconfigFile))
@@ -26,6 +19,13 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
                 credentials.AddRange(config);
             }
         }
+
+        private readonly List<NPMCredential> credentials = new();
+
+        private readonly string upmconfigFile = AppaPath.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".upmconfig.toml"
+        );
 
         public List<NPMCredential> CredentialSet => credentials;
 
@@ -45,19 +45,9 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             }
         }
 
-        public void Write()
+        public NPMCredential GetCredential(string url)
         {
-            foreach (var credential in credentials)
-            {
-                if (string.IsNullOrEmpty(credential.token))
-                {
-                    credential.token = string.Empty;
-                }
-            }
-
-            var json = JsonConvert.SerializeObject(credentials.ToArray());
-
-            AppaFile.WriteAllText(upmconfigFile, json);
+            return credentials.FirstOrDefault(x => x.url?.Equals(url, StringComparison.Ordinal) ?? false);
         }
 
         public bool HasRegistry(string url)
@@ -65,11 +55,12 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             return credentials.Any(x => x.url.Equals(url, StringComparison.Ordinal));
         }
 
-        public NPMCredential GetCredential(string url)
+        public void RemoveCredential(string url)
         {
-            return credentials.FirstOrDefault(
-                x => x.url?.Equals(url, StringComparison.Ordinal) ?? false
-            );
+            if (HasRegistry(url))
+            {
+                credentials.RemoveAll(x => x.url.Equals(url, StringComparison.Ordinal));
+            }
         }
 
         public void SetCredential(string url, bool alwaysAuth, string token)
@@ -92,12 +83,19 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             }
         }
 
-        public void RemoveCredential(string url)
+        public void Write()
         {
-            if (HasRegistry(url))
+            foreach (var credential in credentials)
             {
-                credentials.RemoveAll(x => x.url.Equals(url, StringComparison.Ordinal));
+                if (string.IsNullOrEmpty(credential.token))
+                {
+                    credential.token = string.Empty;
+                }
             }
+
+            var json = JsonConvert.SerializeObject(credentials.ToArray());
+
+            AppaFile.WriteAllText(upmconfigFile, json);
         }
     }
 }

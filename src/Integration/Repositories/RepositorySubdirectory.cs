@@ -12,20 +12,14 @@ namespace Appalachia.CI.Integration.Repositories
     [Serializable]
     public class RepositorySubdirectory
     {
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(RepositorySubdirectory) + ".";
-        public AssetPathMetadata correctionPath;
-        public Object directory;
-        public List<Object> instances;
-        public bool isConventional;
-        public string relativePath;
-        public RepositoryDirectoryMetadata repository;
-
-        public bool showInstances;
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
-        public AppaDirectoryInfo directoryInfo;
-        public HashSet<Object> lookup;
 
-        public RepositorySubdirectory(RepositoryDirectoryMetadata repository, string relativePath)
+#endregion
+
+        public RepositorySubdirectory(RepositoryMetadata repository, string relativePath)
         {
             this.relativePath = relativePath.CleanFullPath();
             var type = AssetDatabaseManager.GetMainAssetTypeAtPath(this.relativePath);
@@ -33,6 +27,17 @@ namespace Appalachia.CI.Integration.Repositories
             directoryInfo = new AppaDirectoryInfo(this.relativePath);
             this.repository = repository;
         }
+
+        public AppaDirectoryInfo directoryInfo;
+        public AssetPath correctionPath;
+        public bool isConventional;
+
+        public bool showInstances;
+        public HashSet<Object> lookup;
+        public List<Object> instances;
+        public Object directory;
+        public RepositoryMetadata repository;
+        public string relativePath;
 
         public override string ToString()
         {

@@ -8,9 +8,14 @@ namespace Appalachia.CI.Integration.Assemblies
     [DoNotReorderFields]
     public class AssemblyDefinitionModel
     {
-        public const string GUID_PREFIX = "GUID:";
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(AssemblyDefinitionModel) + ".";
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
+
+#endregion
+
+        public const string GUID_PREFIX = "GUID:";
 
         public string name;
         public bool allowUnsafeCode;
@@ -26,14 +31,6 @@ namespace Appalachia.CI.Integration.Assemblies
         public string[] includePlatforms;
         public AssemblyVersionDefineModel[] versionDefines;
 
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
-            {
-                return name;
-            }
-        }
-
         public void CheckBeforeWrite()
         {
             name = string.IsNullOrWhiteSpace(name) ? string.Empty : name;
@@ -47,6 +44,14 @@ namespace Appalachia.CI.Integration.Assemblies
             optionalUnityReferences ??= new string[0];
 
             versionDefines ??= new AssemblyVersionDefineModel[0];
+        }
+
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return name;
+            }
         }
     }
 }

@@ -11,6 +11,103 @@ namespace Appalachia.CI.Integration.Assets
         private static Dictionary<string, List<string>> _assetPathsByExtension;
         private static string[] _allAssetPaths;
 
+        public static string[] FindAssetGuids<T>(string searchString = null)
+            where T : Object
+        {
+            InitializeAssetPathData();
+
+            return FindAssetGuids(typeof(T), searchString);
+        }
+
+        public static string[] FindAssetGuids(Type t, string searchString = null)
+        {
+            InitializeAssetPathData();
+
+            var guids = FindAssets(FormatSearchString(t, searchString));
+
+            return guids;
+        }
+
+        public static string[] FindAssetPaths(string searchString = null)
+        {
+            InitializeAssetPathData();
+
+            return FindAssetPaths(null, searchString);
+        }
+
+        public static string[] FindAssetPaths<T>(string searchString = null)
+        {
+            InitializeAssetPathData();
+
+            return FindAssetPaths(typeof(T), searchString);
+        }
+
+        public static string[] FindAssetPaths(Type t, string searchString = null)
+        {
+            InitializeAssetPathData();
+
+            var guids = FindAssetGuids(t, searchString);
+            var paths = new string[guids.Length];
+
+            for (var index = 0; index < guids.Length; index++)
+            {
+                var guid = guids[index];
+                var path = GUIDToAssetPath(guid).CleanFullPath();
+
+                paths[index] = path;
+            }
+
+            return paths;
+        }
+
+        public static List<string> FindAssetPathsByExtension(string extension)
+        {
+            InitializeAssetPathData();
+
+            var cleanExtension = extension.CleanExtension();
+
+            if (_assetPathsByExtension.ContainsKey(cleanExtension))
+            {
+                return _assetPathsByExtension[cleanExtension];
+            }
+
+            return null;
+        }
+
+        public static List<string> FindAssetPathsByFileName(string name)
+        {
+            InitializeAssetPathData();
+
+            var output = new List<string>();
+
+            foreach (var path in _allAssetPaths)
+            {
+                if (name == AppaPath.GetFileName(path))
+                {
+                    output.Add(path);
+                }
+            }
+
+            return output;
+        }
+
+        public static List<string> FindAssetPathsBySubstring(string substring)
+        {
+            InitializeAssetPathData();
+
+            var output = new List<string>();
+
+            foreach (var path in _allAssetPaths)
+            {
+                if (path.Contains(substring))
+                {
+                    output.Add(path);
+                }
+            }
+
+            return output;
+        }
+
         public static List<Object> FindAssets(Type t, string searchString = null)
         {
             var paths = FindAssetPaths(t, searchString);
@@ -32,53 +129,11 @@ namespace Appalachia.CI.Integration.Assets
             return results;
         }
 
-        public static List<string> FindAssetPathsByExtension(string extension)
-        {
-            InitializeAssetPathData();
-
-            var cleanExtension = extension.CleanExtension();
-
-            if (_assetPathsByExtension.ContainsKey(cleanExtension))
-            {
-                return _assetPathsByExtension[cleanExtension];
-            }
-
-            return null;
-        }
-        
-        public static List<string> FindAssetPathsByFileName(string name)
-        {
-            var output = new List<string>();
-            
-            foreach (var path in _allAssetPaths)
-            {
-                if (name == AppaPath.GetFileName(path))
-                {
-                    output.Add(path);
-                }
-            }
-
-            return output;
-        }
-        
-        public static List<string> FindAssetPathsBySubstring(string substring)
-        {
-            var output = new List<string>();
-            
-            foreach (var path in _allAssetPaths)
-            {
-                if (path.Contains(substring))
-                {
-                    output.Add(path);
-                }
-            }
-
-            return output;
-        }
-
         public static List<T> FindAssets<T>(string searchString = null)
             where T : Object
         {
+            InitializeAssetPathData();
+
             var t = typeof(T);
 
             var paths = FindAssetPaths<T>(searchString);
@@ -98,45 +153,6 @@ namespace Appalachia.CI.Integration.Assets
             }
 
             return results;
-        }
-
-        public static string[] FindAssetGuids<T>(string searchString = null)
-            where T : Object
-        {
-            return FindAssetGuids(typeof(T), searchString);
-        }
-
-        public static string[] FindAssetGuids(Type t, string searchString = null)
-        {
-            var guids = FindAssets(FormatSearchString(t, searchString));
-
-            return guids;
-        }
-
-        public static string[] FindAssetPaths(string searchString = null)
-        {
-            return FindAssetPaths(null, searchString);
-        }
-
-        public static string[] FindAssetPaths<T>(string searchString = null)
-        {
-            return FindAssetPaths(typeof(T), searchString);
-        }
-
-        public static string[] FindAssetPaths(Type t, string searchString = null)
-        {
-            var guids = FindAssetGuids(t, searchString);
-            var paths = new string[guids.Length];
-
-            for (var index = 0; index < guids.Length; index++)
-            {
-                var guid = guids[index];
-                var path = GUIDToAssetPath(guid).CleanFullPath();
-
-                paths[index] = path;
-            }
-
-            return paths;
         }
 
         private static string CleanExtension(this string extension)

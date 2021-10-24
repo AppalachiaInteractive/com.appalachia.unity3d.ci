@@ -18,72 +18,61 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             ReorderableList credentialDrawer = null;
             ReorderableList registryDrawer = null;
 
-            var provider =
-                new SettingsProvider("Project/Package Manager/Credentials", SettingsScope.Project)
+            var provider = new SettingsProvider("Project/Package Manager/Credentials", SettingsScope.Project)
+            {
+                label = "Credentials",
+                activateHandler = (str, v) =>
                 {
-                    label = "Credentials",
-                    activateHandler = (str, v) =>
-                    {
-                        registryManager = new RegistryManager();
-                        registryDrawer = RegistryManagerView.GetRegistryList(registryManager);
-                        credentialDrawer =
-                            CredentialManagerView.GetCredentialList(
-                                registryManager.credentialManager
-                            );
-                    },
-                    guiHandler = searchContext =>
-                    {
-                        ThirdPartyInfo();
+                    registryManager = new RegistryManager();
+                    registryDrawer = RegistryManagerView.GetRegistryList(registryManager);
+                    credentialDrawer =
+                        CredentialManagerView.GetCredentialList(registryManager.credentialManager);
+                },
+                guiHandler = searchContext =>
+                {
+                    ThirdPartyInfo();
 
-                        EditorGUILayout.Space();
-                        registryDrawer.DoLayoutList();
+                    EditorGUILayout.Space();
+                    registryDrawer.DoLayoutList();
 
-                        EditorGUILayout.Space();
-                        credentialDrawer.DoLayoutList();
-                    },
-                    footerBarGuiHandler = () =>
-                    {
-                        EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.Space();
+                    credentialDrawer.DoLayoutList();
+                },
+                footerBarGuiHandler = () =>
+                {
+                    EditorGUILayout.BeginHorizontal();
 #if UNITY_2020_1_OR_NEWER
-                        if (GUILayout.Button("Reload Packages"))
+                    if (GUILayout.Button("Reload Packages"))
+                    {
+                        // call internal PackageManagerWindow.ResetPackageDatabase();
+                        var packageManagerWindow = typeof(Client).Assembly.GetType(
+                            "UnityEditor.PackageManager.UI.PackageManagerWindow"
+                        );
+                        if (packageManagerWindow != null)
                         {
-                            // call internal PackageManagerWindow.ResetPackageDatabase();
-                            var packageManagerWindow = typeof(Client).Assembly.GetType(
-                                "UnityEditor.PackageManager.UI.PackageManagerWindow"
-                            );
-                            if (packageManagerWindow != null)
-                            {
-                                packageManagerWindow.GetMethod("ResetPackageDatabase")
-                                                   ?.Invoke(packageManagerWindow, new object[] { });
-                            }
-
-                            Client.Resolve();
+                            packageManagerWindow.GetMethod("ResetPackageDatabase")
+                                               ?.Invoke(packageManagerWindow, new object[] { });
                         }
+
+                        Client.Resolve();
+                    }
 #endif
-                        if (GUILayout.Button("Restart Editor"))
+                    if (GUILayout.Button("Restart Editor"))
+                    {
+                        if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                         {
-                            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                            {
-                                EditorApplication.OpenProject(Environment.CurrentDirectory);
-                            }
+                            EditorApplication.OpenProject(Environment.CurrentDirectory);
                         }
+                    }
 
-                        EditorGUILayout.EndHorizontal();
-                    },
+                    EditorGUILayout.EndHorizontal();
+                },
 
-                    // Populate the search keywords to enable smart search filtering and label highlighting
-                    keywords = new HashSet<string>(
-                        new[]
-                        {
-                            "UPM",
-                            "NPM",
-                            "Credentials",
-                            "Packages",
-                            "Authentication",
-                            "Scoped Registry"
-                        }
-                    )
-                };
+                // Populate the search keywords to enable smart search filtering and label highlighting
+                keywords = new HashSet<string>(
+                    new[] {"UPM", "NPM", "Credentials", "Packages", "Authentication", "Scoped Registry"}
+                )
+            };
 
             return provider;
         }
@@ -99,9 +88,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             lastRect.yMin = lastRect.yMax - 20;
             if (GUI.Button(lastRect, "Read more", Styles.linkLabel))
             {
-                Application.OpenURL(
-                    "https://docs.unity3d.com/Documentation/Manual/upm-scoped.html"
-                );
+                Application.OpenURL("https://docs.unity3d.com/Documentation/Manual/upm-scoped.html");
             }
 
             EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.Link);

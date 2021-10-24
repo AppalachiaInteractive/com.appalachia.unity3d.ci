@@ -72,7 +72,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
                         var receiveStream = e.Response.GetResponseStream();
 
                         // Pipes the stream to a higher level stream reader with the required encoding format.
-                        var readStream = new StreamReader(receiveStream, Encoding.UTF8);
+                        var readStream = new StreamReader(receiveStream!, Encoding.UTF8);
                         var responseString = readStream.ReadToEnd();
                         e.Response.Close();
                         readStream.Close();

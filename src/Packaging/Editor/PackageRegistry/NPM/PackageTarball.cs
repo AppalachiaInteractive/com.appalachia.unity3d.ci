@@ -21,7 +21,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 
             var outputFile = AppaPath.Combine(outputFolder, packageName);
 
-            Stream outStream = AppaFile.Create(outputFile);
+            var outStream = AppaFile.Create(outputFile);
             Stream gzoStream = new GZipOutputStream(outStream);
             var tarArchive = TarArchive.CreateOutputTarArchive(gzoStream);
 
@@ -31,17 +31,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
             outStream.Close();
 
             return outputFile;
-        }
-
-        private static string AppendDirectorySeparatorChar(string path)
-        {
-            // Append a slash only if the path is a directory and does not have a slash.
-            if (AppaDirectory.Exists(path) && !path.EndsWith(AppaPath.DirectorySeparatorChar.ToString()))
-            {
-                return path + AppaPath.DirectorySeparatorChar;
-            }
-
-            return path;
         }
 
         private static void AddDirectoryFilesToTar(
@@ -74,6 +63,17 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
                     AddDirectoryFilesToTar(tarArchive, directory, recurse, newDirectory);
                 }
             }
+        }
+
+        private static string AppendDirectorySeparatorChar(string path)
+        {
+            // Append a slash only if the path is a directory and does not have a slash.
+            if (AppaDirectory.Exists(path) && !path.EndsWith(AppaPath.DirectorySeparatorChar.ToString()))
+            {
+                return path + AppaPath.DirectorySeparatorChar;
+            }
+
+            return path;
         }
     }
 }

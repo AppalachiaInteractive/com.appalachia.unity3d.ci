@@ -9,14 +9,12 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaDirectory
     {
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(AppaDirectory) + ".";
-
         private static readonly ProfilerMarker _PRF_GetParent = new(_PRF_PFX + nameof(GetParent));
-
         private static readonly ProfilerMarker _PRF_CreateDirectory = new(_PRF_PFX + nameof(CreateDirectory));
-
         private static readonly ProfilerMarker _PRF_Exists = new(_PRF_PFX + nameof(Exists));
-
         private static readonly ProfilerMarker _PRF_SetCreationTime = new(_PRF_PFX + nameof(SetCreationTime));
 
         private static readonly ProfilerMarker _PRF_SetCreationTimeUtc =
@@ -52,7 +50,6 @@ namespace Appalachia.CI.Integration.FileSystem
             new(_PRF_PFX + nameof(GetLastAccessTimeUtc));
 
         private static readonly ProfilerMarker _PRF_GetFiles = new(_PRF_PFX + nameof(GetFiles));
-
         private static readonly ProfilerMarker _PRF_GetDirectories = new(_PRF_PFX + nameof(GetDirectories));
 
         private static readonly ProfilerMarker _PRF_GetFileSystemEntries =
@@ -80,6 +77,8 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_Move = new(_PRF_PFX + nameof(Move));
         private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
+
+#endregion
 
         /// <summary>Creates all directories and subdirectories in the specified path unless they already exist.</summary>
         /// <param name="path">The directory to create. </param>
@@ -113,51 +112,13 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Retrieves the parent directory of the specified path, including both absolute and relative paths.</summary>
-        /// <param name="path">The path for which to retrieve the parent directory. </param>
-        /// <returns>
-        ///     The parent directory, or <see langword="null" /> if <paramref name="path" /> is the root directory, including the root of a UNC server or
-        ///     share name.
-        /// </returns>
-        /// <exception cref="T:System.IO.IOException">The directory specified by <paramref name="path" /> is read-only. </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// <summary>Deletes an empty directory from a specified path.</summary>
+        /// <param name="path">The name of the empty directory to remove. This directory must be writable and empty. </param>
+        /// <exception cref="T:System.IO.IOException">
+        ///     A file with the same name and location specified by <paramref name="path" /> exists.-or-The directory is
+        ///     the application's current working directory.-or-The directory specified by <paramref name="path" /> is not empty.-or-The directory is read-only
+        ///     or contains a read-only file.-or-The directory is being used by another process.
         /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path was not found. </exception>
-        public static AppaDirectoryInfo GetParent(string path)
-        {
-            using (_PRF_GetParent.Auto())
-            {
-                return Directory.GetParent(path);
-            }
-        }
-
-        /// <summary>Determines whether the given path refers to an existing directory on disk.</summary>
-        /// <param name="path">The path to test. </param>
-        /// <returns>
-        ///     <see langword="true" /> if <paramref name="path" /> refers to an existing directory; <see langword="false" /> if the directory does not exist or
-        ///     an error occurs when trying to determine if the specified directory exists.
-        /// </returns>
-        public static bool Exists(string path)
-        {
-            using (_PRF_Exists.Auto())
-            {
-                return Directory.Exists(path);
-            }
-        }
-
-        /// <summary>Gets the creation date and time of a directory.</summary>
-        /// <param name="path">The path of the directory. </param>
-        /// <returns>A structure that is set to the creation date and time for the specified directory. This value is expressed in local time.</returns>
         /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
         /// <exception cref="T:System.ArgumentException">
         ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
@@ -170,18 +131,29 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
         ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
         /// </exception>
-        public static DateTime GetCreationTime(string path)
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     <paramref name="path" /> does not exist or could not be found.-or-The specified path is invalid (for example, it is on an unmapped drive).
+        /// </exception>
+        public static void Delete(string path)
         {
-            using (_PRF_GetCreationTime.Auto())
+            using (_PRF_Delete.Auto())
             {
-                return Directory.GetCreationTime(path);
+                Directory.Delete(path);
             }
         }
 
-        /// <summary>Gets the creation date and time, in Coordinated Universal Time (UTC) format, of a directory.</summary>
-        /// <param name="path">The path of the directory. </param>
-        /// <returns>A structure that is set to the creation date and time for the specified directory. This value is expressed in UTC time.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <summary>Deletes the specified directory and, if indicated, any subdirectories and files in the directory. </summary>
+        /// <param name="path">The name of the directory to remove. </param>
+        /// <param name="recursive">
+        ///     <see langword="true" /> to remove directories, subdirectories, and files in <paramref name="path" />; otherwise, <see langword="false" />.
+        /// </param>
+        /// <exception cref="T:System.IO.IOException">
+        ///     A file with the same name and location specified by <paramref name="path" /> exists.-or-The directory
+        ///     specified by <paramref name="path" /> is read-only, or <paramref name="recursive" /> is <see langword="false" /> and <paramref name="path" /> is
+        ///     not an empty directory. -or-The directory is the application's current working directory. -or-The directory contains a read-only file.-or-The
+        ///     directory is being used by another process.
+        /// </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission.</exception>
         /// <exception cref="T:System.ArgumentException">
         ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
         ///     invalid characters by using the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
@@ -193,105 +165,14 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
         ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
         /// </exception>
-        public static DateTime GetCreationTimeUtc(string path)
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     <paramref name="path" /> does not exist or could not be found.-or-The specified path is invalid (for example, it is on an unmapped drive).
+        /// </exception>
+        public static void Delete(string path, bool recursive)
         {
-            using (_PRF_GetCreationTimeUtc.Auto())
+            using (_PRF_Delete.Auto())
             {
-                return Directory.GetCreationTimeUtc(path);
-            }
-        }
-
-        /// <summary>Returns the date and time the specified file or directory was last accessed.</summary>
-        /// <param name="path">The file or directory for which to obtain access date and time information. </param>
-        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in local time.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        /// <exception cref="T:System.NotSupportedException">The <paramref name="path" /> parameter is in an invalid format. </exception>
-        public static DateTime GetLastAccessTime(string path)
-        {
-            using (_PRF_GetLastAccessTime.Auto())
-            {
-                return Directory.GetLastAccessTime(path);
-            }
-        }
-
-        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last accessed.</summary>
-        /// <param name="path">The file or directory for which to obtain access date and time information. </param>
-        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in UTC time.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        /// <exception cref="T:System.NotSupportedException">The <paramref name="path" /> parameter is in an invalid format. </exception>
-        public static DateTime GetLastAccessTimeUtc(string path)
-        {
-            using (_PRF_GetLastAccessTimeUtc.Auto())
-            {
-                return Directory.GetLastAccessTimeUtc(path);
-            }
-        }
-
-        /// <summary>Returns the date and time the specified file or directory was last written to.</summary>
-        /// <param name="path">The file or directory for which to obtain modification date and time information. </param>
-        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in local time.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        public static DateTime GetLastWriteTime(string path)
-        {
-            using (_PRF_GetLastWriteTime.Auto())
-            {
-                return Directory.GetLastWriteTime(path);
-            }
-        }
-
-        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last written to.</summary>
-        /// <param name="path">The file or directory for which to obtain modification date and time information. </param>
-        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in UTC time.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        public static DateTime GetLastWriteTimeUtc(string path)
-        {
-            using (_PRF_GetLastWriteTimeUtc.Auto())
-            {
-                return Directory.GetLastWriteTimeUtc(path);
+                Directory.Delete(path, recursive);
             }
         }
 
@@ -652,6 +533,66 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <summary>Determines whether the given path refers to an existing directory on disk.</summary>
+        /// <param name="path">The path to test. </param>
+        /// <returns>
+        ///     <see langword="true" /> if <paramref name="path" /> refers to an existing directory; <see langword="false" /> if the directory does not exist or
+        ///     an error occurs when trying to determine if the specified directory exists.
+        /// </returns>
+        public static bool Exists(string path)
+        {
+            using (_PRF_Exists.Auto())
+            {
+                return Directory.Exists(path);
+            }
+        }
+
+        /// <summary>Gets the creation date and time of a directory.</summary>
+        /// <param name="path">The path of the directory. </param>
+        /// <returns>A structure that is set to the creation date and time for the specified directory. This value is expressed in local time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters by using the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public static DateTime GetCreationTime(string path)
+        {
+            using (_PRF_GetCreationTime.Auto())
+            {
+                return Directory.GetCreationTime(path);
+            }
+        }
+
+        /// <summary>Gets the creation date and time, in Coordinated Universal Time (UTC) format, of a directory.</summary>
+        /// <param name="path">The path of the directory. </param>
+        /// <returns>A structure that is set to the creation date and time for the specified directory. This value is expressed in UTC time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters by using the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public static DateTime GetCreationTimeUtc(string path)
+        {
+            using (_PRF_GetCreationTimeUtc.Auto())
+            {
+                return Directory.GetCreationTimeUtc(path);
+            }
+        }
+
         /// <summary>Gets the current working directory of the application.</summary>
         /// <returns>A string that contains the path of the current working directory, and does not end with a backslash (\).</returns>
         /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
@@ -664,29 +605,6 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_GetCurrentDirectory.Auto())
             {
                 return Directory.GetCurrentDirectory().CleanFullPath();
-            }
-        }
-
-        /// <summary>Returns the volume information, root information, or both for the specified path.</summary>
-        /// <param name="path">The path of a file or directory. </param>
-        /// <returns>A string that contains the volume information, root information, or both for the specified path.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters with <see cref="M:System.IO.Path.GetInvalidPathChars" />.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        public static string GetDirectoryRoot(string path)
-        {
-            using (_PRF_GetDirectoryRoot.Auto())
-            {
-                return Directory.GetDirectoryRoot(path);
             }
         }
 
@@ -796,6 +714,29 @@ namespace Appalachia.CI.Integration.FileSystem
                 return Directory.GetDirectories(path, searchPattern, searchOption)
                                 .Select(p => p.CleanFullPath())
                                 .ToArray();
+            }
+        }
+
+        /// <summary>Returns the volume information, root information, or both for the specified path.</summary>
+        /// <param name="path">The path of a file or directory. </param>
+        /// <returns>A string that contains the volume information, root information, or both for the specified path.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters with <see cref="M:System.IO.Path.GetInvalidPathChars" />.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public static string GetDirectoryRoot(string path)
+        {
+            using (_PRF_GetDirectoryRoot.Auto())
+            {
+                return Directory.GetDirectoryRoot(path);
             }
         }
 
@@ -1023,6 +964,100 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <summary>Returns the date and time the specified file or directory was last accessed.</summary>
+        /// <param name="path">The file or directory for which to obtain access date and time information. </param>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in local time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters with the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        /// <exception cref="T:System.NotSupportedException">The <paramref name="path" /> parameter is in an invalid format. </exception>
+        public static DateTime GetLastAccessTime(string path)
+        {
+            using (_PRF_GetLastAccessTime.Auto())
+            {
+                return Directory.GetLastAccessTime(path);
+            }
+        }
+
+        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last accessed.</summary>
+        /// <param name="path">The file or directory for which to obtain access date and time information. </param>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in UTC time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        /// <exception cref="T:System.NotSupportedException">The <paramref name="path" /> parameter is in an invalid format. </exception>
+        public static DateTime GetLastAccessTimeUtc(string path)
+        {
+            using (_PRF_GetLastAccessTimeUtc.Auto())
+            {
+                return Directory.GetLastAccessTimeUtc(path);
+            }
+        }
+
+        /// <summary>Returns the date and time the specified file or directory was last written to.</summary>
+        /// <param name="path">The file or directory for which to obtain modification date and time information. </param>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in local time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public static DateTime GetLastWriteTime(string path)
+        {
+            using (_PRF_GetLastWriteTime.Auto())
+            {
+                return Directory.GetLastWriteTime(path);
+            }
+        }
+
+        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last written to.</summary>
+        /// <param name="path">The file or directory for which to obtain modification date and time information. </param>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in UTC time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
+        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="path" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public static DateTime GetLastWriteTimeUtc(string path)
+        {
+            using (_PRF_GetLastWriteTimeUtc.Auto())
+            {
+                return Directory.GetLastWriteTimeUtc(path);
+            }
+        }
+
         /// <summary>Retrieves the names of the logical drives on this computer in the form "&lt;drive letter&gt;:\".</summary>
         /// <returns>The logical drives on this computer.</returns>
         /// <exception cref="T:System.IO.IOException">An I/O error occured (for example, a disk error). </exception>
@@ -1035,17 +1070,17 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Deletes an empty directory from a specified path.</summary>
-        /// <param name="path">The name of the empty directory to remove. This directory must be writable and empty. </param>
-        /// <exception cref="T:System.IO.IOException">
-        ///     A file with the same name and location specified by <paramref name="path" /> exists.-or-The directory is
-        ///     the application's current working directory.-or-The directory specified by <paramref name="path" /> is not empty.-or-The directory is read-only
-        ///     or contains a read-only file.-or-The directory is being used by another process.
-        /// </exception>
+        /// <summary>Retrieves the parent directory of the specified path, including both absolute and relative paths.</summary>
+        /// <param name="path">The path for which to retrieve the parent directory. </param>
+        /// <returns>
+        ///     The parent directory, or <see langword="null" /> if <paramref name="path" /> is the root directory, including the root of a UNC server or
+        ///     share name.
+        /// </returns>
+        /// <exception cref="T:System.IO.IOException">The directory specified by <paramref name="path" /> is read-only. </exception>
         /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
         /// <exception cref="T:System.ArgumentException">
         ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters by using the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
+        ///     invalid characters with the  <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
         /// </exception>
         /// <exception cref="T:System.ArgumentNullException">
         ///     <paramref name="path" /> is <see langword="null" />.
@@ -1054,48 +1089,12 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
         ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
         /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     <paramref name="path" /> does not exist or could not be found.-or-The specified path is invalid (for example, it is on an unmapped drive).
-        /// </exception>
-        public static void Delete(string path)
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path was not found. </exception>
+        public static AppaDirectoryInfo GetParent(string path)
         {
-            using (_PRF_Delete.Auto())
+            using (_PRF_GetParent.Auto())
             {
-                Directory.Delete(path);
-            }
-        }
-
-        /// <summary>Deletes the specified directory and, if indicated, any subdirectories and files in the directory. </summary>
-        /// <param name="path">The name of the directory to remove. </param>
-        /// <param name="recursive">
-        ///     <see langword="true" /> to remove directories, subdirectories, and files in <paramref name="path" />; otherwise, <see langword="false" />.
-        /// </param>
-        /// <exception cref="T:System.IO.IOException">
-        ///     A file with the same name and location specified by <paramref name="path" /> exists.-or-The directory
-        ///     specified by <paramref name="path" /> is read-only, or <paramref name="recursive" /> is <see langword="false" /> and <paramref name="path" /> is
-        ///     not an empty directory. -or-The directory is the application's current working directory. -or-The directory contains a read-only file.-or-The
-        ///     directory is being used by another process.
-        /// </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission.</exception>
-        /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters. You can query for
-        ///     invalid characters by using the <see cref="M:System.IO.Path.GetInvalidPathChars" /> method.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="path" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     <paramref name="path" /> does not exist or could not be found.-or-The specified path is invalid (for example, it is on an unmapped drive).
-        /// </exception>
-        public static void Delete(string path, bool recursive)
-        {
-            using (_PRF_Delete.Auto())
-            {
-                Directory.Delete(path, recursive);
+                return Directory.GetParent(path);
             }
         }
 

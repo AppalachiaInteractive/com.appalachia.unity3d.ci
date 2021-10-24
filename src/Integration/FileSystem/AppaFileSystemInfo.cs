@@ -10,6 +10,10 @@ namespace Appalachia.CI.Integration.FileSystem
         public abstract string Name { get; }
         public abstract string RelativePath { get; }
 
+        public abstract void Delete();
+
+        protected abstract FileSystemInfo GetFileSystemInfo();
+
         public static implicit operator AppaFileSystemInfo(FileSystemInfo o)
         {
             return o is FileInfo fi ? (AppaFileInfo) fi : (AppaDirectoryInfo) (DirectoryInfo) o;
@@ -19,9 +23,5 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             return o.GetFileSystemInfo();
         }
-
-        public abstract void Delete();
-
-        protected abstract FileSystemInfo GetFileSystemInfo();
     }
 }

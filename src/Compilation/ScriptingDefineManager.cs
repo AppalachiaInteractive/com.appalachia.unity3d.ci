@@ -36,6 +36,36 @@ namespace Appalachia.CI.Compilation
             }
         }
 
+        public static string FormatAssemblyNameAsDefine(Assembly assembly)
+        {
+            return assembly.FullName.Split(',')[0].ToLowerInvariant().Replace(".", "_").ToUpperInvariant();
+        }
+
+        public static HashSet<string> GetDefines()
+        {
+            var defineString = GetDefinesUnformatted();
+            var defines = new HashSet<string>();
+            var splits = defineString.Split(';');
+
+            for (var index = 0; index < splits.Length; index++)
+            {
+                var s = splits[index];
+                var trimmed = s.Trim();
+
+                defines.Add(trimmed);
+            }
+
+            return defines;
+        }
+
+        public static string GetDefinesUnformatted()
+        {
+            var defineString =
+                PlayerSettings.GetScriptingDefineSymbolsForGroup(ScriptingDefineSettings.BuildTargetGroup);
+
+            return defineString;
+        }
+
         public static void ResetDefines()
         {
             var targetGroup = ScriptingDefineSettings.BuildTargetGroup;
@@ -64,31 +94,10 @@ namespace Appalachia.CI.Compilation
             );
         }
 
-        public static string GetDefinesUnformatted()
+        public static void SaveNewDefines(IEnumerable<string> defines)
         {
-            var defineString =
-                PlayerSettings.GetScriptingDefineSymbolsForGroup(
-                    ScriptingDefineSettings.BuildTargetGroup
-                );
-
-            return defineString;
-        }
-
-        public static HashSet<string> GetDefines()
-        {
-            var defineString = GetDefinesUnformatted();
-            var defines = new HashSet<string>();
-            var splits = defineString.Split(';');
-            
-            for (var index = 0; index < splits.Length; index++)
-            {
-                var s = splits[index];
-                var trimmed = s.Trim();
-
-                defines.Add(trimmed);
-            }
-
-            return defines;
+            var hashed = new HashSet<string>(defines);
+            SaveNewDefinesInternal(hashed);
         }
 
         private static bool AddDefinesUsingFilter(HashSet<string> defines)
@@ -103,8 +112,8 @@ namespace Appalachia.CI.Compilation
             var assemblies = ReflectionExtensions.GetAssemblies();
 
             var changed = false;
-            
-            for (int i = 0; i < assemblies.Length; i++)
+
+            for (var i = 0; i < assemblies.Length; i++)
             {
                 var assembly = assemblies[i];
                 var name = FormatAssemblyNameAsDefine(assembly);
@@ -127,25 +136,11 @@ namespace Appalachia.CI.Compilation
                 {
                     changed = true;
                 }
-                
+
                 defines.Add(name);
             }
 
             return changed;
-        }
-
-        public static string FormatAssemblyNameAsDefine(Assembly assembly)
-        {
-            return assembly.FullName.Split(',')[0]
-                           .ToLowerInvariant()
-                           .Replace(".", "_")
-                           .ToUpperInvariant();
-        }
-
-        public static void SaveNewDefines(IEnumerable<string> defines)
-        {
-            var hashed = new HashSet<string>(defines);
-            SaveNewDefinesInternal(hashed);
         }
 
         private static void SaveNewDefinesInternal(HashSet<string> defines)

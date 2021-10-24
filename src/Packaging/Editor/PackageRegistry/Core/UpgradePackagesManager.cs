@@ -9,11 +9,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     public class UpgradePackagesManager
     {
-        private readonly ListRequest request;
-        public bool packagesLoaded;
-
-        public List<PackageInfo> UpgradeablePackages = new();
-
         public UpgradePackagesManager()
         {
 #if UNITY_2019_1_OR_NEWER
@@ -21,6 +16,32 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 #else
             request = Client.List();
 #endif
+        }
+
+        public bool packagesLoaded;
+
+        public List<PackageInfo> UpgradeablePackages = new();
+        private readonly ListRequest request;
+
+        public string GetLatestVersion(PackageInfo info)
+        {
+            if (info.source == PackageSource.Git)
+            {
+                return info.packageId;
+            }
+
+            string latest;
+
+            if (string.IsNullOrEmpty(info.versions.verified))
+            {
+                latest = info.versions.latestCompatible;
+            }
+            else
+            {
+                latest = info.versions.verified;
+            }
+
+            return latest;
         }
 
         public void Update()
@@ -49,56 +70,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 
                 packagesLoaded = true;
             }
-        }
-
-        private void AddRegistryPackage(PackageInfo info)
-        {
-            try
-            {
-                var latestVersion = SemVer.SemVer.Parse(GetLatestVersion(info));
-                var currentVersion = SemVer.SemVer.Parse(info.version);
-
-                if (currentVersion < latestVersion)
-                {
-                    UpgradeablePackages.Add(info);
-                }
-            }
-            catch (Exception)
-            {
-                Debug.LogError(
-                    "Invalid version for package " +
-                    info.displayName +
-                    ". Current: " +
-                    info.version +
-                    ", Latest: " +
-                    GetLatestVersion(info)
-                );
-            }
-        }
-
-        public string GetLatestVersion(PackageInfo info)
-        {
-            if (info.source == PackageSource.Git)
-            {
-                return info.packageId;
-            }
-
-            string latest;
-
-#if UNITY_2019_1_OR_NEWER
-            if (string.IsNullOrEmpty(info.versions.verified))
-            {
-                latest = info.versions.latestCompatible;
-            }
-            else
-            {
-                latest = info.versions.verified;
-            }
-#else
-                latest = info.versions.latestCompatible;
-#endif
-
-            return latest;
         }
 
         public bool UpgradePackage(PackageInfo info, ref string error)
@@ -132,6 +103,31 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 
             error = rqst.Error.message;
             return false;
+        }
+
+        private void AddRegistryPackage(PackageInfo info)
+        {
+            try
+            {
+                var latestVersion = SemVer.SemVer.Parse(GetLatestVersion(info));
+                var currentVersion = SemVer.SemVer.Parse(info.version);
+
+                if (currentVersion < latestVersion)
+                {
+                    UpgradeablePackages.Add(info);
+                }
+            }
+            catch (Exception)
+            {
+                Debug.LogError(
+                    "Invalid version for package " +
+                    info.displayName +
+                    ". Current: " +
+                    info.version +
+                    ", Latest: " +
+                    GetLatestVersion(info)
+                );
+            }
         }
     }
 }

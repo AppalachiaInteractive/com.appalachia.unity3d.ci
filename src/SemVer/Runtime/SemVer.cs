@@ -9,9 +9,29 @@ namespace Appalachia.CI.SemVer
     [Serializable]
     public class SemVer : IComparable<SemVer>, IEquatable<SemVer>
     {
+        public const char BuildPrefix = '+';
         public const char IdentifiersSeparator = '.';
         public const char PreReleasePrefix = '-';
-        public const char BuildPrefix = '+';
+
+        public SemVer()
+        {
+            minor = 1;
+            preRelease = string.Empty;
+            autoBuild = SemVerAutoBuild.Type.Manual;
+        }
+
+        /// <summary>
+        ///     A pre-release version indicates that the version is unstable and might not satisfy the intended
+        ///     compatibility requirements as denoted by its associated normal version.
+        /// </summary>
+        /// <example>1.0.0-<b>alpha</b>, 1.0.0-<b>alpha.1</b>, 1.0.0-<b>0.3.7</b>, 1.0.0-<b>x.7.z.92</b></example>
+        public string preRelease;
+
+        /// <summary>
+        ///     Set the <see cref="Build">build</see> metadata automatically
+        /// </summary>
+        /// <seealso cref="Build" />
+        public SemVerAutoBuild.Type autoBuild;
 
         /// <summary>
         ///     Major version X (X.y.z | X > 0) MUST be incremented if any backwards incompatible changes are introduced
@@ -36,45 +56,7 @@ namespace Appalachia.CI.SemVer
         /// </summary>
         public uint patch;
 
-        /// <summary>
-        ///     A pre-release version indicates that the version is unstable and might not satisfy the intended
-        ///     compatibility requirements as denoted by its associated normal version.
-        /// </summary>
-        /// <example>1.0.0-<b>alpha</b>, 1.0.0-<b>alpha.1</b>, 1.0.0-<b>0.3.7</b>, 1.0.0-<b>x.7.z.92</b></example>
-        public string preRelease;
-
-        /// <summary>
-        ///     Set the <see cref="Build">build</see> metadata automatically
-        /// </summary>
-        /// <seealso cref="Build" />
-        public SemVerAutoBuild.Type autoBuild;
-
         [SerializeField] private string build = string.Empty;
-
-        public SemVer()
-        {
-            minor = 1;
-            preRelease = string.Empty;
-            autoBuild = SemVerAutoBuild.Type.Manual;
-        }
-
-        /// <summary>
-        ///     Build metadata MUST be ignored when determining version precedence. Thus two versions that differ only in
-        ///     the build metadata, have the same precedence.
-        /// </summary>
-        /// <example>1.0.0-alpha+<b>001</b>, 1.0.0+<b>20130313144700</b>, 1.0.0-beta+<b>exp.sha.5114f85</b></example>
-        public string Build
-        {
-            get => SemVerAutoBuild.Instances[autoBuild].Get(build);
-            set => build = SemVerAutoBuild.Instances[autoBuild].Set(value);
-        }
-
-        /// <summary>
-        ///     The base part of the version number (Major.Minor.Patch).
-        /// </summary>
-        /// <example>1.9.0</example>
-        /// <returns>Major.Minor.Patch</returns>
-        public string Core => $"{major}.{minor}.{patch}";
 
         /// <summary>
         ///     An internal version number. This number is used only to determine whether one version is more recent than
@@ -94,86 +76,38 @@ namespace Appalachia.CI.SemVer
             }
         }
 
-        public int CompareTo(SemVer other)
+        /// <summary>
+        ///     The base part of the version number (Major.Minor.Patch).
+        /// </summary>
+        /// <example>1.9.0</example>
+        /// <returns>Major.Minor.Patch</returns>
+        public string Core => $"{major}.{minor}.{patch}";
+
+        /// <summary>
+        ///     Build metadata MUST be ignored when determining version precedence. Thus two versions that differ only in
+        ///     the build metadata, have the same precedence.
+        /// </summary>
+        /// <example>1.0.0-alpha+<b>001</b>, 1.0.0+<b>20130313144700</b>, 1.0.0-beta+<b>exp.sha.5114f85</b></example>
+        public string Build
         {
-            return new SemVerComparer().Compare(this, other);
+            get => SemVerAutoBuild.Instances[autoBuild].Get(build);
+            set => build = SemVerAutoBuild.Instances[autoBuild].Set(value);
         }
 
-        public bool Equals(SemVer other)
+        /// <summary>
+        ///     Creates a copy of this semantic version.
+        /// </summary>
+        public SemVer Clone()
         {
-            if (ReferenceEquals(null, other))
+            return new()
             {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return CompareTo(other) == 0;
-        }
-
-        public static bool operator ==(SemVer left, SemVer right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(SemVer left, SemVer right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator >(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) > 0;
-        }
-
-        public static bool operator <(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) < 0;
-        }
-
-        public static bool operator >=(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) >= 0;
-        }
-
-        public static bool operator <=(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) <= 0;
-        }
-
-        public static implicit operator string(SemVer s)
-        {
-            return s.ToString();
-        }
-
-        public static implicit operator SemVer(string s)
-        {
-            return Parse(s);
-        }
-
-        public static SemVer Parse(string semVer)
-        {
-            return SemVerConverter.FromString(semVer);
-        }
-
-        private static uint ClampAndroidBundleVersionCode(uint value, string name)
-        {
-            uint clamped;
-            const uint max = 100;
-            if (value >= max)
-            {
-                clamped = max - 1;
-                Debug.LogWarning(name + " should be less than " + max);
-            }
-            else
-            {
-                clamped = value;
-            }
-
-            return clamped;
+                major = major,
+                minor = minor,
+                patch = patch,
+                preRelease = preRelease,
+                Build = Build,
+                autoBuild = autoBuild
+            };
         }
 
         /// <summary>
@@ -212,20 +146,24 @@ namespace Appalachia.CI.SemVer
             return new SemVerValidator().Validate(this);
         }
 
-        /// <summary>
-        ///     Creates a copy of this semantic version.
-        /// </summary>
-        public SemVer Clone()
+        public int CompareTo(SemVer other)
         {
-            return new()
+            return new SemVerComparer().Compare(this, other);
+        }
+
+        public bool Equals(SemVer other)
+        {
+            if (ReferenceEquals(null, other))
             {
-                major = major,
-                minor = minor,
-                patch = patch,
-                preRelease = preRelease,
-                Build = Build,
-                autoBuild = autoBuild
-            };
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return CompareTo(other) == 0;
         }
 
         public override bool Equals(object obj)
@@ -251,6 +189,68 @@ namespace Appalachia.CI.SemVer
         public override string ToString()
         {
             return SemVerConverter.ToString(this);
+        }
+
+        public static SemVer Parse(string semVer)
+        {
+            return SemVerConverter.FromString(semVer);
+        }
+
+        private static uint ClampAndroidBundleVersionCode(uint value, string name)
+        {
+            uint clamped;
+            const uint max = 100;
+            if (value >= max)
+            {
+                clamped = max - 1;
+                Debug.LogWarning(name + " should be less than " + max);
+            }
+            else
+            {
+                clamped = value;
+            }
+
+            return clamped;
+        }
+
+        public static bool operator ==(SemVer left, SemVer right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
+
+        public static bool operator !=(SemVer left, SemVer right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static implicit operator SemVer(string s)
+        {
+            return Parse(s);
+        }
+
+        public static implicit operator string(SemVer s)
+        {
+            return s.ToString();
         }
     }
 }

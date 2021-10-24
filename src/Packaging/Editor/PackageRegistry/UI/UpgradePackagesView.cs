@@ -10,11 +10,22 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
     internal class UpgradePackagesView : EditorWindow
     {
         private readonly Dictionary<PackageInfo, bool> upgradeList = new();
+
+        private bool upgradeAll;
         private UpgradePackagesManager manager;
 
         private Vector2 scrollPos;
 
-        private bool upgradeAll;
+        private void CloseWindow()
+        {
+            Close();
+            GUIUtility.ExitGUI();
+        }
+
+        private void OnDisable()
+        {
+            manager = null;
+        }
 
         private void OnEnable()
         {
@@ -22,11 +33,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
 
             minSize = new Vector2(640, 320);
             upgradeAll = false;
-        }
-
-        private void OnDisable()
-        {
-            manager = null;
         }
 
         private void OnGUI()
@@ -79,12 +85,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             }
         }
 
-        [MenuItem("Packages/Upgrade Packages", false, 23)]
-        internal static void ManageRegistries()
-        {
-            GetWindow<UpgradePackagesView>(true, "Upgrade packages", true);
-        }
-
         private void Package(PackageInfo info)
         {
             var boxStyle = new GUIStyle();
@@ -100,10 +100,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                 upgrade = upgradeList[info];
             }
 
-            upgrade = EditorGUILayout.BeginToggleGroup(
-                info.displayName + ":" + info.version,
-                upgrade
-            );
+            upgrade = EditorGUILayout.BeginToggleGroup(info.displayName + ":" + info.version, upgrade);
             if (EditorGUI.EndChangeCheck())
             {
                 if (!upgrade)
@@ -144,9 +141,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                             var error = "";
                             if (manager.UpgradePackage(info, ref error))
                             {
-                                output += "[Success] Upgraded " +
-                                          info.displayName +
-                                          Environment.NewLine;
+                                output += "[Success] Upgraded " + info.displayName + Environment.NewLine;
                             }
                             else
                             {
@@ -179,10 +174,10 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             }
         }
 
-        private void CloseWindow()
+        [MenuItem("Packages/Upgrade Packages", false, 23)]
+        internal static void ManageRegistries()
         {
-            Close();
-            GUIUtility.ExitGUI();
+            GetWindow<UpgradePackagesView>(true, "Upgrade packages", true);
         }
     }
 }

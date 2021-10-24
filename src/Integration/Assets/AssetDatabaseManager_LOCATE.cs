@@ -20,6 +20,8 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
+#region Profiling And Tracing Markers
+
         private static Dictionary<MonoScript, Type> _scriptTypeLookup;
         private static Dictionary<Type, Func<Type, string, string>> _assetTypeFolderLookup;
         private static Dictionary<Type, MonoScript> _typeScriptLookup;
@@ -61,53 +63,7 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetScriptFromType =
             new(_PRF_PFX + nameof(GetScriptFromType));
 
-        public static AssetPathMetadata GetSaveLocationForAsset(Type assetType, string assetPath)
-        {
-            using (_PRF_GetSaveLocationForAsset.Auto())
-            {
-                var assetName = AppaPath.GetFileName(assetPath);
-
-                return GetSaveLocationMetadataInternal(assetPath, assetName, assetType);
-            }
-        }
-
-        public static AssetPathMetadata GetSaveLocationForOwnedAsset<TOwner, TAsset>(string fileName)
-            where TOwner : MonoBehaviour
-            where TAsset : Object
-        {
-            using (_PRF_GetSaveLocationForOwnedAsset.Auto())
-            {
-                var ownerType = typeof(TOwner);
-                var assetType = typeof(TAsset);
-
-                var ownerScript = GetScriptFromType(ownerType);
-                var ownerPath = GetAssetPath(ownerScript);
-
-                return GetSaveLocationMetadataInternal(ownerPath, fileName, assetType);
-            }
-        }
-
-        public static AssetPathMetadata GetSaveLocationForScriptableObject<T>()
-            where T : ScriptableObject
-        {
-            using (_PRF_GetSaveLocationForScriptableObject.Auto())
-            {
-                var scriptType = typeof(T);
-
-                return GetSaveLocationForScriptableObject(scriptType);
-            }
-        }
-
-        public static AssetPathMetadata GetSaveLocationForScriptableObject(Type scriptType)
-        {
-            using (_PRF_GetSaveLocationForScriptableObject.Auto())
-            {
-                var script = GetScriptFromType(scriptType);
-                var scriptPath = GetAssetPath(script);
-
-                return GetSaveLocationMetadataInternal(scriptPath, null, scriptType);
-            }
-        }
+#endregion
 
         public static bool DoesFileExist(string path)
         {
@@ -159,6 +115,54 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static AssetPath GetSaveLocationForAsset(Type assetType, string assetPath)
+        {
+            using (_PRF_GetSaveLocationForAsset.Auto())
+            {
+                var assetName = AppaPath.GetFileName(assetPath);
+
+                return GetSaveLocationMetadataInternal(assetPath, assetName, assetType);
+            }
+        }
+
+        public static AssetPath GetSaveLocationForOwnedAsset<TOwner, TAsset>(string fileName)
+            where TOwner : MonoBehaviour
+            where TAsset : Object
+        {
+            using (_PRF_GetSaveLocationForOwnedAsset.Auto())
+            {
+                var ownerType = typeof(TOwner);
+                var assetType = typeof(TAsset);
+
+                var ownerScript = GetScriptFromType(ownerType);
+                var ownerPath = GetAssetPath(ownerScript);
+
+                return GetSaveLocationMetadataInternal(ownerPath, fileName, assetType);
+            }
+        }
+
+        public static AssetPath GetSaveLocationForScriptableObject<T>()
+            where T : ScriptableObject
+        {
+            using (_PRF_GetSaveLocationForScriptableObject.Auto())
+            {
+                var scriptType = typeof(T);
+
+                return GetSaveLocationForScriptableObject(scriptType);
+            }
+        }
+
+        public static AssetPath GetSaveLocationForScriptableObject(Type scriptType)
+        {
+            using (_PRF_GetSaveLocationForScriptableObject.Auto())
+            {
+                var script = GetScriptFromType(scriptType);
+                var scriptPath = GetAssetPath(script);
+
+                return GetSaveLocationMetadataInternal(scriptPath, null, scriptType);
+            }
+        }
+
         public static MonoScript GetScriptFromType(Type t)
         {
             using (_PRF_GetScriptFromType.Auto())
@@ -204,67 +208,6 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        private static AssetPathMetadata GetSaveLocationMetadataInternal(
-            string relativePathToRepositoryMember,
-            string saveFileName,
-            Type saveFiletype)
-        {
-            using (_PRF_GetSaveLocationMetadataInternal.Auto())
-            {
-                var assetBasePath = ProjectLocations.GetAssetsDirectoryPath();
-
-                string baseDataFolder;
-
-                var repository = ProjectLocations.GetAssetRepository(relativePathToRepositoryMember);
-
-                AssetPathMetadataType pathType;
-
-                if (repository == null)
-                {
-                    baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "Data");
-                    pathType = AssetPathMetadataType.ProjectDataFolder;
-                }
-                else
-                {
-                    baseDataFolder = repository.dataDirectory.FullPath;
-                    pathType = AssetPathMetadataType.RepositoryDataFolder;
-                }
-
-                var isLibrary = baseDataFolder.StartsWith("Library");
-                var isPackage = baseDataFolder.StartsWith("Packages");
-
-                if (isLibrary)
-                {
-                    pathType = AssetPathMetadataType.LibraryResource;
-                }
-                else if (isPackage)
-                {
-                    pathType = AssetPathMetadataType.PackageResource;
-                }
-
-                string finalFolderName;
-
-                var assetFolderName = GetAssetFolderByType(saveFiletype, saveFileName);
-                var typeFolderName = saveFiletype.GetSimpleReadableName();
-
-                if (assetFolderName != "Other")
-                {
-                    finalFolderName = assetFolderName;
-                }
-                else
-                {
-                    finalFolderName = typeFolderName;
-                }
-
-                var finalFolder = AppaPath.Combine(baseDataFolder, finalFolderName);
-
-                var output = new AssetPathMetadata(finalFolder, true);
-
-                output.pathType = pathType;
-                return output;
-            }
-        }
-
         private static string GetAssetFolderByType(Type t, string fileName)
         {
             using (_PRF_GetAssetFolderByType.Auto())
@@ -292,6 +235,67 @@ namespace Appalachia.CI.Integration.Assets
                 }
 
                 return "Other";
+            }
+        }
+
+        private static AssetPath GetSaveLocationMetadataInternal(
+            string relativePathToRepositoryMember,
+            string saveFileName,
+            Type saveFiletype)
+        {
+            using (_PRF_GetSaveLocationMetadataInternal.Auto())
+            {
+                var assetBasePath = ProjectLocations.GetAssetsDirectoryPath();
+
+                string baseDataFolder;
+
+                var repository = ProjectLocations.GetAssetRepository(relativePathToRepositoryMember);
+
+                AssetPathType pathType;
+
+                if (repository == null)
+                {
+                    baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "Data");
+                    pathType = AssetPathType.ProjectDataFolder;
+                }
+                else
+                {
+                    baseDataFolder = repository.DataDirectory.FullPath;
+                    pathType = AssetPathType.RepositoryDataFolder;
+                }
+
+                var isLibrary = baseDataFolder.StartsWith("Library");
+                var isPackage = baseDataFolder.StartsWith("Packages");
+
+                if (isLibrary)
+                {
+                    pathType = AssetPathType.LibraryResource;
+                }
+                else if (isPackage)
+                {
+                    pathType = AssetPathType.PackageResource;
+                }
+
+                string finalFolderName;
+
+                var assetFolderName = GetAssetFolderByType(saveFiletype, saveFileName);
+                var typeFolderName = saveFiletype.GetSimpleReadableName();
+
+                if (assetFolderName != "Other")
+                {
+                    finalFolderName = assetFolderName;
+                }
+                else
+                {
+                    finalFolderName = typeFolderName;
+                }
+
+                var finalFolder = AppaPath.Combine(baseDataFolder, finalFolderName);
+
+                var output = new AssetPath(finalFolder, true);
+
+                output.pathType = pathType;
+                return output;
             }
         }
 

@@ -10,13 +10,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
 {
     public class RegistryManager
     {
-        private readonly string manifest = AppaPath.Combine(
-            ProjectLocations.GetAssetsDirectoryPath(),
-            "..",
-            "Packages",
-            "manifest.json"
-        );
-
         public RegistryManager()
         {
             credentialManager = new CredentialManager();
@@ -38,43 +31,57 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             }
         }
 
-        public List<ScopedRegistry> registries { get; }
+        private readonly string manifest = AppaPath.Combine(
+            ProjectLocations.GetAssetsDirectoryPath(),
+            "..",
+            "Packages",
+            "manifest.json"
+        );
 
         public CredentialManager credentialManager { get; }
 
-        private ScopedRegistry LoadRegistry(JObject Jregistry)
+        public List<ScopedRegistry> registries { get; }
+
+        public void Remove(ScopedRegistry registry)
         {
-            var registry = new ScopedRegistry();
-            registry.name = (string) Jregistry["name"];
-            registry.url = (string) Jregistry["url"];
+            var manifestJSON = JObject.Parse(AppaFile.ReadAllText(manifest));
+            var Jregistries = (JArray) manifestJSON["scopedRegistries"];
 
-            var scopes = new List<string>();
-            foreach (var scope in (JArray) Jregistry["scopes"])
+            foreach (var JRegistryElement in Jregistries)
             {
-                scopes.Add((string) scope);
+                if ((JRegistryElement["name"] != null) &&
+                    (JRegistryElement["url"] != null) &&
+                    JRegistryElement["name"]
+                       .Value<string>()
+                       .Equals(registry.name, StringComparison.Ordinal) &&
+                    JRegistryElement["url"].Value<string>().Equals(registry.url, StringComparison.Ordinal))
+                {
+                    JRegistryElement.Remove();
+                    break;
+                }
             }
 
-            registry.scopes = new List<string>(scopes);
-
-            if (credentialManager.HasRegistry(registry.url))
-            {
-                var credential = credentialManager.GetCredential(registry.url);
-                registry.auth = credential.alwaysAuth;
-                registry.token = credential.token;
-            }
-
-            return registry;
+            write(manifestJSON);
         }
 
-        private void UpdateScope(ScopedRegistry registry, JToken registryElement)
+        public void Save(ScopedRegistry registry)
         {
-            var scopes = new JArray();
-            foreach (var scope in registry.scopes)
+            var manifestJSON = JObject.Parse(AppaFile.ReadAllText(manifest));
+
+            var manifestRegistry = GetOrCreateScopedRegistry(registry, manifestJSON);
+
+            if (!string.IsNullOrEmpty(registry.token))
             {
-                scopes.Add(scope);
+                credentialManager.SetCredential(registry.url, registry.auth, registry.token);
+            }
+            else
+            {
+                credentialManager.RemoveCredential(registry.url);
             }
 
-            registryElement["scopes"] = scopes;
+            write(manifestJSON);
+
+            credentialManager.Write();
         }
 
         private JToken GetOrCreateScopedRegistry(ScopedRegistry registry, JObject manifestJSON)
@@ -115,48 +122,39 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             return JRegistry;
         }
 
-        public void Remove(ScopedRegistry registry)
+        private ScopedRegistry LoadRegistry(JObject Jregistry)
         {
-            var manifestJSON = JObject.Parse(AppaFile.ReadAllText(manifest));
-            var Jregistries = (JArray) manifestJSON["scopedRegistries"];
+            var registry = new ScopedRegistry();
+            registry.name = (string) Jregistry["name"];
+            registry.url = (string) Jregistry["url"];
 
-            foreach (var JRegistryElement in Jregistries)
+            var scopes = new List<string>();
+            foreach (var scope in (JArray) Jregistry["scopes"])
             {
-                if ((JRegistryElement["name"] != null) &&
-                    (JRegistryElement["url"] != null) &&
-                    JRegistryElement["name"]
-                       .Value<string>()
-                       .Equals(registry.name, StringComparison.Ordinal) &&
-                    JRegistryElement["url"]
-                       .Value<string>()
-                       .Equals(registry.url, StringComparison.Ordinal))
-                {
-                    JRegistryElement.Remove();
-                    break;
-                }
+                scopes.Add((string) scope);
             }
 
-            write(manifestJSON);
+            registry.scopes = new List<string>(scopes);
+
+            if (credentialManager.HasRegistry(registry.url))
+            {
+                var credential = credentialManager.GetCredential(registry.url);
+                registry.auth = credential.alwaysAuth;
+                registry.token = credential.token;
+            }
+
+            return registry;
         }
 
-        public void Save(ScopedRegistry registry)
+        private void UpdateScope(ScopedRegistry registry, JToken registryElement)
         {
-            var manifestJSON = JObject.Parse(AppaFile.ReadAllText(manifest));
-
-            var manifestRegistry = GetOrCreateScopedRegistry(registry, manifestJSON);
-
-            if (!string.IsNullOrEmpty(registry.token))
+            var scopes = new JArray();
+            foreach (var scope in registry.scopes)
             {
-                credentialManager.SetCredential(registry.url, registry.auth, registry.token);
-            }
-            else
-            {
-                credentialManager.RemoveCredential(registry.url);
+                scopes.Add(scope);
             }
 
-            write(manifestJSON);
-
-            credentialManager.Write();
+            registryElement["scopes"] = scopes;
         }
 
         private void write(JObject manifestJSON)

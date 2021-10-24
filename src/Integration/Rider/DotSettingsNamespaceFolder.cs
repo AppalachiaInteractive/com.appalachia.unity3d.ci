@@ -7,10 +7,11 @@ namespace Appalachia.CI.Integration.Rider
                                               IComparable<DotSettingsNamespaceFolder>,
                                               IComparable
     {
-        public bool excluded;
         public bool encodingIssue;
+        public bool excluded;
         public string encoded;
         public string path;
+        public bool HasIssue => encodingIssue || !excluded;
 
         public int CompareTo(object obj)
         {

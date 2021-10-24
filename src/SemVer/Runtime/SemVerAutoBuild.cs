@@ -31,23 +31,18 @@ namespace Appalachia.CI.SemVer
         public static readonly IReadOnlyDictionary<Type, SemVerAutoBuild> Instances =
             new Dictionary<Type, SemVerAutoBuild>
             {
-                {Type.Manual, new ManualBuild()},
-                {Type.CloudBuildNumber, new CloudBuildNumberBuild()}
+                {Type.Manual, new ManualBuild()}, {Type.CloudBuildNumber, new CloudBuildNumberBuild()}
             };
 
         internal abstract string Get(string build);
 
         internal abstract string Set(string build);
 
-        private class ManualBuild : SemVerAutoBuild
+        public abstract class ReadOnly : SemVerAutoBuild
         {
-            internal override string Get(string build)
+            internal sealed override string Set(string build)
             {
-                return build;
-            }
-
-            internal override string Set(string build)
-            {
+                Debug.LogWarning("The build metadata is read-only");
                 return build;
             }
         }
@@ -62,11 +57,15 @@ namespace Appalachia.CI.SemVer
             }
         }
 
-        public abstract class ReadOnly : SemVerAutoBuild
+        private class ManualBuild : SemVerAutoBuild
         {
-            internal sealed override string Set(string build)
+            internal override string Get(string build)
             {
-                Debug.LogWarning("The build metadata is read-only");
+                return build;
+            }
+
+            internal override string Set(string build)
+            {
                 return build;
             }
         }

@@ -13,12 +13,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
     /// </summary>
     internal class PublicationManifest
     {
-        private readonly JObject j = new();
-        private string base64Data;
-        private string sha1;
-        private string sha512;
-        private long size;
-
         internal PublicationManifest(string packageFolder, string registry)
         {
             CreateTarball(packageFolder);
@@ -85,9 +79,66 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
             j["_attachments"][tarballName]["data"] = base64Data;
         }
 
+        private readonly JObject j = new();
+        private long size;
+        private string base64Data;
+        private string sha1;
+        private string sha512;
+
         public string name { get; }
 
         public string Request => j.ToString(Formatting.None);
+
+        public void CreateTarball(string packageFolder)
+        {
+            var folder = FileUtil.GetUniqueTempPathInProject();
+            var file = PackageTarball.Create(packageFolder, folder);
+
+            var bytes = AppaFile.ReadAllBytes(file);
+            base64Data = Convert.ToBase64String(bytes);
+            size = bytes.Length;
+
+            sha1 = SHA1(bytes);
+            sha512 = SHA512(bytes);
+
+            AppaFile.Delete(file);
+            AppaDirectory.Delete(folder);
+        }
+
+        private string GetReadme(string readmeFile)
+        {
+            return AppaFile.ReadAllText(readmeFile);
+        }
+
+        private string GetReadmeFilename(string packageFolder)
+        {
+            foreach (var path in AppaDirectory.EnumerateFiles(packageFolder))
+            {
+                var file = AppaPath.GetFileName(path);
+                if (file.Equals("readme.md",  StringComparison.InvariantCultureIgnoreCase) ||
+                    file.Equals("readme.txt", StringComparison.InvariantCultureIgnoreCase) ||
+                    file.Equals("readme",     StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return path;
+                }
+            }
+
+            return null;
+        }
+
+        private string SHA1(byte[] data)
+        {
+            var sha = new SHA1Managed();
+            var checksum = sha.ComputeHash(data);
+            return BitConverter.ToString(checksum).Replace("-", string.Empty).ToLower();
+        }
+
+        private string SHA512(byte[] data)
+        {
+            var sha = new SHA512Managed();
+            var checksum = sha.ComputeHash(data);
+            return "sha512-" + Convert.ToBase64String(checksum);
+        }
 
         internal static JObject LoadManifest(string packageFolder)
         {
@@ -118,57 +169,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
             }
 
             return manifest;
-        }
-
-        private string GetReadmeFilename(string packageFolder)
-        {
-            foreach (var path in AppaDirectory.EnumerateFiles(packageFolder))
-            {
-                var file = AppaPath.GetFileName(path);
-                if (file.Equals("readme.md",  StringComparison.InvariantCultureIgnoreCase) ||
-                    file.Equals("readme.txt", StringComparison.InvariantCultureIgnoreCase) ||
-                    file.Equals("readme",     StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return path;
-                }
-            }
-
-            return null;
-        }
-
-        private string GetReadme(string readmeFile)
-        {
-            return AppaFile.ReadAllText(readmeFile);
-        }
-
-        private string SHA512(byte[] data)
-        {
-            var sha = new SHA512Managed();
-            var checksum = sha.ComputeHash(data);
-            return "sha512-" + Convert.ToBase64String(checksum);
-        }
-
-        private string SHA1(byte[] data)
-        {
-            var sha = new SHA1Managed();
-            var checksum = sha.ComputeHash(data);
-            return BitConverter.ToString(checksum).Replace("-", string.Empty).ToLower();
-        }
-
-        public void CreateTarball(string packageFolder)
-        {
-            var folder = FileUtil.GetUniqueTempPathInProject();
-            var file = PackageTarball.Create(packageFolder, folder);
-
-            var bytes =AppaFile.ReadAllBytes(file);
-            base64Data = Convert.ToBase64String(bytes);
-            size = bytes.Length;
-
-            sha1 = SHA1(bytes);
-            sha512 = SHA512(bytes);
-
-            AppaFile.Delete(file);
-            AppaDirectory.Delete(folder);
         }
     }
 }

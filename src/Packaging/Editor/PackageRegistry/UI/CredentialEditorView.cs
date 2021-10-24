@@ -8,23 +8,43 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
     internal class CredentialEditorView : EditorWindow
     {
         private bool createNew;
-
-        private CredentialManager credentialManager;
         private bool initialized;
 
-        private ScopedRegistry registry;
+        private CredentialManager credentialManager;
 
         private int tokenMethod;
 
-        private void OnEnable()
+        private ScopedRegistry registry;
+
+        public void CreateNew(CredentialManager credentialManager)
         {
-            tokenMethod = 0;
-            minSize = new Vector2(480, 320);
+            this.credentialManager = credentialManager;
+            createNew = true;
+            registry = new ScopedRegistry();
+            initialized = true;
+        }
+
+        public void Edit(NPMCredential credential, CredentialManager credentialManager)
+        {
+            this.credentialManager = credentialManager;
+            registry = new ScopedRegistry();
+            registry.url = credential.url;
+            registry.auth = credential.alwaysAuth;
+            registry.token = credential.token;
+
+            createNew = false;
+            initialized = true;
         }
 
         private void OnDisable()
         {
             initialized = false;
+        }
+
+        private void OnEnable()
+        {
+            tokenMethod = 0;
+            minSize = new Vector2(480, 320);
         }
 
         private void OnGUI()
@@ -104,26 +124,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
 
                 EditorGUILayout.EndHorizontal();
             }
-        }
-
-        public void CreateNew(CredentialManager credentialManager)
-        {
-            this.credentialManager = credentialManager;
-            createNew = true;
-            registry = new ScopedRegistry();
-            initialized = true;
-        }
-
-        public void Edit(NPMCredential credential, CredentialManager credentialManager)
-        {
-            this.credentialManager = credentialManager;
-            registry = new ScopedRegistry();
-            registry.url = credential.url;
-            registry.auth = credential.alwaysAuth;
-            registry.token = credential.token;
-
-            createNew = false;
-            initialized = true;
         }
 
         private void Save()

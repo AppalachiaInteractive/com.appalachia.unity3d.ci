@@ -2,78 +2,78 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Appalachia.CI.Integration.Analysis;
 using Appalachia.CI.Integration.Assets;
+using Appalachia.CI.Integration.Core;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
 using Appalachia.CI.Integration.Rider;
 using Newtonsoft.Json;
 using Unity.Profiling;
-using UnityEditor;
 using UnityEditorInternal;
-using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assemblies
 {
     [Serializable]
-    public class AssemblyDefinitionMetadata : IComparable<AssemblyDefinitionMetadata>,
-                                              IComparable,
-                                              IEquatable<AssemblyDefinitionMetadata>,
-                                              IAnalysisTarget
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoad]
+#endif
+    public class AssemblyDefinitionMetadata : IntegrationMetadata<AssemblyDefinitionMetadata>
     {
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(AssemblyDefinitionMetadata) + ".";
-        private static Dictionary<string, AssemblyDefinitionMetadata> _instances;
-        private static Dictionary<string, AssemblyDefinitionMetadata> _instancesByGuid;
+
         private static string[] _partExclusions;
         private static StringBuilder _asmdefNameBuilder;
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
 
-        public static IEnumerable<AssemblyDefinitionMetadata> Instances => _instances.Values;
+        private static readonly ProfilerMarker _PRF_FinalizeInternal =
+            new(_PRF_PFX + nameof(FinalizeInternal));
+
+#endregion
+
+        static AssemblyDefinitionMetadata()
+        {
+            IntegrationMetadataRegistry<AssemblyDefinitionMetadata>.Register(
+                100,
+                FindAllInternal,
+                ProcessAll,
+                FinalizeInternal
+            );
+        }
 
         private AssemblyDefinitionMetadata()
         {
         }
 
-        private static bool _allPrepared;
-
-        public AppaDirectoryInfo directory;
-
-        public AssemblyDefinitionAnalysisMetadata analysis;
         public AssemblyDefinitionAsset asset;
-        public AssemblyDefinitionImporter importer;
+
+        /*public AssemblyDefinitionImporter importer;*/
         public AssemblyDefinitionModel assetModel;
-
-        public bool readOnly;
         public DotSettings dotSettings;
-        public List<AssemblyDefinitionReferenceMetadata> opportunities;
-        public List<AssemblyDefinitionReferenceMetadata> references;
-        public List<RepositoryDependencyMetadata> dependencies;
+        public HashSet<AssemblyDefinitionReference> opportunities;
+        public List<AssemblyDefinitionReference> references;
         public List<string> referenceStrings;
-
-        public RepositoryDirectoryMetadata repository;
-        public string assembly_current;
-        public string assembly_ideal;
+        public RepositoryMetadata repository;
+        public string AssemblyCurrent;
+        public string assemblyIdeal;
         public string csProjPath;
-        public string filename_current;
-        public string guid;
-        public string path;
-        public string root_namespace_current;
-        public string root_namespace_ideal;
+        public string filenameCurrent;
+        public string rootNamespaceCurrent;
+        public string rootNamespaceIdeal;
+        private string _path;
 
-        public Color IssueColor { get; set; }
+        public override string Name => AssemblyCurrent;
 
-        public bool IsAppalachia => filename_current.StartsWith("Appalachia");
-        public bool IsAsset => path.StartsWith("Asset");
-        public bool IsLibrary => path.StartsWith("Library");
+        public override string Path => _path;
 
-        public bool IsPackage => path.StartsWith("Package");
-        public string dotSettingsPath => $"{csProjPath}.dotSettings";
-        public string filename_ideal => assembly_current + ".asmdef";
-        public string Name => assembly_current;
+        public string DotSettingsPath => $"{csProjPath}.dotSettings";
+        public string FilenameIdeal => AssemblyCurrent + ".asmdef";
+        public string guid => id;
 
-        public int GetAssemblyDependencyLevel()
+        public int GetAssemblyAssemblyReferenceLevel()
         {
-            var name = assembly_current;
+            var name = AssemblyCurrent;
             var result = 0;
 
             if (name.EndsWith("Examples") ||
@@ -198,19 +198,19 @@ namespace Appalachia.CI.Integration.Assemblies
                 _partExclusions = new[] {"src", "dist", "asmdef", "Runtime", "Scripts"};
             }
 
-            IssueColor = Color.clear;
             readOnly = !assemblyDefinitionPath.StartsWith("Assets");
 
-            path = assemblyDefinitionPath;
-            guid = AssemblyDefinitionModel.GUID_PREFIX + AssetDatabaseManager.AssetPathToGUID(path);
-            filename_current = AppaPath.GetFileName(assemblyDefinitionPath);
+            _path = assemblyDefinitionPath;
+            id = AssemblyDefinitionModel.GUID_PREFIX + AssetDatabaseManager.AssetPathToGUID(Path);
+            filenameCurrent = AppaPath.GetFileName(assemblyDefinitionPath);
 
-            importer = (AssemblyDefinitionImporter) AssetImporter.GetAtPath(assemblyDefinitionPath);
+            /*importer = (AssemblyDefinitionImporter) AssetImporter.GetAtPath(assemblyDefinitionPath);*/
             asset = AssetDatabaseManager.LoadAssetAtPath<AssemblyDefinitionAsset>(assemblyDefinitionPath);
             var directoryPath = AppaPath.GetDirectoryName(assemblyDefinitionPath);
             directory = new AppaDirectoryInfo(directoryPath);
-            repository = ProjectLocations.GetAssetRepository(path);
-            references = new List<AssemblyDefinitionReferenceMetadata>();
+            repository = ProjectLocations.GetAssetRepository(Path);
+            references = new List<AssemblyDefinitionReference>();
+            opportunities = new HashSet<AssemblyDefinitionReference>();
             referenceStrings = new List<string>();
 
             if (_asmdefNameBuilder == null)
@@ -243,8 +243,8 @@ namespace Appalachia.CI.Integration.Assemblies
                 }
             }
 
-            assembly_ideal = _asmdefNameBuilder.ToString().Trim('.');
-            root_namespace_ideal = null;
+            assemblyIdeal = _asmdefNameBuilder.ToString().Trim('.');
+            rootNamespaceIdeal = null;
 
             assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
 
@@ -252,27 +252,15 @@ namespace Appalachia.CI.Integration.Assemblies
 
             LoadDotSettings();
 
-            assembly_current = assetModel.name;
-            root_namespace_current = assetModel.rootNamespace;
+            AssemblyCurrent = assetModel.name;
+            rootNamespaceCurrent = assetModel.rootNamespace;
 
             referenceStrings = assetModel.references?.ToList() ?? new List<string>();
         }
 
-        public void InitializeAnalysis()
-        {
-            // need to finish initialize method before this is called.
-            analysis = new AssemblyDefinitionAnalysisMetadata(this);
-        }
-
-        public void Reanalyze()
-        {
-            ClearAnalysisResults();
-            InitializeAnalysis();
-        }
-
         public void SaveDotSettingsFile(bool testFile)
         {
-            var outputPath = GetFilePath(dotSettingsPath, testFile);
+            var outputPath = GetFilePath(DotSettingsPath, testFile);
 
             var newContent = dotSettings.ToXml();
 
@@ -284,7 +272,7 @@ namespace Appalachia.CI.Integration.Assemblies
             var settings = new JsonSerializerSettings {Formatting = Formatting.Indented};
             settings.NullValueHandling = NullValueHandling.Include;
 
-            var outputPath = GetFilePath(path, testFile);
+            var outputPath = GetFilePath(Path, testFile);
 
             assetModel.CheckBeforeWrite();
 
@@ -292,7 +280,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
             AppaFile.WriteAllText(outputPath, text);
 
-            EditorUtility.SetDirty(asset);
+            UnityEditor.EditorUtility.SetDirty(asset);
 
             if (reimport)
             {
@@ -306,16 +294,16 @@ namespace Appalachia.CI.Integration.Assemblies
 
             foreach (var referenceString in referenceStrings)
             {
-                AssemblyDefinitionReferenceMetadata reference;
+                AssemblyDefinitionReference reference;
 
-                if (!_instancesByGuid.ContainsKey(referenceString))
+                if (!InstancesByID.ContainsKey(referenceString))
                 {
-                    reference = new AssemblyDefinitionReferenceMetadata(referenceString);
+                    reference = new AssemblyDefinitionReference(referenceString);
                 }
                 else
                 {
-                    reference = new AssemblyDefinitionReferenceMetadata(
-                        _instancesByGuid[referenceString],
+                    reference = new AssemblyDefinitionReference(
+                        InstancesByID[referenceString],
                         referenceString
                     );
                 }
@@ -324,19 +312,7 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        public void ClearAnalysisResults()
-        {
-            IssueColor = Color.clear;
-            LoadDotSettings();
-
-            repository.ClearAnalysisResults();
-
-            references.Clear();
-            dependencies.Clear();
-            opportunities?.Clear();
-        }
-
-        public int CompareTo(object obj)
+        public override int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -353,7 +329,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 : throw new ArgumentException($"Object must be of type {nameof(AssemblyDefinitionMetadata)}");
         }
 
-        public int CompareTo(AssemblyDefinitionMetadata other)
+        public override int CompareTo(AssemblyDefinitionMetadata other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -374,8 +350,8 @@ namespace Appalachia.CI.Integration.Assemblies
                                name.StartsWith("Cinemachine");
             }
 
-            GetMatches(assembly_current,       out var appalachiaMatch,      out var unityMatch);
-            GetMatches(other.assembly_current, out var otherAppalachiaMatch, out var otherUnityMatch);
+            GetMatches(AssemblyCurrent,       out var appalachiaMatch,      out var unityMatch);
+            GetMatches(other.AssemblyCurrent, out var otherAppalachiaMatch, out var otherUnityMatch);
 
             if (appalachiaMatch && !otherAppalachiaMatch)
             {
@@ -398,8 +374,8 @@ namespace Appalachia.CI.Integration.Assemblies
             }
 
             var assemblyCurrentComparison = string.Compare(
-                assembly_current,
-                other.assembly_current,
+                AssemblyCurrent,
+                other.AssemblyCurrent,
                 StringComparison.Ordinal
             );
             if (assemblyCurrentComparison != 0)
@@ -407,10 +383,10 @@ namespace Appalachia.CI.Integration.Assemblies
                 return assemblyCurrentComparison;
             }
 
-            return string.Compare(path, other.path, StringComparison.Ordinal);
+            return string.Compare(Path, other.Path, StringComparison.Ordinal);
         }
 
-        public bool Equals(AssemblyDefinitionMetadata other)
+        public override bool Equals(AssemblyDefinitionMetadata other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -422,7 +398,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 return true;
             }
 
-            return assembly_current == other.assembly_current;
+            return AssemblyCurrent == other.AssemblyCurrent;
         }
 
         public override bool Equals(object obj)
@@ -447,105 +423,78 @@ namespace Appalachia.CI.Integration.Assemblies
 
         public override int GetHashCode()
         {
-            return assembly_current != null ? assembly_current.GetHashCode() : 0;
+            return AssemblyCurrent != null ? AssemblyCurrent.GetHashCode() : 0;
+        }
+
+        public override void InitializeForAnalysis()
+        {
+            SetReferences();
         }
 
         public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
-                return assembly_current;
+                return AssemblyCurrent;
             }
+        }
+
+        protected override IEnumerable<string> GetIds()
+        {
+            yield return id;
+            yield return AssemblyCurrent;
         }
 
         private void LoadDotSettings()
         {
-            if (!AppaFile.Exists(dotSettingsPath))
+            if (!AppaFile.Exists(DotSettingsPath))
             {
                 dotSettings = new DotSettings(null);
             }
             else
             {
-                var dotSettingsText = AppaFile.ReadAllLines(dotSettingsPath);
+                var dotSettingsText = AppaFile.ReadAllLines(DotSettingsPath);
                 dotSettings = new DotSettings(dotSettingsText);
             }
         }
 
-        public static AssemblyDefinitionMetadata CreateNew(string path, bool preparing = false)
+        public static AssemblyDefinitionMetadata CreateNew(string path)
         {
-            if (_instances == null)
+            if (InstancesByPath.ContainsKey(path))
             {
-                _instances = new Dictionary<string, AssemblyDefinitionMetadata>();
-            }
-
-            if (_instancesByGuid == null)
-            {
-                _instancesByGuid = new Dictionary<string, AssemblyDefinitionMetadata>();
-            }
-
-            if (_instances.ContainsKey(path))
-            {
-                return _instances[path];
+                return InstancesByPath[path];
             }
 
             var newInstance = new AssemblyDefinitionMetadata();
 
             newInstance.Initialize(path);
 
-            if (_instances.ContainsKey(path))
-            {
-                return _instances[path];
-            }
-
-            _instances.Add(path, newInstance);
-            _instancesByGuid.Add(newInstance.guid,             newInstance);
-            _instancesByGuid.Add(newInstance.assembly_current, newInstance);
-
-            if (!preparing)
-            {
-                newInstance.InitializeAnalysis();
-            }
-
             return newInstance;
         }
 
-        public static IEnumerable<AssemblyDefinitionMetadata> FindAll()
+        private static void FinalizeInternal()
         {
-            PrepareAll();
-
-            return _instances.Values;
+            using (_PRF_FinalizeInternal.Auto())
+            {
+                foreach (var instance in Instances)
+                {
+                    if (instance.repository == null)
+                    {
+                        instance.repository = RepositoryMetadata.FindByName(instance.Name);
+                        instance.SetReferences();
+                    }
+                }
+            }
         }
 
-        public static void PrepareAll()
+        private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
         {
-            if (_allPrepared)
-            {
-                return;
-            }
-
             var asmdefs = AssetDatabaseManager.FindAssetPathsByExtension(".asmdef");
 
             foreach (var asmdef in asmdefs)
             {
-                CreateNew(asmdef, true);
+                yield return CreateNew(asmdef);
             }
-
-            foreach (var instance in _instances.Values)
-            {
-                instance.InitializeAnalysis();
-            }
-
-            _allPrepared = true;
-        }
-
-        private static string GetFilePath(string path, bool testFile)
-        {
-            if (testFile)
-            {
-                path += ".test";
-            }
-
-            return path;
         }
 
         public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)

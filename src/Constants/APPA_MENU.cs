@@ -2,15 +2,6 @@ namespace Appalachia.CI.Constants
 {
     public static partial class APPA_MENU
     {
-        internal const string Appalachia = "Appalachia";
-
-        public const string BASE_AppalachiaBehaviours = Appalachia + "/Behaviours/";
-        public const string BASE_AppalachiaComponents = Appalachia + "/Components/";
-        public const string BASE_AppalachiaData = Appalachia + "/Data/";
-        public const string BASE_AppalachiaTools = Appalachia + "/Tools/";
-        public const string BASE_AppalachiaState = Appalachia + "/State/";
-        public const string BASE_AppalachiaWindows = Appalachia + "/Windows/";
-
         public const string ASM_AppalachiaAudio = Appalachia + ".Audio/";
         public const string ASM_AppalachiaAudioContextual = Appalachia + ".Audio.Contextual/";
         public const string ASM_AppalachiaAudioEditor = Appalachia + ".Audio.Editor/";
@@ -37,16 +28,14 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaCoreLabels = Appalachia + ".Core.Labels/";
         public const string ASM_AppalachiaCoreLayers = Appalachia + ".Core.Layers/";
 
-        public const string ASM_AppalachiaCoreLayersOverrides =
-            Appalachia + ".Core.Layers.Overrides/";
+        public const string ASM_AppalachiaCoreLayersOverrides = Appalachia + ".Core.Layers.Overrides/";
 
         public const string ASM_AppalachiaCoreMath = Appalachia + ".Core.Math/";
         public const string ASM_AppalachiaCoreObjectPooling = Appalachia + ".Core.ObjectPooling/";
         public const string ASM_AppalachiaCoreOverrides = Appalachia + ".Core.Overrides/";
         public const string ASM_AppalachiaCorePreferences = Appalachia + ".Core.Preferences/";
 
-        public const string ASM_AppalachiaCorePreferencesGlobals =
-            Appalachia + ".Core.Preferences.Globals/";
+        public const string ASM_AppalachiaCorePreferencesGlobals = Appalachia + ".Core.Preferences.Globals/";
 
         public const string ASM_AppalachiaCoreScriptables = Appalachia + ".Core.Scriptables/";
         public const string ASM_AppalachiaCoreShading = Appalachia + ".Core.Shading/";
@@ -57,8 +46,7 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaEditingCore = Appalachia + ".Editing.Core/";
         public const string ASM_AppalachiaEditingDebugging = Appalachia + ".Editing.Debugging/";
 
-        public const string ASM_AppalachiaEditingDebuggingGraphy =
-            Appalachia + ".Editing.Debugging.Graphy/";
+        public const string ASM_AppalachiaEditingDebuggingGraphy = Appalachia + ".Editing.Debugging.Graphy/";
 
         public const string ASM_AppalachiaEditingDebuggingGraphyEditor =
             Appalachia + ".Editing.Debugging.Graphy.Editor/";
@@ -75,8 +63,7 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaEditingVisualizers = Appalachia + ".Editing.Visualizers/";
         public const string ASM_AppalachiaEditorAutoSave = Appalachia + ".Editor.AutoSave/";
 
-        public const string ASM_AppalachiaEditorPreferencesEasy =
-            Appalachia + ".Editor.Preferences.Easy/";
+        public const string ASM_AppalachiaEditorPreferencesEasy = Appalachia + ".Editor.Preferences.Easy/";
 
         public const string ASM_AppalachiaEditorWakaTime = Appalachia + ".Editor.WakaTime/";
         public const string ASM_AppalachiaGlobals = Appalachia + ".Globals/";
@@ -86,8 +73,7 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaJobsOptimization = Appalachia + ".Jobs.Optimization/";
         public const string ASM_AppalachiaJobsTextureJobs = Appalachia + ".Jobs.TextureJobs/";
 
-        public const string ASM_AppalachiaJobsVegetationStudio =
-            Appalachia + ".Jobs.VegetationStudio/";
+        public const string ASM_AppalachiaJobsVegetationStudio = Appalachia + ".Jobs.VegetationStudio/";
 
         public const string ASM_AppalachiaKOCCharacter = Appalachia + ".KOC.Character/";
         public const string ASM_AppalachiaKOCCrafting = Appalachia + ".KOC.Crafting/";
@@ -99,11 +85,9 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaRenderingLightingProbes =
             Appalachia + ".Rendering.Lighting.Probes/";
 
-        public const string ASM_AppalachiaRenderingPostProcessing =
-            Appalachia + ".Rendering.PostProcessing/";
+        public const string ASM_AppalachiaRenderingPostProcessing = Appalachia + ".Rendering.PostProcessing/";
 
-        public const string ASM_AppalachiaRenderingPrefabsCore =
-            Appalachia + ".Rendering.Prefabs.Core/";
+        public const string ASM_AppalachiaRenderingPrefabsCore = Appalachia + ".Rendering.Prefabs.Core/";
 
         public const string ASM_AppalachiaRenderingPrefabsRendering =
             Appalachia + ".Rendering.Prefabs.Rendering/";
@@ -134,15 +118,21 @@ namespace Appalachia.CI.Constants
         public const string ASM_AppalachiaSpatialVoxels = Appalachia + ".Spatial.Voxels/";
         public const string ASM_AppalachiaUtilityColors = Appalachia + ".Utility.Colors/";
 
-        public const string ASM_AppalachiaUtilityColorsTests =
-            Appalachia + ".Utility.Colors.Tests/";
+        public const string ASM_AppalachiaUtilityColorsTests = Appalachia + ".Utility.Colors.Tests/";
 
         public const string ASM_AppalachiaUtilityConstants = Appalachia + ".Utility.Constants/";
         public const string ASM_AppalachiaUtilityEnums = Appalachia + ".Utility.Enums/";
 
-        public const string ASM_AppalachiaUtilityInterpolation =
-            Appalachia + ".Utility.Interpolation/";
+        public const string ASM_AppalachiaUtilityInterpolation = Appalachia + ".Utility.Interpolation/";
 
         public const string ASM_AppalachiaUtilityReflection = Appalachia + ".Utility.Reflection/";
+
+        public const string BASE_AppalachiaBehaviours = Appalachia + "/Behaviours/";
+        public const string BASE_AppalachiaComponents = Appalachia + "/Components/";
+        public const string BASE_AppalachiaData = Appalachia + "/Data/";
+        public const string BASE_AppalachiaState = Appalachia + "/State/";
+        public const string BASE_AppalachiaTools = Appalachia + "/Tools/";
+        public const string BASE_AppalachiaWindows = Appalachia + "/Windows/";
+        internal const string Appalachia = "Appalachia";
     }
 }

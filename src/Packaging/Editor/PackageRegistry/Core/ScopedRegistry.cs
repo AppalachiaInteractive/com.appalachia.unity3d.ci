@@ -7,36 +7,12 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
     [Serializable]
     public class ScopedRegistry
     {
-        public string name;
-        public string url;
-        public List<string> scopes = new();
-
         public bool auth;
+        public List<string> scopes = new();
+        public string name;
 
         public string token;
-
-        public override string ToString()
-        {
-            return JsonUtility.ToJson(this, true);
-        }
-
-        public bool isValidCredential()
-        {
-            if (string.IsNullOrEmpty(url) || !Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                return false;
-            }
-
-            if (auth)
-            {
-                if (string.IsNullOrEmpty(token))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        public string url;
 
         public bool isValid()
         {
@@ -62,6 +38,29 @@ namespace Appalachia.CI.Packaging.PackageRegistry.Core
             }
 
             return isValidCredential();
+        }
+
+        public bool isValidCredential()
+        {
+            if (string.IsNullOrEmpty(url) || !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                return false;
+            }
+
+            if (auth)
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override string ToString()
+        {
+            return JsonUtility.ToJson(this, true);
         }
     }
 }

@@ -7,6 +7,6 @@ namespace Appalachia.CI.Integration.Repositories
     public class RepositoryAssetSaveDirectories
     {
         public List<RepositorySubdirectory> locations;
-        public RepositoryDirectoryMetadata repository;
+        public RepositoryMetadata repository;
     }
 }

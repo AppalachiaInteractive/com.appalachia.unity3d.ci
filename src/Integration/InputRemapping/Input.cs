@@ -64,6 +64,18 @@ namespace Appalachia.CI.Integration.InputRemapping
             return buttonControl.wasReleasedThisFrame;
         }
 
+        public static TouchNew GetTouch(int index)
+        {
+            if (!EnhancedTouchSupport.enabled)
+            {
+                EnhancedTouchSupport.Enable();
+            }
+
+            var touch = TouchNew.activeTouches[index];
+
+            return touch;
+        }
+
         /*public static bool GetButton(string button)
         {
             var buttonControl = GetButtonControlFromMouseButtonIndex(button);
@@ -375,16 +387,15 @@ namespace Appalachia.CI.Integration.InputRemapping
             }
         }
 
-        public static TouchNew GetTouch(int index)
+        private static ButtonControl GetButtonControlFromMouseButtonIndex(int i)
         {
-            if (!EnhancedTouchSupport.enabled)
+            return i switch
             {
-                EnhancedTouchSupport.Enable();
-            }
-
-            var touch = TouchNew.activeTouches[index];
-
-            return touch;
+                0 => Mouse.current.leftButton,
+                1 => Mouse.current.rightButton,
+                2 => Mouse.current.middleButton,
+                _ => null
+            };
         }
 
         private static bool GetKeyEvent(Key key, KeyEventType keyEventType)
@@ -420,17 +431,6 @@ namespace Appalachia.CI.Integration.InputRemapping
                             GetKeyEvent(Key.RightShift, keyEventType);
 
             return isShifted && isPressed;
-        }
-
-        private static ButtonControl GetButtonControlFromMouseButtonIndex(int i)
-        {
-            return i switch
-            {
-                0 => Mouse.current.leftButton,
-                1 => Mouse.current.rightButton,
-                2 => Mouse.current.middleButton,
-                _ => null
-            };
         }
 
         private enum KeyEventType

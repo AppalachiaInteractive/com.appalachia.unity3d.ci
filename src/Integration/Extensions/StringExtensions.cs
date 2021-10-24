@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.FileSystem;
 using Unity.Profiling;
@@ -8,15 +7,31 @@ namespace Appalachia.CI.Integration.Extensions
 {
     public static class StringExtensions
     {
-        private const string _PRF_PFX = nameof(StringExtensions) + ".";
+        public enum EncodingPrefix
+        {
+            UnicodeDefault,
+            Underscore
+        }
 
-        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
+#region Profiling And Tracing Markers
+
+        private const string _PRF_PFX = nameof(StringExtensions) + ".";
         private static Dictionary<string, string> _absoluteToRelativePathLookup;
+        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
         private static readonly ProfilerMarker _PRF_CleanFullPath = new(_PRF_PFX + nameof(CleanFullPath));
 
         private static readonly ProfilerMarker _PRF_ToAbsolutePath = new(_PRF_PFX + nameof(ToAbsolutePath));
-
         private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePath));
+        private static Dictionary<char, string> _encodingReplacements;
+        private static Dictionary<EncodingPrefix, string> _encodingPrefixes;
+
+        private static readonly ProfilerMarker _PRF_SetupEncodingReplacements =
+            new(_PRF_PFX + nameof(SetupEncodingReplacements));
+
+        private static readonly ProfilerMarker _PRF_EncodeUnicodePathToASCII =
+            new(_PRF_PFX + nameof(EncodeUnicodePathToASCII));
+
+#endregion
 
         public static string CleanFullPath(this string path)
         {
@@ -32,17 +47,117 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        public enum EncodingPrefix
+        public static string EncodeUnicodePathToASCII(this string path, EncodingPrefix prefix)
         {
-            UnicodeDefault,
-            Underscore
+            using (_PRF_EncodeUnicodePathToASCII.Auto())
+            {
+                SetupEncodingReplacements();
+
+                var prefixString = _encodingPrefixes[prefix];
+
+                var builder = new StringBuilder();
+
+                for (var i = 0; i < path.Length; i++)
+                {
+                    var character = path[i];
+
+                    if (_encodingReplacements.ContainsKey(character))
+                    {
+                        var replacementSuffix = _encodingReplacements[character];
+                        var replacement = $"{prefixString}{replacementSuffix}";
+
+                        builder.Append(replacement);
+                    }
+                    else
+                    {
+                        builder.Append(character);
+                    }
+                }
+
+                return builder.ToString();
+            }
         }
 
-        private static Dictionary<EncodingPrefix, string> _encodingPrefixes;
-        private static Dictionary<char, string> _encodingReplacements;
+        public static string ToAbsolutePath(this string relativePath)
+        {
+            using (_PRF_ToAbsolutePath.Auto())
+            {
+                InitializePathLookups();
 
-        private static readonly ProfilerMarker _PRF_SetupEncodingReplacements = new ProfilerMarker(_PRF_PFX + nameof(SetupEncodingReplacements));
-       
+                if (_relativeToAbsolutePathLookup.ContainsKey(relativePath))
+                {
+                    return _relativeToAbsolutePathLookup[relativePath];
+                }
+
+                var cleanRelativePath = relativePath.CleanFullPath();
+
+                var basePath = ProjectLocations.GetProjectDirectoryPath();
+
+                var firstSubfolder = cleanRelativePath.IndexOf('/');
+                var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
+
+                var absolutePath =
+                    AppaPath.Combine(basePath, relativePathSubstring).Trim('.', '/', '\\', ' ');
+
+                _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
+                _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
+
+                return absolutePath;
+            }
+        }
+
+        public static string ToRelativePath(this string absolutePath)
+        {
+            using (_PRF_ToRelativePath.Auto())
+            {
+                InitializePathLookups();
+
+                if (_absoluteToRelativePathLookup.ContainsKey(absolutePath))
+                {
+                    return _absoluteToRelativePathLookup[absolutePath];
+                }
+
+                var cleanAbsolutePath = absolutePath.CleanFullPath();
+
+                var basePath = ProjectLocations.GetProjectDirectoryPath();
+
+                var relativePath =
+                    cleanAbsolutePath.Replace(basePath, string.Empty).Trim('.', '/', '\\', ' ');
+
+                _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
+                _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
+
+                return relativePath;
+            }
+        }
+
+        public static string[] ToRelativePath(this string[] paths)
+        {
+            var results = new string[paths.Length];
+
+            for (var index = 0; index < paths.Length; index++)
+            {
+                var path = paths[index];
+
+                results[index] = path.ToRelativePath();
+            }
+
+            return results;
+        }
+
+        private static void InitializePathLookups()
+        {
+            if (_relativeToAbsolutePathLookup == null)
+            {
+                _relativeToAbsolutePathLookup = new Dictionary<string, string>();
+            }
+
+            if (_absoluteToRelativePathLookup == null)
+            {
+                _absoluteToRelativePathLookup = new Dictionary<string, string>();
+            }
+        }
+
         private static void SetupEncodingReplacements()
         {
             using (_PRF_SetupEncodingReplacements.Auto())
@@ -54,7 +169,7 @@ namespace Appalachia.CI.Integration.Extensions
 
                 _encodingPrefixes = new Dictionary<EncodingPrefix, string>();
 
-                _encodingPrefixes.Add(EncodingPrefix.Underscore, "_");
+                _encodingPrefixes.Add(EncodingPrefix.Underscore,     "_");
                 _encodingPrefixes.Add(EncodingPrefix.UnicodeDefault, "U+");
 
                 _encodingReplacements = new Dictionary<char, string>();
@@ -93,117 +208,6 @@ namespace Appalachia.CI.Integration.Extensions
                 _encodingReplacements.Add('}',  "007D"); // Right Curly Bracket
                 _encodingReplacements.Add('~',  "007E"); // Tilde
             }
-        }
-
-        private static readonly ProfilerMarker _PRF_EncodeUnicodePathToASCII = new ProfilerMarker(_PRF_PFX + nameof(EncodeUnicodePathToASCII));
-       
-        public static string EncodeUnicodePathToASCII(this string path, EncodingPrefix prefix)
-        {
-            using (_PRF_EncodeUnicodePathToASCII.Auto())
-            {
-                SetupEncodingReplacements();
-
-                var prefixString = _encodingPrefixes[prefix];
-            
-                var builder = new StringBuilder();
-
-                for (var i = 0; i < path.Length; i++)
-                {
-                    var character = path[i];
-
-                    if (_encodingReplacements.ContainsKey(character))
-                    {
-                        var replacementSuffix = _encodingReplacements[character];
-                        var replacement = $"{prefixString}{replacementSuffix}";
-                    
-                        builder.Append(replacement);
-                    }
-                    else
-                    {
-                        builder.Append(character);
-                    }
-                }
-
-                return builder.ToString();
-            }
-        }
-
-        private static void InitializePathLookups()
-        {
-            if (_relativeToAbsolutePathLookup == null)
-            {
-                _relativeToAbsolutePathLookup = new Dictionary<string, string>();
-            }
-                
-            if (_absoluteToRelativePathLookup == null)
-            {
-                _absoluteToRelativePathLookup = new Dictionary<string, string>();
-            }
-        }
-        
-        public static string ToAbsolutePath(this string relativePath)
-        {
-            using (_PRF_ToAbsolutePath.Auto())
-            {
-                InitializePathLookups();
-
-                if (_relativeToAbsolutePathLookup.ContainsKey(relativePath))
-                {
-                    return _relativeToAbsolutePathLookup[relativePath];
-                }
-
-                var cleanRelativePath = relativePath.CleanFullPath();
-
-                var basePath = ProjectLocations.GetProjectDirectoryPath();
-
-                var firstSubfolder = cleanRelativePath.IndexOf('/');
-                var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
-
-                var absolutePath = AppaPath.Combine(basePath, relativePathSubstring).Trim('.', '/', '\\', ' ');
-
-                _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
-                _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
-
-                return absolutePath;
-            }
-        }
-
-        public static string ToRelativePath(this string absolutePath)
-        {
-            using (_PRF_ToRelativePath.Auto())
-            {
-                InitializePathLookups();
-
-                if (_absoluteToRelativePathLookup.ContainsKey(absolutePath))
-                {
-                    return _absoluteToRelativePathLookup[absolutePath];
-                }
-
-                var cleanAbsolutePath = absolutePath.CleanFullPath();
-
-                var basePath = ProjectLocations.GetProjectDirectoryPath();
-
-                var relativePath = cleanAbsolutePath.Replace(basePath, string.Empty).Trim('.', '/', '\\', ' ');
-                
-                _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
-                _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
-
-                return relativePath;
-            }
-        }
-
-        public static string[] ToRelativePath(this string[] paths)
-        {
-            var results = new string[paths.Length];
-
-            for (var index = 0; index < paths.Length; index++)
-            {
-                var path = paths[index];
-
-                results[index] = path.ToRelativePath();
-            }
-
-            return results;
         }
     }
 }

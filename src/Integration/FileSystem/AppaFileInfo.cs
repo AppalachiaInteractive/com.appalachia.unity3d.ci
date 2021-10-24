@@ -6,8 +6,9 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaFileInfo : AppaFileSystemInfo
     {
-        private const string _PRF_PFX = nameof(AppaFileInfo) + ".";
+#region Profiling And Tracing Markers
 
+        private const string _PRF_PFX = nameof(AppaFileInfo) + ".";
         private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
         private static readonly ProfilerMarker _PRF_CreateText = new(_PRF_PFX + nameof(CreateText));
         private static readonly ProfilerMarker _PRF_AppendText = new(_PRF_PFX + nameof(AppendText));
@@ -34,9 +35,7 @@ namespace Appalachia.CI.Integration.FileSystem
         private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
         private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
 
-        private readonly FileInfo _fileInfo;
-
-        private string _lastDirectoryName;
+#endregion
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> class, which acts as a wrapper for a
@@ -89,6 +88,10 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             _fileInfo = info;
         }
+
+        private readonly FileInfo _fileInfo;
+
+        private string _lastDirectoryName;
 
         /// <summary>Gets a value indicating whether a file exists.</summary>
         /// <returns>
@@ -174,39 +177,16 @@ namespace Appalachia.CI.Integration.FileSystem
             set => _fileInfo.IsReadOnly = value;
         }
 
-        public static implicit operator AppaFileInfo(FileInfo o)
+        /// <summary>
+        ///     Creates a <see cref="T:System.IO.StreamWriter" /> that appends text to the file represented by this instance of the
+        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" />.
+        /// </summary>
+        /// <returns>A new <see langword="StreamWriter" />.</returns>
+        public StreamWriter AppendText()
         {
-            return new(o);
-        }
-
-        public static implicit operator FileInfo(AppaFileInfo o)
-        {
-            return o._fileInfo;
-        }
-
-        /// <summary>Returns the path as a string.</summary>
-        /// <returns>A string representing the path.</returns>
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
+            using (_PRF_AppendText.Auto())
             {
-                return _fileInfo.ToString().CleanFullPath();
-            }
-        }
-
-        /// <summary>Permanently deletes a file.</summary>
-        /// <exception cref="T:System.IO.IOException">
-        ///     The target file is open or memory-mapped on a computer running Microsoft Windows NT.-or-There is an open
-        ///     handle on the file, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories and files. For
-        ///     more information, see How to: Enumerate Directories and Files.
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">The path is a directory. </exception>
-        public override void Delete()
-        {
-            using (_PRF_Delete.Auto())
-            {
-                _fileInfo.Delete();
+                return _fileInfo.AppendText();
             }
         }
 
@@ -275,78 +255,71 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>
-        ///     Replaces the contents of a specified file with the file described by the current
-        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object, deleting
-        ///     the original file, and creating a backup of the replaced file.
-        /// </summary>
-        /// <param name="destinationFileName">The name of a file to replace with the current file.</param>
-        /// <param name="destinationBackupFileName">
-        ///     The name of a file with which to create a backup of the file described by the
-        ///     <paramref name="destFileName" /> parameter.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object that encapsulates information about the file described by the
-        ///     <paramref name="destFileName" /> parameter.
-        /// </returns>
-        /// <exception cref="T:System.ArgumentException">
-        ///     The path described by the <paramref name="destFileName" /> parameter was not of a legal form.-or-The
-        ///     path described by the <paramref name="destBackupFileName" /> parameter was not of a legal form.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">The <paramref name="destFileName" /> parameter is <see langword="null" />.</exception>
-        /// <exception cref="T:System.IO.FileNotFoundException">
-        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
-        ///     found.-or-The file described by the <paramref name="destinationFileName" /> parameter could not be found.
-        /// </exception>
-        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
-        public AppaFileInfo Replace(string destinationFileName, string destinationBackupFileName)
+        /// <summary>Creates a file.</summary>
+        /// <returns>A new file.</returns>
+        public Stream Create()
         {
-            using (_PRF_Replace.Auto())
+            using (_PRF_Create.Auto())
             {
-                return _fileInfo.Replace(destinationFileName, destinationBackupFileName);
+                return _fileInfo.Create();
+            }
+        }
+
+        /// <summary>Creates a <see cref="T:System.IO.StreamWriter" /> that writes a new text file.</summary>
+        /// <returns>A new <see langword="StreamWriter" />.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The file name is a directory. </exception>
+        /// <exception cref="T:System.IO.IOException">The disk is read-only. </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public StreamWriter CreateText()
+        {
+            using (_PRF_CreateText.Auto())
+            {
+                return _fileInfo.CreateText();
             }
         }
 
         /// <summary>
-        ///     Replaces the contents of a specified file with the file described by the current
-        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object, deleting
-        ///     the original file, and creating a backup of the replaced file.  Also specifies whether to ignore merge errors.
+        ///     Decrypts a file that was encrypted by the current account using the
+        ///     <see cref="M:Appalachia.CI.Integration.FileSystem.AppaFileInfo.Encrypt" /> method.
         /// </summary>
-        /// <param name="destinationFileName">The name of a file to replace with the current file.</param>
-        /// <param name="destinationBackupFileName">
-        ///     The name of a file with which to create a backup of the file described by the
-        ///     <paramref name="destFileName" /> parameter.
-        /// </param>
-        /// <param name="ignoreMetadataErrors">
-        ///     <see langword="true" /> to ignore merge errors (such as attributes and ACLs) from the replaced file to the replacement file; otherwise
-        ///     <see langword="false" />.
-        /// </param>
-        /// <returns>
-        ///     A <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object that encapsulates information about the file described by the
-        ///     <paramref name="destFileName" /> parameter.
-        /// </returns>
-        /// <exception cref="T:System.ArgumentException">
-        ///     The path described by the <paramref name="destFileName" /> parameter was not of a legal form.-or-The
-        ///     path described by the <paramref name="destBackupFileName" /> parameter was not of a legal form.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">The <paramref name="destFileName" /> parameter is <see langword="null" />.</exception>
+        /// <exception cref="T:System.IO.DriveNotFoundException">An invalid drive was specified. </exception>
         /// <exception cref="T:System.IO.FileNotFoundException">
         ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
-        ///     found.-or-The file described by the <paramref name="destinationFileName" /> parameter could not be found.
+        ///     found.
         /// </exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the file.</exception>
+        /// <exception cref="T:System.NotSupportedException">The file system is not NTFS.</exception>
         /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
-        public AppaFileInfo Replace(
-            string destinationFileName,
-            string destinationBackupFileName,
-            bool ignoreMetadataErrors)
+        /// <exception cref="T:System.UnauthorizedAccessException">
+        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object is
+        ///     read-only.-or- This operation is not supported on the current platform.-or- The caller does not have the required permission.
+        /// </exception>
+        public void Decrypt()
         {
-            using (_PRF_Replace.Auto())
+            using (_PRF_Decrypt.Auto())
             {
-                return _fileInfo.Replace(
-                    destinationFileName,
-                    destinationBackupFileName,
-                    ignoreMetadataErrors
-                );
+                _fileInfo.Decrypt();
+            }
+        }
+
+        /// <summary>Encrypts a file so that only the account used to encrypt the file can decrypt it.</summary>
+        /// <exception cref="T:System.IO.DriveNotFoundException">An invalid drive was specified. </exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">
+        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
+        ///     found.
+        /// </exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the file.</exception>
+        /// <exception cref="T:System.NotSupportedException">The file system is not NTFS.</exception>
+        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">
+        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object is
+        ///     read-only.-or- This operation is not supported on the current platform.-or- The caller does not have the required permission.
+        /// </exception>
+        public void Encrypt()
+        {
+            using (_PRF_Encrypt.Auto())
+            {
+                _fileInfo.Encrypt();
             }
         }
 
@@ -367,13 +340,33 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Creates a file.</summary>
-        /// <returns>A new file.</returns>
-        public Stream Create()
+        /// <summary>Moves a specified file to a new location, providing the option to specify a new file name.</summary>
+        /// <param name="destFileName">The path to move the file to, which can specify a different file name. </param>
+        /// <exception cref="T:System.IO.IOException">An I/O error occurs, such as the destination file already exists or the destination device is not ready. </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="destFileName" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="destFileName" /> is empty, contains only white spaces, or contains invalid characters.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">
+        ///     <paramref name="destFileName" /> is read-only or is a directory.
+        /// </exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">The file is not found. </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.
+        /// </exception>
+        /// <exception cref="T:System.NotSupportedException">
+        ///     <paramref name="destFileName" /> contains a colon (:) in the middle of the string.
+        /// </exception>
+        public void MoveTo(string destFileName)
         {
-            using (_PRF_Create.Auto())
+            using (_PRF_MoveTo.Auto())
             {
-                return _fileInfo.Create();
+                _fileInfo.MoveTo(destFileName);
             }
         }
 
@@ -464,6 +457,22 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <summary>Creates a <see cref="T:System.IO.StreamReader" /> with UTF8 encoding that reads from an existing text file.</summary>
+        /// <returns>A new <see langword="StreamReader" /> with UTF8 encoding.</returns>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">The file is not found. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">
+        ///     <paramref name="path" /> is read-only or is a directory.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive. </exception>
+        public StreamReader OpenText()
+        {
+            using (_PRF_OpenText.Auto())
+            {
+                return _fileInfo.OpenText();
+            }
+        }
+
         /// <summary>Creates a write-only <see cref="T:System.IO.Stream" />.</summary>
         /// <returns>A write-only unshared <see cref="T:System.IO.Stream" /> object for a new or existing file.</returns>
         /// <exception cref="T:System.UnauthorizedAccessException">
@@ -482,45 +491,11 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Creates a <see cref="T:System.IO.StreamReader" /> with UTF8 encoding that reads from an existing text file.</summary>
-        /// <returns>A new <see langword="StreamReader" /> with UTF8 encoding.</returns>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.IO.FileNotFoundException">The file is not found. </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">
-        ///     <paramref name="path" /> is read-only or is a directory.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive. </exception>
-        public StreamReader OpenText()
+        public string[] ReadAllLines()
         {
-            using (_PRF_OpenText.Auto())
+            using (_PRF_ReadAllLines.Auto())
             {
-                return _fileInfo.OpenText();
-            }
-        }
-
-        /// <summary>
-        ///     Creates a <see cref="T:System.IO.StreamWriter" /> that appends text to the file represented by this instance of the
-        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" />.
-        /// </summary>
-        /// <returns>A new <see langword="StreamWriter" />.</returns>
-        public StreamWriter AppendText()
-        {
-            using (_PRF_AppendText.Auto())
-            {
-                return _fileInfo.AppendText();
-            }
-        }
-
-        /// <summary>Creates a <see cref="T:System.IO.StreamWriter" /> that writes a new text file.</summary>
-        /// <returns>A new <see langword="StreamWriter" />.</returns>
-        /// <exception cref="T:System.UnauthorizedAccessException">The file name is a directory. </exception>
-        /// <exception cref="T:System.IO.IOException">The disk is read-only. </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public StreamWriter CreateText()
-        {
-            using (_PRF_CreateText.Auto())
-            {
-                return _fileInfo.CreateText();
+                return AppaFile.ReadAllLines(FullPath);
             }
         }
 
@@ -532,92 +507,120 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string[] ReadAllLines()
+        /// <summary>
+        ///     Replaces the contents of a specified file with the file described by the current
+        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object, deleting
+        ///     the original file, and creating a backup of the replaced file.
+        /// </summary>
+        /// <param name="destinationFileName">The name of a file to replace with the current file.</param>
+        /// <param name="destinationBackupFileName">
+        ///     The name of a file with which to create a backup of the file described by the
+        ///     <paramref name="destFileName" /> parameter.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object that encapsulates information about the file described by the
+        ///     <paramref name="destFileName" /> parameter.
+        /// </returns>
+        /// <exception cref="T:System.ArgumentException">
+        ///     The path described by the <paramref name="destFileName" /> parameter was not of a legal form.-or-The
+        ///     path described by the <paramref name="destBackupFileName" /> parameter was not of a legal form.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">The <paramref name="destFileName" /> parameter is <see langword="null" />.</exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">
+        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
+        ///     found.-or-The file described by the <paramref name="destinationFileName" /> parameter could not be found.
+        /// </exception>
+        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
+        public AppaFileInfo Replace(string destinationFileName, string destinationBackupFileName)
         {
-            using (_PRF_ReadAllLines.Auto())
+            using (_PRF_Replace.Auto())
             {
-                return AppaFile.ReadAllLines(FullPath);
+                return _fileInfo.Replace(destinationFileName, destinationBackupFileName);
             }
         }
 
         /// <summary>
-        ///     Decrypts a file that was encrypted by the current account using the
-        ///     <see cref="M:Appalachia.CI.Integration.FileSystem.AppaFileInfo.Encrypt" /> method.
+        ///     Replaces the contents of a specified file with the file described by the current
+        ///     <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object, deleting
+        ///     the original file, and creating a backup of the replaced file.  Also specifies whether to ignore merge errors.
         /// </summary>
-        /// <exception cref="T:System.IO.DriveNotFoundException">An invalid drive was specified. </exception>
-        /// <exception cref="T:System.IO.FileNotFoundException">
-        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
-        ///     found.
-        /// </exception>
-        /// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the file.</exception>
-        /// <exception cref="T:System.NotSupportedException">The file system is not NTFS.</exception>
-        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">
-        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object is
-        ///     read-only.-or- This operation is not supported on the current platform.-or- The caller does not have the required permission.
-        /// </exception>
-        public void Decrypt()
-        {
-            using (_PRF_Decrypt.Auto())
-            {
-                _fileInfo.Decrypt();
-            }
-        }
-
-        /// <summary>Encrypts a file so that only the account used to encrypt the file can decrypt it.</summary>
-        /// <exception cref="T:System.IO.DriveNotFoundException">An invalid drive was specified. </exception>
-        /// <exception cref="T:System.IO.FileNotFoundException">
-        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
-        ///     found.
-        /// </exception>
-        /// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the file.</exception>
-        /// <exception cref="T:System.NotSupportedException">The file system is not NTFS.</exception>
-        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">
-        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object is
-        ///     read-only.-or- This operation is not supported on the current platform.-or- The caller does not have the required permission.
-        /// </exception>
-        public void Encrypt()
-        {
-            using (_PRF_Encrypt.Auto())
-            {
-                _fileInfo.Encrypt();
-            }
-        }
-
-        /// <summary>Moves a specified file to a new location, providing the option to specify a new file name.</summary>
-        /// <param name="destFileName">The path to move the file to, which can specify a different file name. </param>
-        /// <exception cref="T:System.IO.IOException">An I/O error occurs, such as the destination file already exists or the destination device is not ready. </exception>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="destFileName" /> is <see langword="null" />.
-        /// </exception>
+        /// <param name="destinationFileName">The name of a file to replace with the current file.</param>
+        /// <param name="destinationBackupFileName">
+        ///     The name of a file with which to create a backup of the file described by the
+        ///     <paramref name="destFileName" /> parameter.
+        /// </param>
+        /// <param name="ignoreMetadataErrors">
+        ///     <see langword="true" /> to ignore merge errors (such as attributes and ACLs) from the replaced file to the replacement file; otherwise
+        ///     <see langword="false" />.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object that encapsulates information about the file described by the
+        ///     <paramref name="destFileName" /> parameter.
+        /// </returns>
         /// <exception cref="T:System.ArgumentException">
-        ///     <paramref name="destFileName" /> is empty, contains only white spaces, or contains invalid characters.
+        ///     The path described by the <paramref name="destFileName" /> parameter was not of a legal form.-or-The
+        ///     path described by the <paramref name="destBackupFileName" /> parameter was not of a legal form.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">The <paramref name="destFileName" /> parameter is <see langword="null" />.</exception>
+        /// <exception cref="T:System.IO.FileNotFoundException">
+        ///     The file described by the current <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> object could not be
+        ///     found.-or-The file described by the <paramref name="destinationFileName" /> parameter could not be found.
+        /// </exception>
+        /// <exception cref="T:System.PlatformNotSupportedException">The current operating system is not Microsoft Windows NT or later.</exception>
+        public AppaFileInfo Replace(
+            string destinationFileName,
+            string destinationBackupFileName,
+            bool ignoreMetadataErrors)
+        {
+            using (_PRF_Replace.Auto())
+            {
+                return _fileInfo.Replace(
+                    destinationFileName,
+                    destinationBackupFileName,
+                    ignoreMetadataErrors
+                );
+            }
+        }
+
+        /// <summary>Permanently deletes a file.</summary>
+        /// <exception cref="T:System.IO.IOException">
+        ///     The target file is open or memory-mapped on a computer running Microsoft Windows NT.-or-There is an open
+        ///     handle on the file, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories and files. For
+        ///     more information, see How to: Enumerate Directories and Files.
         /// </exception>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">
-        ///     <paramref name="destFileName" /> is read-only or is a directory.
-        /// </exception>
-        /// <exception cref="T:System.IO.FileNotFoundException">The file is not found. </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive. </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
-        ///     Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.
-        /// </exception>
-        /// <exception cref="T:System.NotSupportedException">
-        ///     <paramref name="destFileName" /> contains a colon (:) in the middle of the string.
-        /// </exception>
-        public void MoveTo(string destFileName)
+        /// <exception cref="T:System.UnauthorizedAccessException">The path is a directory. </exception>
+        public override void Delete()
         {
-            using (_PRF_MoveTo.Auto())
+            using (_PRF_Delete.Auto())
             {
-                _fileInfo.MoveTo(destFileName);
+                _fileInfo.Delete();
+            }
+        }
+
+        /// <summary>Returns the path as a string.</summary>
+        /// <returns>A string representing the path.</returns>
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return _fileInfo.ToString().CleanFullPath();
             }
         }
 
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _fileInfo;
+        }
+
+        public static implicit operator AppaFileInfo(FileInfo o)
+        {
+            return new(o);
+        }
+
+        public static implicit operator FileInfo(AppaFileInfo o)
+        {
+            return o._fileInfo;
         }
     }
 }

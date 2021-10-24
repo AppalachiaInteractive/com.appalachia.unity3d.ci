@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Profiling;
+using Object = UnityEngine.Object;
 
 namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(AssetDatabaseManager) + ".";
 
         private static Dictionary<string, string[]> _guidsByTypeName;
@@ -31,11 +34,13 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetAllAssetTypes =
             new(_PRF_PFX + nameof(GetAllAssetTypes));
 
+#endregion
+
         public static string[] GetAllAssetGuids(Type type = null)
         {
             using (_PRF_GetAllAssetGuids.Auto())
             {
-                var typeName = type?.Name ?? nameof(UnityEngine.Object);
+                var typeName = type?.Name ?? nameof(Object);
                 InitializeTypeData(typeName);
 
                 return _guidsByTypeName[typeName];
@@ -46,10 +51,21 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAllAssetPaths.Auto())
             {
-                var typeName = type?.Name ?? nameof(UnityEngine.Object);
+                var typeName = type?.Name ?? nameof(Object);
                 InitializeTypeData(typeName);
 
                 return _pathsByTypeName[typeName];
+            }
+        }
+
+        public static Type[] GetAllAssetTypes(Type type = null)
+        {
+            using (_PRF_GetAllAssetTypes.Auto())
+            {
+                var typeName = type?.Name ?? nameof(Object);
+                InitializeTypeData(typeName);
+
+                return _typesByTypeName[typeName];
             }
         }
 
@@ -66,17 +82,6 @@ namespace Appalachia.CI.Integration.Assets
                 Array.Sort(filteredAssetPaths);
 
                 return filteredAssetPaths;
-            }
-        }
-
-        public static Type[] GetAllAssetTypes(Type type = null)
-        {
-            using (_PRF_GetAllAssetTypes.Auto())
-            {
-                var typeName = type?.Name ?? nameof(UnityEngine.Object);
-                InitializeTypeData(typeName);
-
-                return _typesByTypeName[typeName];
             }
         }
 

@@ -9,7 +9,13 @@ namespace Appalachia.CI.Integration.Rider
 {
     public class DotSettings
     {
-        private const string FOLDER_SKIP_END = @"/@EntryIndexedValue"">True</s:Boolean>";
+        private const string FALSE = "False";
+        private const string FOLDER_SKIP_BOOLEND = @"</s:Boolean>";
+        private const string FOLDER_SKIP_END_FALSE = FOLDER_SKIP_ENTRYINDEX + FALSE + FOLDER_SKIP_BOOLEND;
+
+        private const string FOLDER_SKIP_END_TRUE = FOLDER_SKIP_ENTRYINDEX + TRUE + FOLDER_SKIP_BOOLEND;
+
+        private const string FOLDER_SKIP_ENTRYINDEX = @"/@EntryIndexedValue"">";
 
         private const string FOLDER_SKIP_START =
             @"<s:Boolean x:Key=""/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=";
@@ -18,6 +24,14 @@ namespace Appalachia.CI.Integration.Rider
 
         private const string HEADER =
             @"<wpf:ResourceDictionary xml:space=""preserve"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:s=""clr-namespace:System;assembly=mscorlib"" xmlns:ss=""urn:shemas-jetbrains-com:settings-storage-xaml"" xmlns:wpf=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">";
+
+        private const string MALFORMED1 = @"/@EntryIndexedValue""&gt;True";
+        private const string MALFORMED2 = @"/@EntryIndexedValue""&gt;False";
+        private const string MALFORMED3 = @"&gt";
+        private const string MALFORMED4 = @"&lt>";
+        private const string TRUE = "True";
+
+        private static readonly string[] MALFORMATIONS = {MALFORMED1, MALFORMED2, MALFORMED3, MALFORMED4};
 
         public DotSettings(string[] lines)
         {
@@ -32,64 +46,27 @@ namespace Appalachia.CI.Integration.Rider
         private static HashSet<string> _nameExclusions;
 
         private static string[] _pathExclusions;
+        private Dictionary<string, DotSettingsNamespaceFolder> _foldersLookup;
 
         private List<DotSettingsNamespaceFolder> _folders;
-        private Dictionary<string, DotSettingsNamespaceFolder> _foldersLookup;
+
+        private List<string> _otherLines;
 
         public IEnumerable<DotSettingsNamespaceFolder> AllFolders
         {
             get
             {
                 Initialize();
-                
+
                 return _folders;
             }
         }
 
+        public IEnumerable<DotSettingsNamespaceFolder> EncodingIssues =>
+            AllFolders.Where(f => f.encodingIssue);
+
         public IEnumerable<DotSettingsNamespaceFolder> ExcludedFolders => AllFolders.Where(f => f.excluded);
         public IEnumerable<DotSettingsNamespaceFolder> MissingFolders => AllFolders.Where(f => !f.excluded);
-        public IEnumerable<DotSettingsNamespaceFolder> EncodingIssues => AllFolders.Where(f => f.encodingIssue);
-
-        private List<string> _otherLines;
-        
-        public string ToXml()
-        {
-            Initialize();
-
-            var builder = new StringBuilder();
-            var alreadyAdded = new HashSet<string>();
-
-            builder.AppendLine(HEADER);
-
-            foreach (var line in _otherLines)
-            {
-                builder.AppendLine(line);
-            }
-
-            var indent = new string(' ', 4);
-
-            foreach (var excludedFolder in ExcludedFolders)
-            {
-                if (alreadyAdded.Contains(excludedFolder.encoded))
-                {
-                    continue;
-                }
-
-                alreadyAdded.Add(excludedFolder.encoded);
-                
-                builder.Append(indent);
-                builder.Append(FOLDER_SKIP_START);
-
-                builder.Append(excludedFolder.encoded);
-
-                builder.Append(FOLDER_SKIP_END);
-                builder.AppendLine();
-            }
-
-            builder.AppendLine(FOOTER);
-
-            return builder.ToString();
-        }
 
         public void AddMissingFolders()
         {
@@ -101,23 +78,10 @@ namespace Appalachia.CI.Integration.Rider
             }
         }
 
-        public void FixEncodingIssues()
-        {
-            Initialize();
-            
-            foreach (var folder in EncodingIssues)
-            {
-                folder.encoded = folder.encoded.Replace(FOOTER, string.Empty);
-                folder.encoded = folder.encoded.Replace(HEADER, string.Empty);
-                folder.encodingIssue = false;
-                folder.excluded = true;
-            }
-        }
-
         public void CheckNamespaceFolderIssues(AssemblyDefinitionMetadata assembly)
         {
             Initialize();
-            
+
             var nameExclusions = GetDirectoryNameExclusions();
             var pathExclusions = GetDirectoryPathExclusions();
 
@@ -174,64 +138,105 @@ namespace Appalachia.CI.Integration.Rider
             }
         }
 
+        public void FixEncodingIssues()
+        {
+            Initialize();
+
+            foreach (var folder in EncodingIssues)
+            {
+                folder.encoded = folder.encoded.Replace(FOOTER, string.Empty);
+                folder.encoded = folder.encoded.Replace(HEADER, string.Empty);
+                folder.encodingIssue = false;
+                folder.excluded = true;
+            }
+        }
+
         public void LoadXml(string[] lines)
         {
             Initialize();
 
-            foreach (var line in lines)
+            foreach (var originalLine in lines)
             {
-                if (line.Contains(FOLDER_SKIP_START))
+                if (string.IsNullOrWhiteSpace(originalLine))
                 {
-                    var encoded = line.Replace(FOLDER_SKIP_START, string.Empty)
-                                      .Replace(FOLDER_SKIP_END, string.Empty)
-                                      .Trim();
+                    continue;
+                }
+
+                if (originalLine.Contains(FOLDER_SKIP_START))
+                {
+                    var cleanLine = originalLine.Replace(FOLDER_SKIP_START, string.Empty)
+                                                .Replace(HEADER, string.Empty)
+                                                .Replace(FOOTER, string.Empty)
+                                                .Trim();
+
+                    var excluded = cleanLine.Contains(TRUE) && !cleanLine.Contains(FALSE);
+
+                    var encoded = cleanLine.Replace(FOLDER_SKIP_END_TRUE, string.Empty)
+                                           .Replace(FOLDER_SKIP_END_FALSE, string.Empty)
+                                           .Trim();
+
+                    var encodingIssue = false;
+
+                    foreach (var malformed in MALFORMATIONS)
+                    {
+                        if (originalLine.Contains(malformed))
+                        {
+                            encodingIssue = true;
+                        }
+
+                        encoded = encoded.Replace(malformed, string.Empty);
+                    }
 
                     var folder = Create(null, encoded);
-                    folder.excluded = true;
 
-                    if (encoded.Contains(FOOTER))
-                    {
-                        folder.encodingIssue = true;
-                    }
+                    folder.excluded = excluded;
+                    folder.encodingIssue = encodingIssue;
                 }
-                else if (!line.Contains(HEADER) && !line.Contains(FOOTER))
+                else if (!originalLine.Contains(HEADER) && !originalLine.Contains(FOOTER))
                 {
-                    _otherLines.Add(line);
-                    throw new NotSupportedException(line);
+                    _otherLines.Add(originalLine);
+                    throw new NotSupportedException(originalLine);
                 }
             }
         }
 
-        private bool IsExcludingFolder(string path, out string encoded)
+        public string ToXml()
         {
             Initialize();
 
-            encoded = GetEncodedPath(path);
+            var builder = new StringBuilder();
+            var alreadyAdded = new HashSet<string>();
 
-            if (!_foldersLookup.ContainsKey(encoded))
+            builder.AppendLine(HEADER);
+
+            foreach (var line in _otherLines)
             {
-                return false;
+                builder.AppendLine(line);
             }
 
-            var folder = _foldersLookup[encoded];
+            var indent = new string(' ', 4);
 
-            return folder.excluded;
-        }
-
-        private string GetEncodedPath(string folder)
-        {
-            Initialize();
-
-            if (_foldersLookup.ContainsKey(folder))
+            foreach (var excludedFolder in ExcludedFolders)
             {
-                return _foldersLookup[folder].encoded;
+                if (alreadyAdded.Contains(excludedFolder.encoded))
+                {
+                    continue;
+                }
+
+                alreadyAdded.Add(excludedFolder.encoded);
+
+                builder.Append(indent);
+                builder.Append(FOLDER_SKIP_START);
+
+                builder.Append(excludedFolder.encoded);
+
+                builder.Append(FOLDER_SKIP_END_TRUE);
+                builder.AppendLine();
             }
 
-            var clean = folder.Replace("/", "\\");
-            var lower = clean.ToLowerInvariant();
-            var encoded = lower.EncodeUnicodePathToASCII(StringExtensions.EncodingPrefix.Underscore);
+            builder.AppendLine(FOOTER);
 
-            return encoded;
+            return builder.ToString();
         }
 
         private DotSettingsNamespaceFolder Create(string path, string encoded)
@@ -254,13 +259,29 @@ namespace Appalachia.CI.Integration.Rider
             {
                 newFolder.encodingIssue = true;
             }
-            
+
             _foldersLookup.Add(encoded, newFolder);
             _folders.Add(newFolder);
-            
+
             _folders.Sort();
 
             return newFolder;
+        }
+
+        private string GetEncodedPath(string folder)
+        {
+            Initialize();
+
+            if (_foldersLookup.ContainsKey(folder))
+            {
+                return _foldersLookup[folder].encoded;
+            }
+
+            var clean = folder.Replace("/", "\\");
+            var lower = clean.ToLowerInvariant();
+            var encoded = lower.EncodeUnicodePathToASCII(StringExtensions.EncodingPrefix.Underscore);
+
+            return encoded;
         }
 
         private void Initialize()
@@ -279,6 +300,22 @@ namespace Appalachia.CI.Integration.Rider
             {
                 _folders = new List<DotSettingsNamespaceFolder>();
             }
+        }
+
+        private bool IsExcludingFolder(string path, out string encoded)
+        {
+            Initialize();
+
+            encoded = GetEncodedPath(path);
+
+            if (!_foldersLookup.ContainsKey(encoded))
+            {
+                return false;
+            }
+
+            var folder = _foldersLookup[encoded];
+
+            return folder.excluded;
         }
 
         private static HashSet<string> GetDirectoryNameExclusions()

@@ -8,21 +8,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 {
     public class NPMLogin
     {
-        internal static string UrlCombine(string start, string more)
-        {
-            if (string.IsNullOrEmpty(start))
-            {
-                return more;
-            }
-
-            if (string.IsNullOrEmpty(more))
-            {
-                return start;
-            }
-
-            return start.TrimEnd('/') + "/" + more.TrimStart('/');
-        }
-
         public static string GetBintrayToken(string user, string apiKey)
         {
             return Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + apiKey));
@@ -37,8 +22,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
                 client.Headers.Add(
                     HttpRequestHeader.Authorization,
-                    "Basic " +
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + password))
+                    "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + password))
                 );
 
                 var request = new NPMLoginRequest();
@@ -66,7 +50,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
                             var receiveStream = e.Response.GetResponseStream();
 
                             // Pipes the stream to a higher level stream reader with the required encoding format.
-                            var readStream = new StreamReader(receiveStream, Encoding.UTF8);
+                            var readStream = new StreamReader(receiveStream!, Encoding.UTF8);
                             var responseString = readStream.ReadToEnd();
                             e.Response.Close();
                             readStream.Close();
@@ -88,6 +72,21 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
                     }
                 }
             }
+        }
+
+        internal static string UrlCombine(string start, string more)
+        {
+            if (string.IsNullOrEmpty(start))
+            {
+                return more;
+            }
+
+            if (string.IsNullOrEmpty(more))
+            {
+                return start;
+            }
+
+            return start.TrimEnd('/') + "/" + more.TrimStart('/');
         }
     }
 }

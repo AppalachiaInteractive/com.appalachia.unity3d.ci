@@ -39,6 +39,24 @@ namespace Appalachia.CI.SemVer
             return patchComparison != 0 ? patchComparison : ComparePreReleaseVersions(x, y);
         }
 
+        private static int ComparePreReleaseIdentifiers(string xIdentifier, string yIdentifier)
+        {
+            var isXNumber = int.TryParse(xIdentifier, out var xNumber);
+            var isYNumber = int.TryParse(yIdentifier, out var yNumber);
+            if (!isXNumber)
+            {
+                const StringComparison comparison = StringComparison.Ordinal;
+                return isYNumber ? 1 : string.Compare(xIdentifier, yIdentifier, comparison);
+            }
+
+            if (isYNumber)
+            {
+                return xNumber.CompareTo(yNumber);
+            }
+
+            return -1;
+        }
+
         private static int ComparePreReleaseVersions(SemVer x, SemVer y)
         {
             if (IsPreRelease(x))
@@ -74,24 +92,6 @@ namespace Appalachia.CI.SemVer
         private static bool IsPreRelease(SemVer semVer)
         {
             return !string.IsNullOrEmpty(semVer.preRelease);
-        }
-
-        private static int ComparePreReleaseIdentifiers(string xIdentifier, string yIdentifier)
-        {
-            var isXNumber = int.TryParse(xIdentifier, out var xNumber);
-            var isYNumber = int.TryParse(yIdentifier, out var yNumber);
-            if (!isXNumber)
-            {
-                const StringComparison comparison = StringComparison.Ordinal;
-                return isYNumber ? 1 : string.Compare(xIdentifier, yIdentifier, comparison);
-            }
-
-            if (isYNumber)
-            {
-                return xNumber.CompareTo(yNumber);
-            }
-
-            return -1;
         }
     }
 }

@@ -60,6 +60,44 @@ namespace Appalachia.CI.Integration.Serialization
             SetPathComponentValue(container, deferredToken, value);
         }
 
+        private static object GetMemberValue(object container, string name)
+        {
+            if (container == null)
+            {
+                return null;
+            }
+
+            var type = container.GetType();
+            var members = type.GetMember(
+                name,
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
+            );
+            for (var i = 0; i < members.Length; ++i)
+            {
+                if (members[i] is FieldInfo field)
+                {
+                    return field.GetValue(container);
+                }
+
+                if (members[i] is PropertyInfo property)
+                {
+                    return property.GetValue(container);
+                }
+            }
+
+            return null;
+        }
+
+        private static object GetPathComponentValue(object container, PropertyPathComponent component)
+        {
+            if (component.propertyName == null)
+            {
+                return ((IList) container)[component.elementIndex];
+            }
+
+            return GetMemberValue(container, component.propertyName);
+        }
+
         // Parse the next path component from a SerializedProperty.propertyPath.  For simple field/property access,
         // this is just tokenizing on '.' and returning each field/property name.  Array/list access is via
         // the pseudo-property "Array.data[N]", so this method parses that and returns just the array/list index N.
@@ -111,44 +149,6 @@ namespace Appalachia.CI.Integration.Serialization
             return true;
         }
 
-        private static object GetMemberValue(object container, string name)
-        {
-            if (container == null)
-            {
-                return null;
-            }
-
-            var type = container.GetType();
-            var members = type.GetMember(
-                name,
-                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
-            );
-            for (var i = 0; i < members.Length; ++i)
-            {
-                if (members[i] is FieldInfo field)
-                {
-                    return field.GetValue(container);
-                }
-
-                if (members[i] is PropertyInfo property)
-                {
-                    return property.GetValue(container);
-                }
-            }
-
-            return null;
-        }
-
-        private static object GetPathComponentValue(object container, PropertyPathComponent component)
-        {
-            if (component.propertyName == null)
-            {
-                return ((IList) container)[component.elementIndex];
-            }
-
-            return GetMemberValue(container, component.propertyName);
-        }
-
         private static void SetMemberValue(object container, string name, object value)
         {
             var type = container.GetType();
@@ -193,8 +193,8 @@ namespace Appalachia.CI.Integration.Serialization
         // index is valid only if propertyName is null.
         private struct PropertyPathComponent
         {
-            public string propertyName;
             public int elementIndex;
+            public string propertyName;
         }
     }
 }

@@ -8,17 +8,7 @@ namespace Appalachia.CI.SemVer
     /// </summary>
     internal class CloudBuildManifest
     {
-        private static CloudBuildManifest _instance;
-
-        /// <summary>
-        ///     The Unity Cloud Build “build number” corresponding to this build.
-        /// </summary>
-        public readonly int BuildNumber;
-
-        /// <summary>
-        ///     Returns true if the manifest has been successfully loaded.
-        /// </summary>
-        public readonly bool IsLoaded;
+        public static CloudBuildManifest Instance => _instance ?? (_instance = new CloudBuildManifest());
 
         private CloudBuildManifest()
         {
@@ -39,7 +29,16 @@ namespace Appalachia.CI.SemVer
             int.TryParse(buildNumber, out BuildNumber);
         }
 
-        public static CloudBuildManifest Instance =>
-            _instance ?? (_instance = new CloudBuildManifest());
+        private static CloudBuildManifest _instance;
+
+        /// <summary>
+        ///     Returns true if the manifest has been successfully loaded.
+        /// </summary>
+        public readonly bool IsLoaded;
+
+        /// <summary>
+        ///     The Unity Cloud Build “build number” corresponding to this build.
+        /// </summary>
+        public readonly int BuildNumber;
     }
 }

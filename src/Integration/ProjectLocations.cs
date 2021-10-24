@@ -12,9 +12,9 @@ namespace Appalachia.CI.Integration
         public const string ThirdPartyFolder = "Third-Party";
         private static AppaDirectoryInfo _assetAppaDirectory;
         private static AppaDirectoryInfo _projectAppaDirectory;
-        private static Dictionary<AppaDirectoryInfo, RepositoryDirectoryMetadata> _repoDirectoryLookup;
+        private static Dictionary<AppaDirectoryInfo, RepositoryMetadata> _repoDirectoryLookup;
         private static Dictionary<string, AppaDirectoryInfo> _thirdPartyAssetAppaDirectory;
-        private static Dictionary<string, RepositoryDirectoryMetadata> _assetRepoLookup;
+        private static Dictionary<string, RepositoryMetadata> _assetRepoLookup;
         private static Dictionary<string, string> _thirdPartyAssetDirectoryPath;
         private static Dictionary<string, string> _thirdPartyAssetDirectoryPathRelative;
 
@@ -24,45 +24,7 @@ namespace Appalachia.CI.Integration
         private static string _projectDirectoryPath;
         private static string _projectDirectoryPathRelative;
 
-        public static AppaDirectoryInfo GetAssetsAppaDirectory()
-        {
-            if (_assetAppaDirectory != null)
-            {
-                return _assetAppaDirectory;
-            }
-
-            _assetAppaDirectory = new AppaDirectoryInfo(GetAssetsDirectoryPath());
-            return _assetAppaDirectory;
-        }
-
-        public static AppaDirectoryInfo GetThirdPartyAssetsAppaDirectory(string partyName)
-        {
-            if (_thirdPartyAssetAppaDirectory == null)
-            {
-                _thirdPartyAssetAppaDirectory = new Dictionary<string, AppaDirectoryInfo>();
-            }
-
-            if (_thirdPartyAssetAppaDirectory.ContainsKey(partyName))
-            {
-                return _thirdPartyAssetAppaDirectory[partyName];
-            }
-
-            var thirdParty = GetThirdPartyAssetsDirectoryPath(partyName);
-
-            var thirdPartyInfo = new AppaDirectoryInfo(thirdParty);
-            _thirdPartyAssetAppaDirectory.Add(partyName, thirdPartyInfo);
-
-            if (!thirdPartyInfo.Exists)
-            {
-                thirdPartyInfo.Create();
-            }
-
-            return thirdPartyInfo;
-        }
-
-        public static RepositoryDirectoryMetadata GetAssetRepository(
-            string assetPath,
-            bool invalidateCache = true)
+        public static RepositoryMetadata GetAssetRepository(string assetPath, bool invalidateCache = true)
         {
             if (string.IsNullOrWhiteSpace(assetPath))
             {
@@ -71,7 +33,7 @@ namespace Appalachia.CI.Integration
 
             if (invalidateCache || (_assetRepoLookup == null))
             {
-                _assetRepoLookup = new Dictionary<string, RepositoryDirectoryMetadata>();
+                _assetRepoLookup = new Dictionary<string, RepositoryMetadata>();
             }
 
             if (_assetRepoLookup.ContainsKey(assetPath))
@@ -94,7 +56,7 @@ namespace Appalachia.CI.Integration
 
             if (_repoDirectoryLookup == null)
             {
-                _repoDirectoryLookup = new Dictionary<AppaDirectoryInfo, RepositoryDirectoryMetadata>();
+                _repoDirectoryLookup = new Dictionary<AppaDirectoryInfo, RepositoryMetadata>();
             }
 
             var rootDirectory = directoryInfo.Parent;
@@ -104,12 +66,23 @@ namespace Appalachia.CI.Integration
                 return _repoDirectoryLookup[rootDirectory];
             }
 
-            var repo = RepositoryDirectoryMetadata.FromRoot(rootDirectory);
+            var repo = RepositoryMetadata.FindInDirectory(rootDirectory);
 
             _assetRepoLookup.Add(assetPath, repo);
             _repoDirectoryLookup.Add(rootDirectory, repo);
 
             return repo;
+        }
+
+        public static AppaDirectoryInfo GetAssetsAppaDirectory()
+        {
+            if (_assetAppaDirectory != null)
+            {
+                return _assetAppaDirectory;
+            }
+
+            _assetAppaDirectory = new AppaDirectoryInfo(GetAssetsDirectoryPath());
+            return _assetAppaDirectory;
         }
 
         public static string GetAssetsDirectoryPath()
@@ -154,6 +127,31 @@ namespace Appalachia.CI.Integration
 
             _projectDirectoryPathRelative = string.Empty;
             return _projectDirectoryPathRelative;
+        }
+
+        public static AppaDirectoryInfo GetThirdPartyAssetsAppaDirectory(string partyName)
+        {
+            if (_thirdPartyAssetAppaDirectory == null)
+            {
+                _thirdPartyAssetAppaDirectory = new Dictionary<string, AppaDirectoryInfo>();
+            }
+
+            if (_thirdPartyAssetAppaDirectory.ContainsKey(partyName))
+            {
+                return _thirdPartyAssetAppaDirectory[partyName];
+            }
+
+            var thirdParty = GetThirdPartyAssetsDirectoryPath(partyName);
+
+            var thirdPartyInfo = new AppaDirectoryInfo(thirdParty);
+            _thirdPartyAssetAppaDirectory.Add(partyName, thirdPartyInfo);
+
+            if (!thirdPartyInfo.Exists)
+            {
+                thirdPartyInfo.Create();
+            }
+
+            return thirdPartyInfo;
         }
 
         public static string GetThirdPartyAssetsDirectoryPath(string partyName)

@@ -7,8 +7,8 @@ namespace Appalachia.CI.SemVer
 {
     internal class SemVerValidator
     {
-        private SemVer _corrected;
         private List<string> _errors;
+        private SemVer _corrected;
 
         public SemVerValidationResult Validate(SemVer semVer)
         {
@@ -17,14 +17,6 @@ namespace Appalachia.CI.SemVer
             ValidatePreRelease(semVer);
             ValidateBuild(semVer);
             return new SemVerValidationResult(_errors.AsReadOnly(), _corrected.Clone());
-        }
-
-        private void ValidatePreRelease(SemVer semVer)
-        {
-            var identifiers = ValidateIdentifiers(semVer.preRelease);
-            identifiers = ValidateLeadingZeroes(identifiers);
-            var joined = JoinIdentifiers(identifiers);
-            _corrected.preRelease = joined;
         }
 
         private void ValidateBuild(SemVer semVer)
@@ -89,6 +81,14 @@ namespace Appalachia.CI.SemVer
             }
 
             return corrected;
+        }
+
+        private void ValidatePreRelease(SemVer semVer)
+        {
+            var identifiers = ValidateIdentifiers(semVer.preRelease);
+            identifiers = ValidateLeadingZeroes(identifiers);
+            var joined = JoinIdentifiers(identifiers);
+            _corrected.preRelease = joined;
         }
 
         private static string JoinIdentifiers(string[] identifiers)

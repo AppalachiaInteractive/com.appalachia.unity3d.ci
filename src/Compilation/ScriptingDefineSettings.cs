@@ -6,23 +6,24 @@ namespace Appalachia.CI.Compilation
     {
         private const string _defaultFilter = "Appalachia";
         private static readonly string _key_prefix = typeof(ScriptingDefineManager).Namespace;
-        private static readonly string _key_warnIfDisabled = $"{_key_prefix}.WarnIfDisabled";
+        private static readonly string _key_backupDefines = $"{_key_prefix}.BackupDefines.{0}";
         private static readonly string _key_enabled = $"{_key_prefix}.Enabled";
+        private static readonly string _key_excludeTests = $"{_key_prefix}.ExcludeTests";
         private static readonly string _key_filtered = $"{_key_prefix}.Filtered";
         private static readonly string _key_filterValue = $"{_key_prefix}.FilterValue";
-        private static readonly string _key_excludeTests = $"{_key_prefix}.ExcludeTests";
-        private static readonly string _key_backupDefines = $"{_key_prefix}.BackupDefines.{0}";
 
-        public static bool WarnIfDisabled
-        {
-            get => EditorPrefs.GetBool(_key_warnIfDisabled, true);
-            set => EditorPrefs.SetBool(_key_warnIfDisabled, value);
-        }
+        private static readonly string _key_warnIfDisabled = $"{_key_prefix}.WarnIfDisabled";
 
         public static bool Enabled
         {
             get => EditorPrefs.GetBool(_key_enabled, false);
             set => EditorPrefs.SetBool(_key_enabled, value);
+        }
+
+        public static bool ExcludeTests
+        {
+            get => EditorPrefs.GetBool(_key_excludeTests, false);
+            set => EditorPrefs.SetBool(_key_excludeTests, value);
         }
 
         public static bool Filtered
@@ -31,16 +32,10 @@ namespace Appalachia.CI.Compilation
             set => EditorPrefs.SetBool(_key_filtered, value);
         }
 
-        public static string FilterValue
+        public static bool WarnIfDisabled
         {
-            get => EditorPrefs.GetString(_key_filterValue, _defaultFilter);
-            set => EditorPrefs.SetString(_key_filterValue, value);
-        }
-
-        public static bool ExcludeTests
-        {
-            get => EditorPrefs.GetBool(_key_excludeTests, false);
-            set => EditorPrefs.SetBool(_key_excludeTests, value);
+            get => EditorPrefs.GetBool(_key_warnIfDisabled, true);
+            set => EditorPrefs.SetBool(_key_warnIfDisabled, value);
         }
 
         public static BuildTargetGroup BuildTargetGroup
@@ -60,10 +55,13 @@ namespace Appalachia.CI.Compilation
                 );
             }
             set =>
-                EditorPrefs.SetString(
-                    string.Format(_key_backupDefines, BuildTargetGroup.ToString()),
-                    value
-                );
+                EditorPrefs.SetString(string.Format(_key_backupDefines, BuildTargetGroup.ToString()), value);
+        }
+
+        public static string FilterValue
+        {
+            get => EditorPrefs.GetString(_key_filterValue, _defaultFilter);
+            set => EditorPrefs.SetString(_key_filterValue, value);
         }
 
         public static void Initialize()

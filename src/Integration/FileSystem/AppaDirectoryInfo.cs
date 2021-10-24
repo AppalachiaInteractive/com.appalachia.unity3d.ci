@@ -9,6 +9,8 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaDirectoryInfo : AppaFileSystemInfo
     {
+#region Profiling And Tracing Markers
+
         private const string _PRF_PFX = nameof(AppaDirectoryInfo) + ".";
 
         private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
@@ -48,7 +50,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_HasSiblingFile = new(_PRF_PFX + nameof(HasSiblingFile));
 
-        private readonly DirectoryInfo _directoryInfo;
+#endregion
 
         /// <summary>Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> class on the specified path.</summary>
         /// <param name="path">A string specifying the path on which to create the <see langword="AppaDirectoryInfo" />. </param>
@@ -88,6 +90,8 @@ namespace Appalachia.CI.Integration.FileSystem
             _directoryInfo = info;
         }
 
+        private readonly DirectoryInfo _directoryInfo;
+
         /// <summary>Gets the root portion of the directory.</summary>
         /// <returns>An object that represents the root of the directory.</returns>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
@@ -111,7 +115,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 }
 
                 var parentPath = parent.FullName.CleanFullPath();
-                
+
                 var projectRoot = ProjectLocations.GetProjectDirectoryPath();
 
                 if (!parentPath.Contains(projectRoot))
@@ -119,7 +123,7 @@ namespace Appalachia.CI.Integration.FileSystem
                     throw new NotSupportedException(parentPath);
                     return null;
                 }
-                
+
                 return parent;
             }
         }
@@ -140,43 +144,13 @@ namespace Appalachia.CI.Integration.FileSystem
 
         public override string RelativePath => FullPath.ToRelativePath();
 
-        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
+        /// <summary>Creates a directory.</summary>
+        /// <exception cref="T:System.IO.IOException">The directory cannot be created. </exception>
+        public void Create()
         {
-            return new(o);
-        }
-
-        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
-        {
-            return o._directoryInfo;
-        }
-
-        /// <summary>Returns the original path that was passed by the user.</summary>
-        /// <returns>Returns the original path that was passed by the user.</returns>
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
+            using (_PRF_Create.Auto())
             {
-                return _directoryInfo.ToString().CleanFullPath();
-            }
-        }
-
-        /// <summary>Deletes this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> if it is empty.</summary>
-        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
-        ///     exist or could not be found.
-        /// </exception>
-        /// <exception cref="T:System.IO.IOException">
-        ///     The directory is not empty. -or-The directory is the application's current working directory.-or-There is
-        ///     an open handle on the directory, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories. For
-        ///     more information, see How to: Enumerate Directories and Files.
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public override void Delete()
-        {
-            using (_PRF_Delete.Auto())
-            {
-                _directoryInfo.Delete();
+                _directoryInfo.Create();
             }
         }
 
@@ -216,6 +190,246 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_CreateSubdirectory.Auto())
             {
                 return _directoryInfo.CreateSubdirectory(path);
+            }
+        }
+
+        /// <summary>
+        ///     Deletes this instance of a <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" />, specifying whether to delete
+        ///     subdirectories and files.
+        /// </summary>
+        /// <param name="recursive">
+        ///     <see langword="true" /> to delete this directory, its subdirectories, and all files; otherwise, <see langword="false" />.
+        /// </param>
+        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
+        ///     exist or could not be found.
+        /// </exception>
+        /// <exception cref="T:System.IO.IOException">
+        ///     The directory is read-only.-or- The directory contains one or more files or subdirectories and
+        ///     <paramref name="recursive" /> is <see langword="false" />.-or-The directory is the application's current working directory. -or-There is an open
+        ///     handle on the directory or on one of its files, and the operating system is Windows XP or earlier. This open handle can result from enumerating
+        ///     directories and files. For more information, see How to: Enumerate Directories and Files.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public void Delete(bool recursive)
+        {
+            using (_PRF_Delete.Auto())
+            {
+                _directoryInfo.Delete(recursive);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of directory information in the current directory.</summary>
+        /// <returns>An enumerable collection of directories in the current directory.</returns>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories()
+        {
+            using (_PRF_EnumerateDirectories.Auto())
+            {
+                return _directoryInfo.EnumerateDirectories().Select(d => (AppaDirectoryInfo) d);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of directory information that matches a specified search pattern.</summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
+        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
+        ///     files.
+        /// </param>
+        /// <returns>An enumerable collection of directories that matches <paramref name="searchPattern" />.</returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories(string searchPattern)
+        {
+            using (_PRF_EnumerateDirectories.Auto())
+            {
+                return _directoryInfo.EnumerateDirectories(searchPattern).Select(d => (AppaDirectoryInfo) d);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of directory information that matches a specified search pattern and search subdirectory option. </summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
+        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
+        ///     files.
+        /// </param>
+        /// <param name="searchOption">
+        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
+        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
+        /// </param>
+        /// <returns>An enumerable collection of directories that matches <paramref name="searchPattern" /> and <paramref name="searchOption" />.</returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories(
+            string searchPattern,
+            SearchOption searchOption)
+        {
+            using (_PRF_EnumerateDirectories.Auto())
+            {
+                return _directoryInfo.EnumerateDirectories(searchPattern, searchOption)
+                                     .Select(d => (AppaDirectoryInfo) d);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file information in the current directory.</summary>
+        /// <returns>An enumerable collection of the files in the current directory.</returns>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileInfo> EnumerateFiles()
+        {
+            using (_PRF_EnumerateFiles.Auto())
+            {
+                return _directoryInfo.EnumerateFiles().Select(fs => (AppaFileInfo) fs);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file information that matches a search pattern.</summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of files.  This parameter can contain a combination of valid literal path
+        ///     and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all files.
+        /// </param>
+        /// <returns>An enumerable collection of files that matches <paramref name="searchPattern" />.</returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid,
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileInfo> EnumerateFiles(string searchPattern)
+        {
+            using (_PRF_EnumerateFiles.Auto())
+            {
+                return _directoryInfo.EnumerateFiles(searchPattern).Select(fs => (AppaFileInfo) fs);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file information that matches a specified search pattern and search subdirectory option.</summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of files.  This parameter can contain a combination of valid literal path
+        ///     and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all files.
+        /// </param>
+        /// <param name="searchOption">
+        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
+        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
+        /// </param>
+        /// <returns>An enumerable collection of files that matches <paramref name="searchPattern" /> and <paramref name="searchOption" />.</returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileInfo> EnumerateFiles(string searchPattern, SearchOption searchOption)
+        {
+            using (_PRF_EnumerateFiles.Auto())
+            {
+                return _directoryInfo.EnumerateFiles(searchPattern, searchOption)
+                                     .Select(fs => (AppaFileInfo) fs);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file system information in the current directory.</summary>
+        /// <returns>An enumerable collection of file system information in the current directory. </returns>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos()
+        {
+            using (_PRF_EnumerateFileSystemInfos.Auto())
+            {
+                return _directoryInfo.EnumerateFileSystemInfos().Select(fs => (AppaFileSystemInfo) fs);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file system information that matches a specified search pattern.</summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
+        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
+        ///     files.
+        /// </param>
+        /// <returns>An enumerable collection of file system information objects that matches <paramref name="searchPattern" />.</returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos(string searchPattern)
+        {
+            using (_PRF_EnumerateFileSystemInfos.Auto())
+            {
+                return _directoryInfo.EnumerateFileSystemInfos(searchPattern)
+                                     .Select(fs => (AppaFileSystemInfo) fs);
+            }
+        }
+
+        /// <summary>Returns an enumerable collection of file system information that matches a specified search pattern and search subdirectory option.</summary>
+        /// <param name="searchPattern">
+        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
+        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
+        ///     files.
+        /// </param>
+        /// <param name="searchOption">
+        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
+        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
+        /// </param>
+        /// <returns>
+        ///     An enumerable collection of file system information objects that matches <paramref name="searchPattern" /> and
+        ///     <paramref name="searchOption" />.
+        /// </returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="searchPattern" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
+        /// </exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
+        ///     (for example, it is on an unmapped drive).
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos(
+            string searchPattern,
+            SearchOption searchOption)
+        {
+            using (_PRF_EnumerateFileSystemInfos.Auto())
+            {
+                return _directoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption)
+                                     .Select(fs => (AppaFileSystemInfo) fs);
             }
         }
 
@@ -595,256 +809,6 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Returns an enumerable collection of directory information in the current directory.</summary>
-        /// <returns>An enumerable collection of directories in the current directory.</returns>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories()
-        {
-            using (_PRF_EnumerateDirectories.Auto())
-            {
-                return _directoryInfo.EnumerateDirectories().Select(d => (AppaDirectoryInfo) d);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of directory information that matches a specified search pattern.</summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
-        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
-        ///     files.
-        /// </param>
-        /// <returns>An enumerable collection of directories that matches <paramref name="searchPattern" />.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories(string searchPattern)
-        {
-            using (_PRF_EnumerateDirectories.Auto())
-            {
-                return _directoryInfo.EnumerateDirectories(searchPattern).Select(d => (AppaDirectoryInfo) d);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of directory information that matches a specified search pattern and search subdirectory option. </summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
-        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
-        ///     files.
-        /// </param>
-        /// <param name="searchOption">
-        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
-        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
-        /// </param>
-        /// <returns>An enumerable collection of directories that matches <paramref name="searchPattern" /> and <paramref name="searchOption" />.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaDirectoryInfo> EnumerateDirectories(
-            string searchPattern,
-            SearchOption searchOption)
-        {
-            using (_PRF_EnumerateDirectories.Auto())
-            {
-                return _directoryInfo.EnumerateDirectories(searchPattern, searchOption)
-                                     .Select(d => (AppaDirectoryInfo) d);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file information in the current directory.</summary>
-        /// <returns>An enumerable collection of the files in the current directory.</returns>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileInfo> EnumerateFiles()
-        {
-            using (_PRF_EnumerateFiles.Auto())
-            {
-                return _directoryInfo.EnumerateFiles().Select(fs => (AppaFileInfo) fs);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file information that matches a search pattern.</summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of files.  This parameter can contain a combination of valid literal path
-        ///     and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all files.
-        /// </param>
-        /// <returns>An enumerable collection of files that matches <paramref name="searchPattern" />.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid,
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileInfo> EnumerateFiles(string searchPattern)
-        {
-            using (_PRF_EnumerateFiles.Auto())
-            {
-                return _directoryInfo.EnumerateFiles(searchPattern).Select(fs => (AppaFileInfo) fs);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file information that matches a specified search pattern and search subdirectory option.</summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of files.  This parameter can contain a combination of valid literal path
-        ///     and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all files.
-        /// </param>
-        /// <param name="searchOption">
-        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
-        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
-        /// </param>
-        /// <returns>An enumerable collection of files that matches <paramref name="searchPattern" /> and <paramref name="searchOption" />.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileInfo> EnumerateFiles(string searchPattern, SearchOption searchOption)
-        {
-            using (_PRF_EnumerateFiles.Auto())
-            {
-                return _directoryInfo.EnumerateFiles(searchPattern, searchOption)
-                                     .Select(fs => (AppaFileInfo) fs);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file system information in the current directory.</summary>
-        /// <returns>An enumerable collection of file system information in the current directory. </returns>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos()
-        {
-            using (_PRF_EnumerateFileSystemInfos.Auto())
-            {
-                return _directoryInfo.EnumerateFileSystemInfos().Select(fs => (AppaFileSystemInfo) fs);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file system information that matches a specified search pattern.</summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
-        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
-        ///     files.
-        /// </param>
-        /// <returns>An enumerable collection of file system information objects that matches <paramref name="searchPattern" />.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos(string searchPattern)
-        {
-            using (_PRF_EnumerateFileSystemInfos.Auto())
-            {
-                return _directoryInfo.EnumerateFileSystemInfos(searchPattern)
-                                     .Select(fs => (AppaFileSystemInfo) fs);
-            }
-        }
-
-        /// <summary>Returns an enumerable collection of file system information that matches a specified search pattern and search subdirectory option.</summary>
-        /// <param name="searchPattern">
-        ///     The search string to match against the names of directories.  This parameter can contain a combination of valid literal
-        ///     path and wildcard (* and ?) characters (see Remarks), but doesn't support regular expressions. The default pattern is "*", which returns all
-        ///     files.
-        /// </param>
-        /// <param name="searchOption">
-        ///     One of the enumeration values that specifies whether the search operation should include only the current directory or all
-        ///     subdirectories. The default value is <see cref="F:System.IO.SearchOption.TopDirectoryOnly" />.
-        /// </param>
-        /// <returns>
-        ///     An enumerable collection of file system information objects that matches <paramref name="searchPattern" /> and
-        ///     <paramref name="searchOption" />.
-        /// </returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <paramref name="searchPattern" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        ///     <paramref name="searchOption" /> is not a valid <see cref="T:System.IO.SearchOption" /> value.
-        /// </exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The path encapsulated in the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object is invalid
-        ///     (for example, it is on an unmapped drive).
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public IEnumerable<AppaFileSystemInfo> EnumerateFileSystemInfos(
-            string searchPattern,
-            SearchOption searchOption)
-        {
-            using (_PRF_EnumerateFileSystemInfos.Auto())
-            {
-                return _directoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption)
-                                     .Select(fs => (AppaFileSystemInfo) fs);
-            }
-        }
-
-        /// <summary>Creates a directory.</summary>
-        /// <exception cref="T:System.IO.IOException">The directory cannot be created. </exception>
-        public void Create()
-        {
-            using (_PRF_Create.Auto())
-            {
-                _directoryInfo.Create();
-            }
-        }
-
-        /// <summary>
-        ///     Deletes this instance of a <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" />, specifying whether to delete
-        ///     subdirectories and files.
-        /// </summary>
-        /// <param name="recursive">
-        ///     <see langword="true" /> to delete this directory, its subdirectories, and all files; otherwise, <see langword="false" />.
-        /// </param>
-        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
-        ///     exist or could not be found.
-        /// </exception>
-        /// <exception cref="T:System.IO.IOException">
-        ///     The directory is read-only.-or- The directory contains one or more files or subdirectories and
-        ///     <paramref name="recursive" /> is <see langword="false" />.-or-The directory is the application's current working directory. -or-There is an open
-        ///     handle on the directory or on one of its files, and the operating system is Windows XP or earlier. This open handle can result from enumerating
-        ///     directories and files. For more information, see How to: Enumerate Directories and Files.
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public void Delete(bool recursive)
-        {
-            using (_PRF_Delete.Auto())
-            {
-                _directoryInfo.Delete(recursive);
-            }
-        }
-
         /// <summary>Moves a <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> instance and its contents to a new path.</summary>
         /// <param name="destDirName">
         ///     The name and path to which to move this directory. The destination cannot be another disk volume or a directory with the
@@ -871,9 +835,49 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <summary>Deletes this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> if it is empty.</summary>
+        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
+        ///     exist or could not be found.
+        /// </exception>
+        /// <exception cref="T:System.IO.IOException">
+        ///     The directory is not empty. -or-The directory is the application's current working directory.-or-There is
+        ///     an open handle on the directory, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories. For
+        ///     more information, see How to: Enumerate Directories and Files.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public override void Delete()
+        {
+            using (_PRF_Delete.Auto())
+            {
+                _directoryInfo.Delete();
+            }
+        }
+
+        /// <summary>Returns the original path that was passed by the user.</summary>
+        /// <returns>Returns the original path that was passed by the user.</returns>
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return _directoryInfo.ToString().CleanFullPath();
+            }
+        }
+
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _directoryInfo;
+        }
+
+        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
+        {
+            return new(o);
+        }
+
+        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
+        {
+            return o._directoryInfo;
         }
     }
 }

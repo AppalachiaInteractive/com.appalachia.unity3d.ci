@@ -21,12 +21,6 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             drawer.DoLayoutList();
         }
 
-        [MenuItem("Packages/Manage scoped registries", false, 21)]
-        internal static void ManageRegistries()
-        {
-            SettingsService.OpenProjectSettings("Project/Package Manager/Credentials");
-        }
-
         internal static ReorderableList GetRegistryList(RegistryManager registryManager)
         {
             ReorderableList registryList = null;
@@ -40,10 +34,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                     true
                 )
                 {
-                    drawHeaderCallback = rect =>
-                    {
-                        GUI.Label(rect, "Scoped Registries in this project");
-                    },
+                    drawHeaderCallback = rect => { GUI.Label(rect, "Scoped Registries in this project"); },
                     elementHeight = 70,
                     drawElementCallback = (rect, index, active, focused) =>
                     {
@@ -87,8 +78,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                     },
                     onAddCallback = list =>
                     {
-                        var registryEditor =
-                            GetWindow<ScopedRegistryEditorView>(true, "Add registry", true);
+                        var registryEditor = GetWindow<ScopedRegistryEditorView>(true, "Add registry", true);
                         registryEditor.CreateNew(registryManager);
                     },
                     onRemoveCallback = list =>
@@ -99,6 +89,12 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
                     }
                 };
             return registryList;
+        }
+
+        [MenuItem("Packages/Manage scoped registries", false, 21)]
+        internal static void ManageRegistries()
+        {
+            SettingsService.OpenProjectSettings("Project/Package Manager/Credentials");
         }
     }
 }
