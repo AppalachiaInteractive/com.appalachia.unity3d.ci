@@ -26,7 +26,6 @@ namespace Appalachia.CI.Integration.Packages
             new(_PRF_PFX + nameof(ExecutePackageListRequest));
 
         private static readonly ProfilerMarker _PRF_Packages = new(_PRF_PFX + nameof(Packages));
-        private static ListRequest _request;
         private static readonly ProfilerMarker _PRF_FindAllInternal = new(_PRF_PFX + nameof(FindAllInternal));
 
         private static readonly ProfilerMarker _PRF_InitializeInternal =
@@ -36,6 +35,27 @@ namespace Appalachia.CI.Integration.Packages
             new(_PRF_PFX + nameof(FinalizeInternal));
 
         #endregion
+
+        static PackageMetadata()
+        {
+            using (_PRF_PackageMetadata.Auto())
+            {
+                _request = ExecutePackageListRequest();
+
+                IntegrationMetadataRegistry<PackageMetadata>.Register(
+                    0,
+                    FindAllInternal,
+                    ProcessAll,
+                    FinalizeInternal
+                );
+            }
+        }
+
+        private PackageMetadata()
+        {
+        }
+
+        private static ListRequest _request;
 
         public static PackageCollection Packages
         {
@@ -56,25 +76,6 @@ namespace Appalachia.CI.Integration.Packages
                     return _request.Result;
                 }
             }
-        }
-
-        static PackageMetadata()
-        {
-            using (_PRF_PackageMetadata.Auto())
-            {
-                _request = ExecutePackageListRequest();
-
-                IntegrationMetadataRegistry<PackageMetadata>.Register(
-                    0,
-                    FindAllInternal,
-                    ProcessAll,
-                    FinalizeInternal
-                );
-            }
-        }
-
-        private PackageMetadata()
-        {
         }
 
         public PackageInfo packageInfo;

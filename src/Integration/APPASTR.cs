@@ -72,6 +72,9 @@ namespace Appalachia.CI.Integration.Core
         public const string package_json = "package.json";
         public const string Package_Review = Package + " " + Review;
         public const string Package_Search = Package + " " + Search;
+        public const string Maintenance = "Maintenance";
+        public const string Tasks = "Tasks";
+        public const string Maintenance_Tasks = Maintenance + " " + Tasks;
         public const string Packages = "Packages";
         public const string Path = "Path";
         public const string Presence = "Presence";
@@ -102,8 +105,11 @@ namespace Appalachia.CI.Integration.Core
 
             public static class CI
             {
+                private const string PREFIX = PREF.PREFIX + APPASTR.CI + "/";
+                
                 public const string Asset_Review = PREFIX + APPASTR.Asset_Review;
                 public const string Package_Review = PREFIX + APPASTR.Package_Review;
+                public const string Maintenance_Tasks = PREFIX + APPASTR.Maintenance_Tasks;
             }
         }
     }
