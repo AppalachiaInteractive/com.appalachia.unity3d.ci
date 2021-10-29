@@ -91,7 +91,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             return registryList;
         }
 
-        [MenuItem("Packages/Manage scoped registries", false, 21)]
+        [UnityEditor.MenuItem(PKG.Menu.Appalachia.Tools.Base + "Manage scoped registries", false, 21)]
         internal static void ManageRegistries()
         {
             SettingsService.OpenProjectSettings("Project/Package Manager/Credentials");

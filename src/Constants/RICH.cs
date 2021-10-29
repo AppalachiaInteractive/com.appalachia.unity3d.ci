@@ -28,6 +28,13 @@ namespace Appalachia.CI.Constants
 
             return $"<size={size}>{value}</size>";
         }
+        
+        public static string Size(this string value, float size)
+        {
+            size = Mathf.Clamp((int)size, 1, 100);
+
+            return $"<size={size}>{value}</size>";
+        }
 
         public static void SupportRichText(this GUIStyle style)
         {

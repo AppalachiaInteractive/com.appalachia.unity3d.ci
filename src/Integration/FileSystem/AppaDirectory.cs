@@ -843,9 +843,20 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_GetFiles.Auto())
             {
-                return Directory.GetFiles(path, searchPattern, searchOption)
-                                .Select(p => p.CleanFullPath())
-                                .ToArray();
+                var files = Directory.GetFiles(path, searchPattern, searchOption);
+
+                var destinationFileIndex = 0;
+                
+                for (var sourceFileIndex = 0; sourceFileIndex < files.Length; sourceFileIndex++)
+                {
+                    var file = files[sourceFileIndex].CleanFullPath();
+
+                    files[destinationFileIndex] = file;
+                    destinationFileIndex += 1;
+                }
+
+                Array.Resize(ref files, destinationFileIndex);
+                return files;
             }
         }
 

@@ -85,10 +85,10 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             EditorGUILayout.LabelField("Add multiple packages. Place each package on a newline.");
             EditorGUILayout.LabelField("Format:.");
             EditorGUILayout.LabelField(
-                "\tLatest version of package: com.halodi.halodi-unity-package-registry-manager"
+                "\tLatest version of package: com.appalachia.unity3d.core"
             );
             EditorGUILayout.LabelField(
-                "\tSpecific version: com.halodi.halodi-unity-package-registry-manager@0.1.0"
+                "\tSpecific version: com.appalachia.unity3d.core@0.1.0"
             );
 
             EditorGUILayout.BeginHorizontal();
@@ -106,7 +106,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             EditorGUILayout.EndHorizontal();
         }
 
-        [MenuItem("Packages/Add packages (bulk)", false, 22)]
+        [UnityEditor.MenuItem(PKG.Menu.Appalachia.Tools.Base + "Add packages (bulk)", false, 22)]
         internal static void ManageRegistries()
         {
             GetWindow<BulkAddPackages>(true, "Add packages", true);

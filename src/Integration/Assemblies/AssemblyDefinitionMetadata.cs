@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
+using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
 using Appalachia.CI.Integration.Rider;
@@ -19,7 +20,7 @@ namespace Appalachia.CI.Integration.Assemblies
 #endif
     public class AssemblyDefinitionMetadata : IntegrationMetadata<AssemblyDefinitionMetadata>
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AssemblyDefinitionMetadata) + ".";
 
@@ -30,7 +31,7 @@ namespace Appalachia.CI.Integration.Assemblies
         private static readonly ProfilerMarker _PRF_FinalizeInternal =
             new(_PRF_PFX + nameof(FinalizeInternal));
 
-#endregion
+        #endregion
 
         static AssemblyDefinitionMetadata()
         {
@@ -61,7 +62,10 @@ namespace Appalachia.CI.Integration.Assemblies
         public string filenameCurrent;
         public string rootNamespaceCurrent;
         public string rootNamespaceIdeal;
+
+        private string _guid;
         private string _path;
+        public override string Id => _guid;
 
         public override string Name => AssemblyCurrent;
 
@@ -69,7 +73,6 @@ namespace Appalachia.CI.Integration.Assemblies
 
         public string DotSettingsPath => $"{csProjPath}.dotSettings";
         public string FilenameIdeal => AssemblyCurrent + ".asmdef";
-        public string guid => id;
 
         public int GetAssemblyReferenceLevel()
         {
@@ -112,9 +115,15 @@ namespace Appalachia.CI.Integration.Assemblies
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.CI.Integration"))
+                if (name.StartsWith("Appalachia.CI.Constants"))
                 {
                     result += 1;
+                    return result;
+                }
+                
+                if (name.StartsWith("Appalachia.CI.Integration"))
+                {
+                    result += 2;
                     return result;
                 }
 
@@ -191,24 +200,31 @@ namespace Appalachia.CI.Integration.Assemblies
             return 50;
         }
 
-        public void Initialize(string assemblyDefinitionPath)
+        public void Initialize(string path)
         {
             if (_partExclusions == null)
             {
                 _partExclusions = new[] {"src", "dist", "asmdef", "Runtime", "Scripts"};
             }
 
-            readOnly = !assemblyDefinitionPath.StartsWith("Assets");
+            _path = path.ToRelativePath();
 
-            _path = assemblyDefinitionPath;
-            id = AssemblyDefinitionModel.GUID_PREFIX + AssetDatabaseManager.AssetPathToGUID(Path);
-            filenameCurrent = AppaPath.GetFileName(assemblyDefinitionPath);
+            readOnly = !_path.StartsWith("Assets");
 
-            /*importer = (AssemblyDefinitionImporter) AssetImporter.GetAtPath(assemblyDefinitionPath);*/
-            asset = AssetDatabaseManager.LoadAssetAtPath<AssemblyDefinitionAsset>(assemblyDefinitionPath);
-            var directoryPath = AppaPath.GetDirectoryName(assemblyDefinitionPath);
+            _guid = AssemblyDefinitionModel.GUID_PREFIX + AssetDatabaseManager.AssetPathToGUID(_path);
+
+            if (string.IsNullOrWhiteSpace(_guid))
+            {
+                throw new NotSupportedException(_path);
+            }
+
+            filenameCurrent = AppaPath.GetFileName(_path);
+
+            LoadAsset(_path);
+
+            var directoryPath = AppaPath.GetDirectoryName(_path);
             directory = new AppaDirectoryInfo(directoryPath);
-            repository = ProjectLocations.GetAssetRepository(Path);
+            repository = ProjectLocations.GetAssetRepository(_path);
             references = new List<AssemblyDefinitionReference>();
             opportunities = new HashSet<AssemblyDefinitionReference>();
             referenceStrings = new List<string>();
@@ -220,7 +236,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
             _asmdefNameBuilder.Clear();
 
-            var asmDefDirectory = AppaPath.GetDirectoryName(assemblyDefinitionPath).Replace("\\", "/");
+            var asmDefDirectory = AppaPath.GetDirectoryName(_path).Replace("\\", "/");
 
             var parts = asmDefDirectory.Split('/');
 
@@ -246,16 +262,17 @@ namespace Appalachia.CI.Integration.Assemblies
             assemblyIdeal = _asmdefNameBuilder.ToString().Trim('.');
             rootNamespaceIdeal = null;
 
-            assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
-
+            if (assetModel == null)
+            {
+                return;
+            }
+            
             csProjPath = $"{assetModel.name}.csproj";
 
             LoadDotSettings();
 
             AssemblyCurrent = assetModel.name;
             rootNamespaceCurrent = assetModel.rootNamespace;
-
-            referenceStrings = assetModel.references?.ToList() ?? new List<string>();
         }
 
         public void SaveDotSettingsFile(bool testFile)
@@ -269,6 +286,11 @@ namespace Appalachia.CI.Integration.Assemblies
 
         public void SaveFile(bool testFile, bool reimport)
         {
+            if (references.Count != referenceStrings.Count)
+            {
+                throw new NotSupportedException("Make sure you are not losing references!");
+            }
+
             var settings = new JsonSerializerSettings {Formatting = Formatting.Indented};
             settings.NullValueHandling = NullValueHandling.Include;
 
@@ -284,13 +306,19 @@ namespace Appalachia.CI.Integration.Assemblies
 
             if (reimport)
             {
-                AssetDatabaseManager.ImportAsset(outputPath);
+                LoadAsset(_path);
+                SetReferences();
             }
         }
 
         public void SetReferences()
         {
             references.Clear();
+
+            if ((referenceStrings == null) || (referenceStrings.Count == 0))
+            {
+                LoadAsset(_path);
+            }
 
             foreach (var referenceString in referenceStrings)
             {
@@ -441,8 +469,21 @@ namespace Appalachia.CI.Integration.Assemblies
 
         protected override IEnumerable<string> GetIds()
         {
-            yield return id;
+            yield return Id;
             yield return AssemblyCurrent;
+        }
+
+        private void LoadAsset(string assemblyDefinitionPath)
+        {
+            asset = AssetDatabaseManager.LoadAssetAtPath<AssemblyDefinitionAsset>(assemblyDefinitionPath);
+
+            if (asset == null)
+            {
+                return;
+            }
+
+            assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
+            referenceStrings = assetModel.references?.ToList() ?? new List<string>();
         }
 
         private void LoadDotSettings()
@@ -489,7 +530,7 @@ namespace Appalachia.CI.Integration.Assemblies
 
         private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
         {
-            var asmdefs = AssetDatabaseManager.FindAssetPathsByExtension(".asmdef");
+            var asmdefs = AssetDatabaseManager.FindProjectPathsByExtension(".asmdef");
 
             foreach (var asmdef in asmdefs)
             {

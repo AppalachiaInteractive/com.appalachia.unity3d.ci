@@ -287,7 +287,14 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_Copy.Auto())
             {
-                File.Copy(sourceFileName, destFileName);
+                try
+                {
+                    File.Copy(sourceFileName, destFileName);
+                }
+                catch
+                {
+                    throw;
+                }
             }
         }
 

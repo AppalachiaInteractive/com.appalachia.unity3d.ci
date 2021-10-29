@@ -97,7 +97,7 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <returns>
         ///     <see langword="true" /> if the file exists; <see langword="false" /> if the file does not exist or if the file is a directory.
         /// </returns>
-        public override bool Exists { get; }
+        public override bool Exists => _fileInfo.Exists;
 
         public override AppaDirectoryInfo Parent => _fileInfo.Directory;
 

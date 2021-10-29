@@ -32,7 +32,7 @@ namespace Appalachia.CI.Integration.Assemblies
         public AssemblyDefinitionReference(AssemblyDefinitionMetadata assembly)
         {
             this.assembly = assembly;
-            guid = assembly.guid;
+            guid = assembly.Id;
         }
 
         public AssemblyDefinitionMetadata assembly;

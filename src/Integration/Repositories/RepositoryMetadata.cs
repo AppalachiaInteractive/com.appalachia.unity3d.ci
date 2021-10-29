@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
@@ -46,10 +47,12 @@ namespace Appalachia.CI.Integration.Repositories
         private RepositoryMetadata()
         {
             dependencies = new HashSet<RepositoryDependency>();
+            missingDependencies = new HashSet<RepositoryDependency>();
             assemblies = new List<AssemblyDefinitionMetadata>();
         }
 
         public HashSet<RepositoryDependency> dependencies;
+        public HashSet<RepositoryDependency> missingDependencies;
 
         public List<AssemblyDefinitionMetadata> assemblies;
 
@@ -71,7 +74,8 @@ namespace Appalachia.CI.Integration.Repositories
 
         private string _repoName;
 
-        public override string Name => PackageName;
+        public override string Id => Name;
+        public override string Name => PackageName ?? RepoName;
         public override string Path => directory.RelativePath;
 
         public bool HasPackage => npmPackage != null;
@@ -273,15 +277,25 @@ namespace Appalachia.CI.Integration.Repositories
                 {
                     var newDep = new RepositoryDependency(dependency.Key, dependency.Value);
 
-                    var repoMatch = FindById(dependency.Key);
-
-                    if (repoMatch != null)
-                    {
-                        newDep.repository = repoMatch;
-                    }
+                    PopulateDependency(newDep);
 
                     dependencies.Add(newDep);
                 }
+            }
+
+            foreach (var dependency in missingDependencies)
+            {
+                PopulateDependency(dependency);
+            }
+        }
+
+        public void PopulateDependency(RepositoryDependency dependency)
+        {
+            var repoMatch = FindById(dependency.name);
+
+            if (repoMatch != null)
+            {
+                dependency.repository = repoMatch;
             }
         }
 

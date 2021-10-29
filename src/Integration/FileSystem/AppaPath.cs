@@ -1,55 +1,104 @@
 using System.IO;
+using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Utility.Logging;
+using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaPath
     {
+        #region Profiling And Tracing Markers
+
+        private const string _PRF_PFX = nameof(AppaPath) + ".";
+
+        private static readonly ProfilerMarker _PRF_Combine = new(_PRF_PFX + nameof(Combine));
+
+        private static readonly ProfilerMarker _PRF_GetDirectoryName =
+            new(_PRF_PFX + nameof(GetDirectoryName));
+
+        private static readonly ProfilerMarker _PRF_GetExtension = new(_PRF_PFX + nameof(GetExtension));
+
+        private static readonly ProfilerMarker _PRF_GetFileName = new(_PRF_PFX + nameof(GetFileName));
+
+        private static readonly ProfilerMarker _PRF_GetFileNameWithoutExtension =
+            new(_PRF_PFX + nameof(GetFileNameWithoutExtension));
+
+        private static readonly ProfilerMarker _PRF_GetFullPath = new(_PRF_PFX + nameof(GetFullPath));
+
+        #endregion
+
+        private static StringCombiner _pathCombiner;
         public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
-
-        public static string Combine(string path1, string path2)
-        {
-            return Path.Combine(path1, path2).CleanFullPath();
-        }
-
-        public static string Combine(string path1, string path2, string path3)
-        {
-            return Path.Combine(path1, path2, path3).CleanFullPath();
-        }
-
-        public static string Combine(string path1, string path2, string path3, string path4)
-        {
-            return Path.Combine(path1, path2, path3, path4).CleanFullPath();
-        }
 
         public static string Combine(params string[] paths)
         {
-            return Path.Combine(paths).CleanFullPath();
+            using (_PRF_Combine.Auto())
+            {
+                return Path.Combine(paths);
+            }
         }
 
-        public static string GetDirectoryName(string path)
+        public static string GetDirectoryName(string path, bool cleanPath = true)
         {
-            return Path.GetDirectoryName(path).CleanFullPath();
+            using (_PRF_GetDirectoryName.Auto())
+            {
+                var result = Path.GetDirectoryName(path);
+
+                if (cleanPath)
+                {
+                    result = result.CleanFullPath();
+                }
+
+                return result;
+            }
         }
 
         public static string GetExtension(string path)
         {
-            return Path.GetExtension(path);
+            using (_PRF_GetExtension.Auto())
+            {
+                try
+                {
+                    return Path.GetExtension(path);
+                }
+                catch
+                {
+                    AppaLog.Error(nameof(GetExtension) + ": Error parsing extension! " + path);
+                    throw;
+                }
+            }
         }
 
         public static string GetFileName(string path)
         {
-            return Path.GetFileName(path);
+            using (_PRF_GetFileName.Auto())
+            {
+                return Path.GetFileName(path);
+            }
         }
 
         public static string GetFileNameWithoutExtension(string path)
         {
-            return Path.GetFileNameWithoutExtension(path);
+            using (_PRF_GetFileNameWithoutExtension.Auto())
+            {
+                return Path.GetFileNameWithoutExtension(path);
+            }
         }
 
-        public static string GetFullPath(string path)
+        public static string GetFullPath(string path, bool cleanPath = true)
         {
-            return Path.GetFullPath(path).CleanFullPath();
+            using (_PRF_GetFullPath.Auto())
+            {
+                var result = Path.GetFullPath(path);
+
+                if (cleanPath)
+                {
+                    result = result.CleanFullPath();
+                }
+
+                return result;
+            }
         }
     }
 }

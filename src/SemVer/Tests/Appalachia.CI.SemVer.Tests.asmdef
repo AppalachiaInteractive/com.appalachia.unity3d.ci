@@ -1,25 +1,26 @@
 {
   "name": "Appalachia.CI.SemVer.Tests",
-  "rootNamespace": "",
-  "references": [
-    "GUID:c7f2f2911de381941be7186214305448",
-    "GUID:0acc523941302664db1f4e527237feb3",
-    "GUID:27619889b8ba8c24980f49ee34dbb44a"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
   "allowUnsafeCode": false,
-  "overrideReferences": true,
-  "precompiledReferences": [
-    "nunit.framework.dll"
-  ],
   "autoReferenced": false,
+  "noEngineReferences": false,
+  "overrideReferences": true,
+  "rootNamespace": "",
   "defineConstraints": [
     "UNITY_INCLUDE_TESTS"
   ],
-  "versionDefines": [],
-  "noEngineReferences": false,
-  "optionalUnityReferences": []
+  "references": [
+    "GUID:c7f2f2911de381941be7186214305448",
+    "GUID:6b8c99229a4703f47b9e6e696c2e8d8d",
+    "GUID:0acc523941302664db1f4e527237feb3",
+    "GUID:27619889b8ba8c24980f49ee34dbb44a"
+  ],
+  "optionalUnityReferences": [],
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "excludePlatforms": [],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "versionDefines": []
 }

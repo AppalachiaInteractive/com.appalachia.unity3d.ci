@@ -13,6 +13,10 @@ namespace Appalachia.CI.Integration.Core
     [Serializable, InitializeOnLoad]
     public abstract class IntegrationMetadata
     {
+        public abstract string Name { get; }
+        public abstract string Path { get; }
+        public abstract string Id { get; }
+
         public static IReadOnlyList<T> ClearAll<T>()
             where T : IntegrationMetadata<T>
         {
@@ -66,20 +70,12 @@ namespace Appalachia.CI.Integration.Core
                                                    IEquatable<T>
         where T : IntegrationMetadata<T>
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(IntegrationMetadata<T>) + ".";
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
 
-#endregion
-
-        public static IReadOnlyDictionary<string, T> InstancesByID => _instancesByID;
-
-        public static IReadOnlyDictionary<string, T> InstancesByName => _instancesByName;
-
-        public static IReadOnlyDictionary<string, T> InstancesByPath => _instancesByPath;
-
-        public static IReadOnlyList<T> Instances => _instances;
+        #endregion
 
         static IntegrationMetadata()
         {
@@ -93,12 +89,16 @@ namespace Appalachia.CI.Integration.Core
         private static HashSet<T> _instancesUnique;
         private static List<T> _instances;
 
+        public static IReadOnlyDictionary<string, T> InstancesByID => _instancesByID;
+
+        public static IReadOnlyDictionary<string, T> InstancesByName => _instancesByName;
+
+        public static IReadOnlyDictionary<string, T> InstancesByPath => _instancesByPath;
+
+        public static IReadOnlyList<T> Instances => _instances;
+
         public AppaDirectoryInfo directory;
         public bool readOnly;
-        public string id;
-
-        public abstract string Name { get; }
-        public abstract string Path { get; }
 
         public bool IsAppalachia => Name.Contains("Appalachia") || Name.StartsWith("com.appalachia");
         public bool IsAsset => Path?.StartsWith("Asset") ?? false;
@@ -122,17 +122,23 @@ namespace Appalachia.CI.Integration.Core
 
         public static T FindByFile(AppaFileInfo file)
         {
+            CheckIntegrationRegistration();
+
             return InstancesByPath[file.RelativePath];
         }
 
         public static T FindByFilePath(string path)
         {
+            CheckIntegrationRegistration();
+
             var file = new AppaFileInfo(path);
             return FindByFile(file);
         }
 
         public static T FindById(string id)
         {
+            CheckIntegrationRegistration();
+
             if (!InstancesByID.ContainsKey(id))
             {
                 return null;
@@ -145,6 +151,8 @@ namespace Appalachia.CI.Integration.Core
 
         public static T FindByName(string name)
         {
+            CheckIntegrationRegistration();
+
             if (!InstancesByName.ContainsKey(name))
             {
                 return null;
@@ -157,11 +165,20 @@ namespace Appalachia.CI.Integration.Core
 
         public static T FindInDirectory(AppaDirectoryInfo directory)
         {
+            CheckIntegrationRegistration();
+            
+            if (!InstancesByPath.ContainsKey(directory.RelativePath))
+            {
+                throw new NotSupportedException(directory.RelativePath);
+            }
+            
             return InstancesByPath[directory.RelativePath];
         }
 
         public static T FindInDirectoryPath(string path)
         {
+            CheckIntegrationRegistration();
+
             var directory = new AppaDirectoryInfo(path);
             return FindInDirectory(directory);
         }
@@ -246,6 +263,14 @@ namespace Appalachia.CI.Integration.Core
             }
 
             return path;
+        }
+
+        private static void CheckIntegrationRegistration()
+        {
+            if (!IntegrationMetadataRegisterExecutor.HasExecuted)
+            {
+                IntegrationMetadataRegisterExecutor.Execute();
+            }
         }
     }
 }

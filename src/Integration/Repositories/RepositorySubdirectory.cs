@@ -21,7 +21,7 @@ namespace Appalachia.CI.Integration.Repositories
 
         public RepositorySubdirectory(RepositoryMetadata repository, string relativePath)
         {
-            this.relativePath = relativePath.CleanFullPath();
+            this.relativePath = relativePath.CleanRelativePath();
             var type = AssetDatabaseManager.GetMainAssetTypeAtPath(this.relativePath);
             directory = AssetDatabaseManager.LoadAssetAtPath(this.relativePath, type);
             directoryInfo = new AppaDirectoryInfo(this.relativePath);

@@ -1,8 +1,8 @@
 // ReSharper disable MemberHidesStaticFromOuterClass
 
-namespace Appalachia.CI.Integration.Core
+namespace Appalachia.CI.Constants
 {
-    public static class APPASTR
+    public static partial class APPASTR
     {
         public const string _asmdef = ".asmdef";
         public const string _dotSettings = ".dotSettings";
@@ -23,6 +23,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Assembly_Review = Assembly + " " + Review;
         public const string asset = "asset";
         public const string Asset = "Asset";
+        public const string Asset_Generation = "Asset_Generation";
 
         public const string Asset_Review = Asset + " " + Review;
         public const string Assets = "Assets";
@@ -38,6 +39,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Details = "Details";
         public const string Directories = "Directories";
         public const string Directory = "Directory";
+        public const string Editor = "Editor";
         public const string File = "File";
         public const string File_Current = File + " (" + Ideal + ")";
         public const string File_Ideal = File + " (" + Current + ")";
@@ -55,6 +57,8 @@ namespace Appalachia.CI.Integration.Core
         public const string Issue_Type_Repository = Issue + " " + Type + " " + Repository;
         public const string Issues = "Issues";
         public const string Level = "Level";
+        public const string Maintenance = "Maintenance";
+        public const string Maintenance_Tasks = Maintenance + " " + Tasks;
         public const string Metadata = "Metadata";
         public const string Name = "Name";
         public const string Namespace = "Namespace";
@@ -72,9 +76,6 @@ namespace Appalachia.CI.Integration.Core
         public const string package_json = "package.json";
         public const string Package_Review = Package + " " + Review;
         public const string Package_Search = Package + " " + Search;
-        public const string Maintenance = "Maintenance";
-        public const string Tasks = "Tasks";
-        public const string Maintenance_Tasks = Maintenance + " " + Tasks;
         public const string Packages = "Packages";
         public const string Path = "Path";
         public const string Presence = "Presence";
@@ -90,6 +91,7 @@ namespace Appalachia.CI.Integration.Core
         public const string Select = "Select";
         public const string src = "src";
         public const string Status = "Status";
+        public const string Tasks = "Tasks";
         public const string Test = "Test";
         public const string Test_Files = Test + " " + Files;
         public const string Type = "Type";
@@ -98,19 +100,5 @@ namespace Appalachia.CI.Integration.Core
         public const string version = "version";
         public const string Version = "Version";
         public const string Versions = "Versions";
-
-        public static class PREF
-        {
-            private const string PREFIX = Appalachia + "/";
-
-            public static class CI
-            {
-                private const string PREFIX = PREF.PREFIX + APPASTR.CI + "/";
-                
-                public const string Asset_Review = PREFIX + APPASTR.Asset_Review;
-                public const string Package_Review = PREFIX + APPASTR.Package_Review;
-                public const string Maintenance_Tasks = PREFIX + APPASTR.Maintenance_Tasks;
-            }
-        }
     }
 }

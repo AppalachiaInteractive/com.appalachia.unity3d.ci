@@ -5,8 +5,9 @@ using Unity.Profiling;
 namespace Appalachia.CI.Integration.Core
 {
     public static class IntegrationMetadataRegistry<T>
+        where T : IntegrationMetadata
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(IntegrationMetadataRegistry<T>) + ".";
         private static Action _finalizing;
@@ -22,7 +23,7 @@ namespace Appalachia.CI.Integration.Core
         private static readonly ProfilerMarker _PRF_Initialize = new(_PRF_PFX + nameof(Initialize));
         private static readonly ProfilerMarker _PRF_Finalize = new(_PRF_PFX + nameof(Finalize));
 
-#endregion
+        #endregion
 
         public static void Clear()
         {
@@ -106,6 +107,26 @@ namespace Appalachia.CI.Integration.Core
 
                     foreach (var meta in all)
                     {
+                        var message = meta.Name ?? meta.Id ?? meta.Path;
+                        
+                        if (meta.Name == null)
+                        {
+                            continue;
+                            throw new NotSupportedException($"{typeof(T).Name}: Missing Name | {message}");
+                        }
+                        
+                        if (meta.Id == null)
+                        {
+                            continue;
+                            throw new NotSupportedException($"{typeof(T).Name}: Missing Id | {message}");
+                        }
+                        
+                        if (meta.Path == null)
+                        {
+                            continue;
+                            throw new NotSupportedException($"{typeof(T).Name}: Missing Path | {message}");
+                        }
+
                         _all.Add(meta);
                     }
                 }

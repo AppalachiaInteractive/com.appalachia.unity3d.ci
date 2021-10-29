@@ -14,7 +14,7 @@ namespace Appalachia.CI.Integration.Rider
         private const string FOLDER_SKIP_END_FALSE = FOLDER_SKIP_ENTRYINDEX + FALSE + FOLDER_SKIP_BOOLEND;
 
         private const string FOLDER_SKIP_END_TRUE = FOLDER_SKIP_ENTRYINDEX + TRUE + FOLDER_SKIP_BOOLEND;
-
+        private const string ENTRYINDEXVALUE = "EntryIndexedValue";
         private const string FOLDER_SKIP_ENTRYINDEX = @"/@EntryIndexedValue"">";
 
         private const string FOLDER_SKIP_START =
@@ -177,6 +177,9 @@ namespace Appalachia.CI.Integration.Rider
                                            .Replace(FOLDER_SKIP_END_FALSE, string.Empty)
                                            .Trim();
 
+                    var entryValuesfirst = originalLine.IndexOf(ENTRYINDEXVALUE);
+                    var entryValuesLast = originalLine.LastIndexOf(ENTRYINDEXVALUE);
+
                     var encodingIssue = false;
 
                     foreach (var malformed in MALFORMATIONS)
@@ -189,6 +192,8 @@ namespace Appalachia.CI.Integration.Rider
                         encoded = encoded.Replace(malformed, string.Empty);
                     }
 
+                    encodingIssue = encodingIssue || (entryValuesfirst != entryValuesLast);
+                                    
                     var folder = Create(null, encoded);
 
                     folder.excluded = excluded;

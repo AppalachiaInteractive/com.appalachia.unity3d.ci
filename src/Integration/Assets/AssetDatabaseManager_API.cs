@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Core.Extensions;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.AssetImporters;
@@ -12,7 +15,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private static readonly ProfilerMarker _PRF_CanOpenForEdit = new(_PRF_PFX + nameof(CanOpenForEdit));
         private static readonly ProfilerMarker _PRF_IsOpenForEdit = new(_PRF_PFX + nameof(IsOpenForEdit));
@@ -242,7 +245,13 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_ForceToDesiredWorkerCount =
             new(_PRF_PFX + nameof(ForceToDesiredWorkerCount));
 
-#endregion
+        private static readonly ProfilerMarker _PRF_GetAllProjectPaths =
+            new(_PRF_PFX + nameof(GetAllProjectPaths));
+
+        private static readonly ProfilerMarker _PRF_ShiftCleanPathsLeft =
+            new(_PRF_PFX + nameof(ShiftCleanPathsLeft));
+
+        #endregion
 
         /// <summary>
         ///     <para>Changes during Refresh if anything has changed that can invalidate any artifact.</para>
@@ -796,7 +805,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ExportPackage.Auto())
             {
-                var relativePaths = paths.ToRelativePath();
+                var relativePaths = paths.ToRelativePaths();
                 AssetDatabase.ExportPackage(relativePaths, fileName);
             }
         }
@@ -812,7 +821,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ExportPackage.Auto())
             {
-                var relativePaths = paths.ToRelativePath();
+                var relativePaths = paths.ToRelativePaths();
                 AssetDatabase.ExportPackage(relativePaths, fileName, flags);
             }
         }
@@ -934,6 +943,28 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetAllAssetPaths.Auto())
             {
                 return AssetDatabase.GetAllAssetPaths();
+            }
+        }
+
+        public static string[] GetAllProjectPaths()
+        {
+            using (_PRF_GetAllProjectPaths.Auto())
+            {
+                var assets = GetAllAssetPaths();
+
+                var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
+
+                var files = AppaDirectory.GetFiles(packageLocation, "*.*", SearchOption.AllDirectories);
+
+                var cleanFiles = ShiftCleanPathsLeft(files, assets);
+
+                var assetsLength = assets.Length;
+
+                Array.Resize(ref assets, assetsLength + cleanFiles);
+
+                Array.Copy(files, 0, assets, assetsLength, cleanFiles);
+
+                return assets;
             }
         }
 
@@ -1278,7 +1309,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetDependencies.Auto())
             {
-                var relativePaths = paths.ToRelativePath();
+                var relativePaths = paths.ToRelativePaths();
                 return AssetDatabase.GetDependencies(relativePaths);
             }
         }
@@ -1303,7 +1334,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetDependencies.Auto())
             {
-                var relativePaths = paths.ToRelativePath();
+                var relativePaths = paths.ToRelativePaths();
                 return AssetDatabase.GetDependencies(relativePaths, recursive);
             }
         }
@@ -2476,6 +2507,31 @@ namespace Appalachia.CI.Integration.Assets
             {
                 var relativePath = path.ToRelativePath();
                 return AssetDatabase.WriteImportSettingsIfDirty(relativePath);
+            }
+        }
+
+        private static int ShiftCleanPathsLeft(string[] paths, string[] assets)
+        {
+            using (_PRF_ShiftCleanPathsLeft.Auto())
+            {
+                var assetsLookup = assets.ToHashSet();
+                
+                var destinationFileIndex = 0;
+
+                for (var sourceFileIndex = 0; sourceFileIndex < paths.Length; sourceFileIndex++)
+                {
+                    var file = paths[sourceFileIndex].ToRelativePath();
+
+                    if (file.Contains("~/") || assetsLookup.Contains(file))
+                    {
+                        continue;
+                    }
+
+                    paths[destinationFileIndex] = file;
+                    destinationFileIndex += 1;
+                }
+
+                return destinationFileIndex;
             }
         }
     }

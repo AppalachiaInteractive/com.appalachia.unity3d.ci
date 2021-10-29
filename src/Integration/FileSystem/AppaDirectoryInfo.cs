@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Utility.Logging;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.FileSystem
@@ -68,7 +69,15 @@ namespace Appalachia.CI.Integration.FileSystem
         /// </exception>
         public AppaDirectoryInfo(string path)
         {
-            _directoryInfo = new DirectoryInfo(path);
+            try
+            {
+                _directoryInfo = new DirectoryInfo(path);
+            }
+            catch
+            {
+                AppaLog.Error(nameof(AppaDirectoryInfo) + ": " + path);
+                throw;
+            }
         }
 
         /// <summary>Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> class on the directory.</summary>
@@ -120,7 +129,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
                 if (!parentPath.Contains(projectRoot))
                 {
-                    throw new NotSupportedException(parentPath);
+                    throw new NotSupportedException($"Didn't find project root for {_directoryInfo.Parent}");
                     return null;
                 }
 
@@ -798,12 +807,11 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_IsPathInAnySubdirectory.Auto())
             {
-                var cleanPath = path.CleanFullPath();
-                var lastIndex = cleanPath.LastIndexOf('/');
+                var lastIndex = path.LastIndexOf('/');
 
-                var subset = cleanPath.Substring(0, lastIndex).Trim('/');
+                var subset = path.Substring(0, lastIndex).Trim('/');
 
-                var contains = FullPath.Contains(subset);
+                var contains = subset.Contains(FullPath);
 
                 return contains;
             }
@@ -878,6 +886,14 @@ namespace Appalachia.CI.Integration.FileSystem
         public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
         {
             return o._directoryInfo;
+        }
+
+        public bool IsInRepositoryRoot()
+        {
+            var gitFolder = HasSiblingDirectory(".git", out _);
+            var packageJson = HasSiblingFile("package.json", out _);
+
+            return gitFolder || packageJson;
         }
     }
 }

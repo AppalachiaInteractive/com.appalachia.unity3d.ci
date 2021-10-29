@@ -13,17 +13,13 @@ namespace Appalachia.CI.Integration.Extensions
             Underscore
         }
 
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(StringExtensions) + ".";
-        private static Dictionary<string, string> _absoluteToRelativePathLookup;
-        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
         private static readonly ProfilerMarker _PRF_CleanFullPath = new(_PRF_PFX + nameof(CleanFullPath));
 
         private static readonly ProfilerMarker _PRF_ToAbsolutePath = new(_PRF_PFX + nameof(ToAbsolutePath));
-        private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePath));
-        private static Dictionary<char, string> _encodingReplacements;
-        private static Dictionary<EncodingPrefix, string> _encodingPrefixes;
+        private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePaths));
 
         private static readonly ProfilerMarker _PRF_SetupEncodingReplacements =
             new(_PRF_PFX + nameof(SetupEncodingReplacements));
@@ -31,19 +27,63 @@ namespace Appalachia.CI.Integration.Extensions
         private static readonly ProfilerMarker _PRF_EncodeUnicodePathToASCII =
             new(_PRF_PFX + nameof(EncodeUnicodePathToASCII));
 
-#endregion
+        private static readonly ProfilerMarker _PRF_CleanPackagePath =
+            new(_PRF_PFX + nameof(CleanPackagePath));
+
+        private static readonly ProfilerMarker _PRF_InitializePathLookups =
+            new(_PRF_PFX + nameof(InitializePathLookups));
+
+        private static Dictionary<char, string> _encodingReplacements;
+        private static Dictionary<EncodingPrefix, string> _encodingPrefixes;
+        private static Dictionary<string, string> _absoluteToRelativePathLookup;
+        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
+        private static readonly ProfilerMarker _PRF_ToRelativePaths = new(_PRF_PFX + nameof(ToRelativePaths));
+        private static char[] _trims = {' ', '.'};
+        private static string[] _keys = {"\\", "//", "\0", "\a", "\b", "\f", "\n", "\r", "\t", "\v"};
+        private static string[] _values = {"/", "/", "", "", "", "", "", "", "", ""};
+
+        private static readonly ProfilerMarker _PRF_CleanRelativePath =
+            new(_PRF_PFX + nameof(CleanRelativePath));
+
+        #endregion
 
         public static string CleanFullPath(this string path)
         {
             using (_PRF_CleanFullPath.Auto())
             {
-                return path.Replace("\\", "/")
-                           .Replace("//", "/")
-                           .Replace("//", "/")
-                           .Trim('/')
-                           .Trim(' ')
-                           .Trim('.')
-                           .Trim();
+                for (var i = 0; i < _keys.Length; i++)
+                {
+                    var key = _keys[i];
+                    var value = _values[i];
+                    
+                    path = path.Replace(key, value);
+                }
+
+                path = path.Trim(_trims);
+                return path;
+            }
+        }
+
+        public static string CleanRelativePath(this string path)
+        {
+            using (_PRF_CleanRelativePath.Auto())
+            {
+                if (path.Contains("Library/PackageCache") || path.Contains("Library\\PackageCache"))
+                {
+                    path = CleanPackagePath(path);
+                }
+                
+                for (var i = 0; i < _keys.Length; i++)
+                {
+                    var key = _keys[i];
+                    var value = _values[i];
+                    
+                    path = path.Replace(key, value);
+                }
+
+                path = path.Trim(_trims);
+                
+                return path;
             }
         }
 
@@ -96,11 +136,14 @@ namespace Appalachia.CI.Integration.Extensions
                 var firstSubfolder = cleanRelativePath.IndexOf('/');
                 var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
 
-                var absolutePath =
-                    AppaPath.Combine(basePath, relativePathSubstring).Trim('.', '/', '\\', ' ');
+                var absolutePath = AppaPath.Combine(basePath, relativePathSubstring);
 
-                _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
                 _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
+
+                if (!_absoluteToRelativePathLookup.ContainsKey(absolutePath))
+                {
+                    _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
+                }
 
                 return absolutePath;
             }
@@ -121,40 +164,81 @@ namespace Appalachia.CI.Integration.Extensions
 
                 var basePath = ProjectLocations.GetProjectDirectoryPath();
 
-                var relativePath =
-                    cleanAbsolutePath.Replace(basePath, string.Empty).Trim('.', '/', '\\', ' ');
+                var trimmedPath = cleanAbsolutePath.Replace(basePath, string.Empty);
+                var relativePath = trimmedPath.CleanRelativePath();
 
                 _absoluteToRelativePathLookup.Add(absolutePath, relativePath);
-                _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
+
+                if (!_relativeToAbsolutePathLookup.ContainsKey(relativePath))
+                {
+                    _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
+                }
 
                 return relativePath;
             }
         }
 
-        public static string[] ToRelativePath(this string[] paths)
+        public static string[] ToRelativePaths(this string[] paths)
         {
-            var results = new string[paths.Length];
-
-            for (var index = 0; index < paths.Length; index++)
+            using (_PRF_ToRelativePaths.Auto())
             {
-                var path = paths[index];
+                var results = new string[paths.Length];
 
-                results[index] = path.ToRelativePath();
+                for (var index = 0; index < paths.Length; index++)
+                {
+                    var path = paths[index];
+
+                    results[index] = path.ToRelativePath();
+                }
+
+                return results;
             }
+        }
 
-            return results;
+        private static string CleanPackagePath(string path)
+        {
+            using (_PRF_CleanPackagePath.Auto())
+            {
+                path = path.Replace("Library/PackageCache", "Packages");
+
+                var indexOfAt = path.IndexOf('@');
+
+                if (indexOfAt <= 0)
+                {
+                    return path;
+                }
+
+                var start = path.Substring(0, indexOfAt);
+                var end = path.Substring(indexOfAt + 1);
+
+                var nextFolderStart = end.IndexOf('/');
+
+                if (nextFolderStart == -1)
+                {
+                    return start;
+                }
+
+                end = end.Substring(nextFolderStart + 1);
+
+                var final = AppaPath.Combine(start, end);
+
+                return final;
+            }
         }
 
         private static void InitializePathLookups()
         {
-            if (_relativeToAbsolutePathLookup == null)
+            using (_PRF_InitializePathLookups.Auto())
             {
-                _relativeToAbsolutePathLookup = new Dictionary<string, string>();
-            }
+                if (_relativeToAbsolutePathLookup == null)
+                {
+                    _relativeToAbsolutePathLookup = new Dictionary<string, string>();
+                }
 
-            if (_absoluteToRelativePathLookup == null)
-            {
-                _absoluteToRelativePathLookup = new Dictionary<string, string>();
+                if (_absoluteToRelativePathLookup == null)
+                {
+                    _absoluteToRelativePathLookup = new Dictionary<string, string>();
+                }
             }
         }
 

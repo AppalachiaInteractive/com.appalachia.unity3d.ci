@@ -81,6 +81,7 @@ namespace Appalachia.CI.Integration.Packages
         public PackageInfo packageInfo;
         public RepositoryMetadata repository;
 
+        public override string Id => packageInfo.name;
         public override string Name => packageInfo.name;
         public override string Path => packageInfo.assetPath;
 

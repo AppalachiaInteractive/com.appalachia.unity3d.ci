@@ -174,7 +174,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             }
         }
 
-        [MenuItem("Packages/Upgrade Packages", false, 23)]
+        [UnityEditor.MenuItem(PKG.Menu.Appalachia.Tools.Base + "Upgrade Packages", false, 23)]
         internal static void ManageRegistries()
         {
             GetWindow<UpgradePackagesView>(true, "Upgrade packages", true);

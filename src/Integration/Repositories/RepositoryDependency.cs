@@ -6,12 +6,12 @@ namespace Appalachia.CI.Integration.Repositories
     [Serializable]
     public class RepositoryDependency
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(RepositoryDependency) + ".";
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
 
-#endregion
+        #endregion
 
         public RepositoryDependency(RepositoryMetadata repository)
         {
@@ -35,15 +35,19 @@ namespace Appalachia.CI.Integration.Repositories
 
         public string name;
         public string version;
-
-        public bool HasIssue => !IsValid || IsMissing || IsOutOfDate;
-        public bool IsMissing => !IsValid || (name != repository.PackageName);
+        private bool _isMissing;
+        public bool IsMissing => _isMissing || !IsValid || (name != repository.PackageName);
         public bool IsOutOfDate => !IsValid || (version != repository.PackageVersion);
 
         public bool IsValid => repository != null;
 
         public string Name => repository?.PackageName ?? name;
         public string Version => version;
+
+        public void SetMissing()
+        {
+            _isMissing = true;
+        }
 
         public override string ToString()
         {
@@ -52,6 +56,5 @@ namespace Appalachia.CI.Integration.Repositories
                 return $"{Name} : {Version}";
             }
         }
-        
     }
 }
