@@ -90,7 +90,8 @@ namespace Appalachia.CI.Integration.Paths
 
         public void CreateDirectoryStructure()
         {
-            AssetDatabaseManager.CreateFolder(relativePath);
+            var directory = AppaDirectory.GetParent(relativePath);
+            AssetDatabaseManager.CreateFolder(directory.RelativePath, true);
             doesExist = true;
         }
 

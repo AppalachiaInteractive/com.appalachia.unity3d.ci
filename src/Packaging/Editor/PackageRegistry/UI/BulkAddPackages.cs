@@ -106,7 +106,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.UI
             EditorGUILayout.EndHorizontal();
         }
 
-        [UnityEditor.MenuItem(PKG.Menu.Appalachia.Tools.Base + "Add packages (bulk)", false, 22)]
+        [UnityEditor.MenuItem(PKG.Menu.Appalachia.Tools.Base + "Add packages (bulk)", priority = PKG.Priority + 22)]
         internal static void ManageRegistries()
         {
             GetWindow<BulkAddPackages>(true, "Add packages", true);

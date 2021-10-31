@@ -660,7 +660,8 @@ namespace Appalachia.CI.Integration.Assets
             {
                 var relativePath = path.ToRelativePath();
                 var directory = AppaPath.GetDirectoryName(relativePath);
-                CreateFolder(directory);
+                
+                CreateFolder(directory, true);
 
                 AssetDatabase.CreateAsset(asset, relativePath);
             }
@@ -679,7 +680,7 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>The GUID of the newly created folder, if the folder was created successfully. Otherwise returns an empty string.</para>
         /// </returns>
-        public static string CreateFolder(
+        public static void CreateFolder(
             string parentFolder,
             string newFolderName,
             bool createStructure = true)
@@ -703,19 +704,20 @@ namespace Appalachia.CI.Integration.Assets
 
                 if (AppaDirectory.Exists(completeFolder))
                 {
-                    return string.Empty;
+                    return;
                 }
 
                 if (AssetDatabase.IsValidFolder(completeFolder))
                 {
-                    return string.Empty;
+                    return;
                 }
 
-                return AssetDatabase.CreateFolder(parentFolder, newFolderName);
+                AppaDirectory.CreateDirectory(completeFolder);
+                AssetDatabase.ImportAsset(completeFolder);
             }
         }
 
-        public static string CreateFolder(string folderPath, bool createStructure = true)
+        public static void CreateFolder(string folderPath, bool createStructure)
         {
             folderPath = folderPath.CleanFullPath();
 
@@ -725,7 +727,7 @@ namespace Appalachia.CI.Integration.Assets
 
             var basePath = folderPath.Replace(lastPart, string.Empty);
 
-            return CreateFolder(basePath, lastPart, createStructure);
+            CreateFolder(basePath, lastPart, createStructure);
         }
 
         /// <summary>

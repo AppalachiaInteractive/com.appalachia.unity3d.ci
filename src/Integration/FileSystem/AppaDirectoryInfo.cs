@@ -130,7 +130,6 @@ namespace Appalachia.CI.Integration.FileSystem
                 if (!parentPath.Contains(projectRoot))
                 {
                     throw new NotSupportedException($"Didn't find project root for {_directoryInfo.Parent}");
-                    return null;
                 }
 
                 return parent;

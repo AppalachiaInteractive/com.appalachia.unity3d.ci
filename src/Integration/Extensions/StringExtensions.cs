@@ -47,6 +47,35 @@ namespace Appalachia.CI.Integration.Extensions
 
         #endregion
 
+
+        private static string[] _packagePaths;
+        
+        public static bool IsPackagePath(this string path)
+        {
+            if (_packagePaths == null)
+            {
+                _packagePaths = new[]
+                {
+                    "Packages/",
+                    "Packages\\",
+                    "Library/PackageCache",
+                    "Library\\PackageCache",
+                };
+            }
+
+            for (var i = 0; i < _packagePaths.Length; i++)
+            {
+                var packagePath = _packagePaths[i];
+
+                if (path.Contains(packagePath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
         public static string CleanFullPath(this string path)
         {
             using (_PRF_CleanFullPath.Auto())
@@ -60,6 +89,12 @@ namespace Appalachia.CI.Integration.Extensions
                 }
 
                 path = path.Trim(_trims);
+
+                if (path.StartsWith('/'))
+                {
+                    path = path.Substring(1);
+                }
+                
                 return path;
             }
         }
@@ -82,6 +117,11 @@ namespace Appalachia.CI.Integration.Extensions
                 }
 
                 path = path.Trim(_trims);
+
+                if (path.StartsWith('/'))
+                {
+                    path = path.Substring(1);
+                }
                 
                 return path;
             }

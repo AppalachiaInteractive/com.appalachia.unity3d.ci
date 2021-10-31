@@ -21,7 +21,7 @@ namespace Appalachia.CI.Integration.Core
         private static readonly ProfilerMarker _PRF_Refresh = new(_PRF_PFX + nameof(Refresh));
         private static readonly ProfilerMarker _PRF_Register = new(_PRF_PFX + nameof(Register));
         private static readonly ProfilerMarker _PRF_Initialize = new(_PRF_PFX + nameof(Initialize));
-        private static readonly ProfilerMarker _PRF_Finalize = new(_PRF_PFX + nameof(Finalize));
+        private static readonly ProfilerMarker _PRF_Finalize = new(_PRF_PFX + nameof(OnFinalize));
 
         #endregion
 
@@ -71,11 +71,11 @@ namespace Appalachia.CI.Integration.Core
                 _processing = processing;
                 _finalizing = finalizing;
 
-                IntegrationMetadataRegisterExecutor.Register(priority, Initialize, Finalize);
+                IntegrationMetadataRegisterExecutor.Register(priority, Initialize, OnFinalize);
             }
         }
 
-        private static void Finalize()
+        private static void OnFinalize()
         {
             using (_PRF_Finalize.Auto())
             {
