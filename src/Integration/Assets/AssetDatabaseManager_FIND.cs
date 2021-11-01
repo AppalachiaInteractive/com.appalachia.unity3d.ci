@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
@@ -38,11 +37,141 @@ namespace Appalachia.CI.Integration.Assets
 
         #endregion
 
+        private static char[] _extensionTrims;
+
         private static Dictionary<string, List<string>> _assetPathsByExtension;
         private static Dictionary<string, List<string>> _projectPathsByExtension;
         private static string[] _allAssetPaths;
         private static string[] _allProjectPaths;
-        
+        private static StringCleanerWithContext<char[]> _extensionCleaner;
+
+        public static List<Object> FindAssets(Type t, string searchString = null)
+        {
+            using (_PRF_FindAssets.Auto())
+            {
+                var paths = FindAssetPaths(t, searchString);
+                var results = new List<Object>(paths.Length);
+
+                for (var i = 0; i < paths.Length; i++)
+                {
+                    var path = paths[i];
+
+                    var type = GetMainAssetTypeAtPath(path);
+
+                    if (t.IsAssignableFrom(type))
+                    {
+                        var cast = LoadAssetAtPath(path, t);
+                        results.Add(cast);
+                    }
+                }
+
+                return results;
+            }
+        }
+
+        public static List<string> FindAssetPathsByExtension(string extension)
+        {
+            using (_PRF_FindAssetPathsByExtension.Auto())
+            {
+                InitializeAssetPathData();
+
+                var cleanExtension = extension.CleanExtension();
+
+                if (_assetPathsByExtension.ContainsKey(cleanExtension))
+                {
+                    return _assetPathsByExtension[cleanExtension];
+                }
+
+                return null;
+            }
+        }
+
+        public static List<string> FindAssetPathsByFileName(string name)
+        {
+            using (_PRF_FindAssetPathsByFileName.Auto())
+            {
+                InitializeAssetPathData();
+
+                var output = new List<string>();
+
+                foreach (var path in _allAssetPaths)
+                {
+                    if (name == AppaPath.GetFileName(path))
+                    {
+                        output.Add(path);
+                    }
+                }
+
+                return output;
+            }
+        }
+
+        public static List<string> FindAssetPathsBySubstring(string substring)
+        {
+            using (_PRF_FindAssetPathsBySubstring.Auto())
+            {
+                InitializeAssetPathData();
+
+                var output = new List<string>();
+
+                foreach (var path in _allAssetPaths)
+                {
+                    if (path.Contains(substring))
+                    {
+                        output.Add(path);
+                    }
+                }
+
+                return output;
+            }
+        }
+
+        public static List<string> FindProjectPathsByExtension(string extension)
+        {
+            using (_PRF_FindProjectPathsByExtension.Auto())
+            {
+                InitializeAssetPathData();
+
+                var cleanExtension = extension.CleanExtension();
+
+                if (_projectPathsByExtension.ContainsKey(cleanExtension))
+                {
+                    return _projectPathsByExtension[cleanExtension];
+                }
+
+                return null;
+            }
+        }
+
+        public static List<T> FindAssets<T>(string searchString = null)
+            where T : Object
+        {
+            using (_PRF_FindAssets.Auto())
+            {
+                InitializeAssetPathData();
+
+                var t = typeof(T);
+
+                var paths = FindAssetPaths<T>(searchString);
+                var results = new List<T>(paths.Length);
+
+                for (var i = 0; i < paths.Length; i++)
+                {
+                    var path = paths[i];
+
+                    var type = GetMainAssetTypeAtPath(path);
+
+                    if (t.IsAssignableFrom(type))
+                    {
+                        var cast = LoadAssetAtPath<T>(path);
+                        results.Add(cast);
+                    }
+                }
+
+                return results;
+            }
+        }
+
         public static string[] FindAssetGuids<T>(string searchString = null)
             where T : Object
         {
@@ -107,136 +236,6 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPathsByExtension(string extension)
-        {
-            using (_PRF_FindAssetPathsByExtension.Auto())
-            {
-                InitializeAssetPathData();
-
-                var cleanExtension = extension.CleanExtension();
-
-                if (_assetPathsByExtension.ContainsKey(cleanExtension))
-                {
-                    return _assetPathsByExtension[cleanExtension];
-                }
-
-                return null;
-            }
-        }
-
-        public static List<string> FindAssetPathsByFileName(string name)
-        {
-            using (_PRF_FindAssetPathsByFileName.Auto())
-            {
-                InitializeAssetPathData();
-
-                var output = new List<string>();
-
-                foreach (var path in _allAssetPaths)
-                {
-                    if (name == AppaPath.GetFileName(path))
-                    {
-                        output.Add(path);
-                    }
-                }
-
-                return output;
-            }
-        }
-
-        public static List<string> FindAssetPathsBySubstring(string substring)
-        {
-            using (_PRF_FindAssetPathsBySubstring.Auto())
-            {
-                InitializeAssetPathData();
-
-                var output = new List<string>();
-
-                foreach (var path in _allAssetPaths)
-                {
-                    if (path.Contains(substring))
-                    {
-                        output.Add(path);
-                    }
-                }
-
-                return output;
-            }
-        }
-
-        public static List<Object> FindAssets(Type t, string searchString = null)
-        {
-            using (_PRF_FindAssets.Auto())
-            {
-                var paths = FindAssetPaths(t, searchString);
-                var results = new List<Object>(paths.Length);
-
-                for (var i = 0; i < paths.Length; i++)
-                {
-                    var path = paths[i];
-
-                    var type = GetMainAssetTypeAtPath(path);
-
-                    if (t.IsAssignableFrom(type))
-                    {
-                        var cast = LoadAssetAtPath(path, t);
-                        results.Add(cast);
-                    }
-                }
-
-                return results;
-            }
-        }
-
-        public static List<T> FindAssets<T>(string searchString = null)
-            where T : Object
-        {
-            using (_PRF_FindAssets.Auto())
-            {
-                InitializeAssetPathData();
-
-                var t = typeof(T);
-
-                var paths = FindAssetPaths<T>(searchString);
-                var results = new List<T>(paths.Length);
-
-                for (var i = 0; i < paths.Length; i++)
-                {
-                    var path = paths[i];
-
-                    var type = GetMainAssetTypeAtPath(path);
-
-                    if (t.IsAssignableFrom(type))
-                    {
-                        var cast = LoadAssetAtPath<T>(path);
-                        results.Add(cast);
-                    }
-                }
-
-                return results;
-            }
-        }
-
-        public static List<string> FindProjectPathsByExtension(string extension)
-        {
-            using (_PRF_FindProjectPathsByExtension.Auto())
-            {
-                InitializeAssetPathData();
-
-                var cleanExtension = extension.CleanExtension();
-
-                if (_projectPathsByExtension.ContainsKey(cleanExtension))
-                {
-                    return _projectPathsByExtension[cleanExtension];
-                }
-
-                return null;
-            }
-        }
-
-        private static char[] _extensionTrims;
-        private static StringCleanerWithContext<char[]> _extensionCleaner;
-        
         private static string CleanExtension(this string extension)
         {
             using (_PRF_CleanExtension.Auto())
@@ -281,7 +280,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     _assetPathsByExtension = null;
                 }
-                
+
                 if ((_allProjectPaths == null) || (_allProjectPaths.Length == 0))
                 {
                     _allProjectPaths = GetAllProjectPaths();

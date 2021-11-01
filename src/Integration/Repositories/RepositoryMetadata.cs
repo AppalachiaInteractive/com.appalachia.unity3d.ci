@@ -8,6 +8,7 @@ using Appalachia.CI.Integration.Core;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Packages.NpmModel;
+using Appalachia.Utility.Extensions;
 using Unity.Profiling;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -72,7 +73,17 @@ namespace Appalachia.CI.Integration.Repositories
 
         private string _packageVersion;
 
+        private string _publishedVersion;
+
         private string _repoName;
+
+        private PublishStatus _publishStatus;
+
+        public PublishStatus publishStatus
+        {
+            get => _publishStatus;
+            set => _publishStatus = value;
+        }
 
         public override string Id => Name;
         public override string Name => PackageName ?? RepoName;
@@ -130,6 +141,27 @@ namespace Appalachia.CI.Integration.Repositories
                 }
 
                 return _packageVersion;
+            }
+        }
+
+        public string PublishedVersion
+        {
+            get
+            {
+                if (_publishedVersion == null)
+                {
+                    var result = new SystemShell.Result();
+
+                    SystemShell.Execute("npm v | grep latest", this, result, synchronous: true).Complete();
+
+                    var lastPartIndex = result.output.LastIndexOf(":", StringComparison.Ordinal);
+
+                    var substring = result.output.Substring(lastPartIndex);
+                    
+                    _publishedVersion = substring.Trim();
+                }
+
+                return _publishedVersion;
             }
         }
 
@@ -262,6 +294,180 @@ namespace Appalachia.CI.Integration.Repositories
             set => _srcDirectory = value;
         }
 
+        public static bool operator ==(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return Comparer<RepositoryMetadata>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return Comparer<RepositoryMetadata>.Default.Compare(left, right) >= 0;
+        }
+
+        public static bool operator !=(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return Comparer<RepositoryMetadata>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(RepositoryMetadata left, RepositoryMetadata right)
+        {
+            return Comparer<RepositoryMetadata>.Default.Compare(left, right) <= 0;
+        }
+
+        public static RepositoryMetadata Empty()
+        {
+            return new();
+        }
+
+        private static IEnumerable<RepositoryMetadata> FindAllInternal()
+        {
+            using (_PRF_FindAllInternal.Auto())
+            {
+                var packageJsons = AssetDatabaseManager.FindAssetPathsByFileName("package.json");
+
+                foreach (var packageJson in packageJsons)
+                {
+                    var directoryPath = AppaPath.GetDirectoryName(packageJson);
+                    var directory = new AppaDirectoryInfo(directoryPath);
+
+                    var instance = new RepositoryMetadata();
+
+                    instance.InitializeInternal(directory);
+
+                    yield return instance;
+                }
+            }
+        }
+
+        private static void FinalizeInternal()
+        {
+            using (_PRF_FinalizeInternal.Auto())
+            {
+                var assemblies = AssemblyDefinitionMetadata.Instances;
+
+                foreach (var assembly in assemblies)
+                {
+                    assembly.repository.assemblies.Add(assembly);
+                }
+            }
+        }
+
+        public override bool Equals(RepositoryMetadata other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(directory?.FullPath,    other.directory?.FullPath) &&
+                   Equals(GitDirectory?.FullPath, other.GitDirectory?.FullPath) &&
+                   Equals(SrcDirectory?.FullPath, other.SrcDirectory?.FullPath);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((RepositoryMetadata) obj);
+        }
+
+        public override int CompareTo(RepositoryMetadata other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other))
+            {
+                return 1;
+            }
+
+            var packageNameComparison = string.Compare(
+                _packageName,
+                other._packageName,
+                StringComparison.Ordinal
+            );
+            if (packageNameComparison != 0)
+            {
+                return packageNameComparison;
+            }
+
+            return string.Compare(_packageVersion, other._packageVersion, StringComparison.Ordinal);
+        }
+
+        public override int CompareTo(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return 1;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return 0;
+            }
+
+            return obj is RepositoryMetadata other
+                ? CompareTo(other)
+                : throw new ArgumentException($"Object must be of type {nameof(RepositoryMetadata)}");
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = directory != null ? directory.FullPath.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^
+                           (GitDirectory != null ? GitDirectory.FullPath.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^
+                           (SrcDirectory != null ? SrcDirectory.FullPath.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+
+        public override string ToString()
+        {
+            if (!HasPackage)
+            {
+                return directory.RelativePath;
+            }
+
+            return $"{directory.RelativePath}: {PackageVersion}";
+        }
+
+        public override void InitializeForAnalysis()
+        {
+        }
+
         public void PopulateDependencies()
         {
             if (dependencies == null)
@@ -318,112 +524,6 @@ namespace Appalachia.CI.Integration.Repositories
             }
         }
 
-        public override int CompareTo(RepositoryMetadata other)
-        {
-            if (ReferenceEquals(this, other))
-            {
-                return 0;
-            }
-
-            if (ReferenceEquals(null, other))
-            {
-                return 1;
-            }
-
-            var packageNameComparison = string.Compare(
-                _packageName,
-                other._packageName,
-                StringComparison.Ordinal
-            );
-            if (packageNameComparison != 0)
-            {
-                return packageNameComparison;
-            }
-
-            return string.Compare(_packageVersion, other._packageVersion, StringComparison.Ordinal);
-        }
-
-        public override int CompareTo(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return 1;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return 0;
-            }
-
-            return obj is RepositoryMetadata other
-                ? CompareTo(other)
-                : throw new ArgumentException($"Object must be of type {nameof(RepositoryMetadata)}");
-        }
-
-        public override bool Equals(RepositoryMetadata other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return Equals(directory?.FullPath,    other.directory?.FullPath) &&
-                   Equals(GitDirectory?.FullPath, other.GitDirectory?.FullPath) &&
-                   Equals(SrcDirectory?.FullPath, other.SrcDirectory?.FullPath);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((RepositoryMetadata) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = directory != null ? directory.FullPath.GetHashCode() : 0;
-                hashCode = (hashCode * 397) ^
-                           (GitDirectory != null ? GitDirectory.FullPath.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^
-                           (SrcDirectory != null ? SrcDirectory.FullPath.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-
-        public override void InitializeForAnalysis()
-        {
-        }
-
-        public override string ToString()
-        {
-            if (!HasPackage)
-            {
-                return directory.RelativePath;
-            }
-
-            return $"{directory.RelativePath}: {PackageVersion}";
-        }
-
         protected override IEnumerable<string> GetIds()
         {
             yield return PackageName;
@@ -455,77 +555,9 @@ namespace Appalachia.CI.Integration.Repositories
                         throw;
                     }
                 }
-                
+
                 PopulateDependencies();
             }
-        }
-
-        public static RepositoryMetadata Empty()
-        {
-            return new();
-        }
-
-        private static void FinalizeInternal()
-        {
-            using (_PRF_FinalizeInternal.Auto())
-            {
-                var assemblies = AssemblyDefinitionMetadata.Instances;
-
-                foreach (var assembly in assemblies)
-                {
-                    assembly.repository.assemblies.Add(assembly);
-                }
-            }
-        }
-
-        private static IEnumerable<RepositoryMetadata> FindAllInternal()
-        {
-            using (_PRF_FindAllInternal.Auto())
-            {
-                var packageJsons = AssetDatabaseManager.FindAssetPathsByFileName("package.json");
-
-                foreach (var packageJson in packageJsons)
-                {
-                    var directoryPath = AppaPath.GetDirectoryName(packageJson);
-                    var directory = new AppaDirectoryInfo(directoryPath);
-
-                    var instance = new RepositoryMetadata();
-
-                    instance.InitializeInternal(directory);
-
-                    yield return instance;
-                }
-            }
-        }
-
-        public static bool operator ==(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator >(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return Comparer<RepositoryMetadata>.Default.Compare(left, right) > 0;
-        }
-
-        public static bool operator >=(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return Comparer<RepositoryMetadata>.Default.Compare(left, right) >= 0;
-        }
-
-        public static bool operator !=(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator <(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return Comparer<RepositoryMetadata>.Default.Compare(left, right) < 0;
-        }
-
-        public static bool operator <=(RepositoryMetadata left, RepositoryMetadata right)
-        {
-            return Comparer<RepositoryMetadata>.Default.Compare(left, right) <= 0;
         }
     }
 }

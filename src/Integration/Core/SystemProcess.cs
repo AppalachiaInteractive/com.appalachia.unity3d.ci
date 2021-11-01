@@ -3,8 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using Appalachia.CI.Integration.Extensions;
-using Appalachia.CI.Integration.FileSystem;
-using Debug = UnityEngine.Debug;
+using Appalachia.CI.Integration.Repositories;
 
 namespace Appalachia.CI.Integration.Core
 {
@@ -12,50 +11,60 @@ namespace Appalachia.CI.Integration.Core
     {
         public static IEnumerator Execute(
             string command,
+            RepositoryMetadata repository,
+            Result result = null,
+            DataReceivedEventHandler standardOutHandler = null,
+            DataReceivedEventHandler standardErrorHandler = null,
+            bool synchronous = false)
+        {
+            return Execute(
+                command,
+                repository.Path,
+                result,
+                standardOutHandler,
+                standardErrorHandler,
+                synchronous
+            );
+        }
+
+        public static IEnumerator Execute(
+            string command,
             string workingDir,
             Result result = null,
             DataReceivedEventHandler standardOutHandler = null,
-            DataReceivedEventHandler standardErrorHandler = null)
+            DataReceivedEventHandler standardErrorHandler = null,
+            bool synchronous = false)
         {
             var outBuilder = new StringBuilder();
             var errorBuilder = new StringBuilder();
 
-            var bashFile = @"C:\Program Files\Git\git-bash.exe";
-            var bashFile2 = @"C:\Program Files\Git\git-bash.2.exe";
-            var bashFile3 = @"C:\Program Files\Git\bin\bash.exe";
-
-            if (!AppaFile.Exists(bashFile2))
-            {
-                AppaFile.Copy(bashFile, bashFile2);
-            }
+            var bash = @"C:\Program Files\Git\bin\bash.exe";
 
             var linuxWorkingDirectory = workingDir.ToAbsolutePath().WindowsToLinuxPath();
-            
+
             Environment.SetEnvironmentVariable("APPA_FAST",        "1");
             Environment.SetEnvironmentVariable("APPA_PWD",         linuxWorkingDirectory);
             Environment.SetEnvironmentVariable("APPA_LOAD_BASHRC", "1");
 
-            
-            var processStartInfo = new ProcessStartInfo(bashFile3, "-c \" " + command + " \"")
+            var processStartInfo = new ProcessStartInfo(bash, "-c \" " + command + " \"")
             {
                 WorkingDirectory = workingDir,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                //RedirectStandardInput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
             };
 
             var process = new Process {StartInfo = processStartInfo, EnableRaisingEvents = true};
-            
+
             process.OutputDataReceived += (sender, args) =>
             {
                 if (args.Data == null)
                 {
                     return;
                 }
-                
+
                 outBuilder.AppendLine(args.Data);
                 standardOutHandler?.Invoke(sender, args);
             };
@@ -66,7 +75,7 @@ namespace Appalachia.CI.Integration.Core
                 {
                     return;
                 }
-                
+
                 errorBuilder.AppendLine(args.Data);
                 standardErrorHandler?.Invoke(sender, args);
             };
@@ -75,10 +84,17 @@ namespace Appalachia.CI.Integration.Core
 
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            
-            while (!process.HasExited)
+
+            if (synchronous)
             {
-                yield return null;
+                process.WaitForExit();
+            }
+            else
+            {
+                while (!process.HasExited)
+                {
+                    yield return null;
+                }
             }
 
             if (result != null)

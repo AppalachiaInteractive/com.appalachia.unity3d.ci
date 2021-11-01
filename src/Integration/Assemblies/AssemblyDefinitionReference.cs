@@ -10,13 +10,13 @@ namespace Appalachia.CI.Integration.Assemblies
                                                IComparable,
                                                IEquatable<AssemblyDefinitionReference>
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AssemblyDefinitionReference) + ".";
 
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
 
-#endregion
+        #endregion
 
         public AssemblyDefinitionReference(string guid)
         {
@@ -38,22 +38,18 @@ namespace Appalachia.CI.Integration.Assemblies
         public AssemblyDefinitionMetadata assembly;
 
         public string guid;
-        private bool _isDuplicated;
         private bool _hasReferenceLevelIssue;
         private bool _hasSortingIssue;
-
-        public string DisplayName => assembly?.Name ?? guid;
+        private bool _isDuplicated;
         public Color IssueColor { get; set; }
 
         public bool HasIssue => IsDuplicated || HasReferenceLevelIssue || HasSortingIssue;
 
         public bool IsGuidReference => guid.StartsWith(AssemblyDefinitionModel.GUID_PREFIX);
 
-        public bool IsDuplicated
-        {
-            get => _isDuplicated;
-            set => _isDuplicated = value;
-        }
+        public bool IsValid => assembly != null;
+
+        public string DisplayName => assembly?.Name ?? guid;
 
         public bool HasReferenceLevelIssue
         {
@@ -67,9 +63,73 @@ namespace Appalachia.CI.Integration.Assemblies
             set => _hasSortingIssue = value;
         }
 
-        public bool IsValid
+        public bool IsDuplicated
         {
-            get => assembly != null;
+            get => _isDuplicated;
+            set => _isDuplicated = value;
+        }
+
+        public static bool operator ==(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) >= 0;
+        }
+
+        public static bool operator !=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        {
+            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) <= 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((AssemblyDefinitionReference) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return guid != null ? guid.GetHashCode() : 0;
+        }
+
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return assembly?.AssemblyCurrent ?? guid;
+            }
         }
 
         public int CompareTo(object obj)
@@ -119,69 +179,6 @@ namespace Appalachia.CI.Integration.Assemblies
             }
 
             return guid == other.guid;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((AssemblyDefinitionReference) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return guid != null ? guid.GetHashCode() : 0;
-        }
-
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
-            {
-                return assembly?.AssemblyCurrent ?? guid;
-            }
-        }
-
-        public static bool operator ==(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator >(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) > 0;
-        }
-
-        public static bool operator >=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) >= 0;
-        }
-
-        public static bool operator !=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator <(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) < 0;
-        }
-
-        public static bool operator <=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
-        {
-            return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) <= 0;
         }
     }
 }

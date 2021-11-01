@@ -74,6 +74,202 @@ namespace Appalachia.CI.Integration.Assemblies
         public string DotSettingsPath => $"{csProjPath}.dotSettings";
         public string FilenameIdeal => AssemblyCurrent + ".asmdef";
 
+        public static AssemblyDefinitionMetadata CreateNew(string path)
+        {
+            if (InstancesByPath.ContainsKey(path))
+            {
+                return InstancesByPath[path];
+            }
+
+            var newInstance = new AssemblyDefinitionMetadata();
+
+            newInstance.Initialize(path);
+
+            return newInstance;
+        }
+
+        public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) >= 0;
+        }
+
+        public static bool operator !=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        {
+            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) <= 0;
+        }
+
+        private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
+        {
+            var asmdefs = AssetDatabaseManager.FindProjectPathsByExtension(".asmdef");
+
+            foreach (var asmdef in asmdefs)
+            {
+                yield return CreateNew(asmdef);
+            }
+        }
+
+        private static void FinalizeInternal()
+        {
+            using (_PRF_FinalizeInternal.Auto())
+            {
+                foreach (var instance in Instances)
+                {
+                    if (instance.repository == null)
+                    {
+                        instance.repository = RepositoryMetadata.FindByName(instance.Name);
+                        instance.SetReferences();
+                    }
+                }
+            }
+        }
+
+        public override bool Equals(AssemblyDefinitionMetadata other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return AssemblyCurrent == other.AssemblyCurrent;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((AssemblyDefinitionMetadata) obj);
+        }
+
+        public override int CompareTo(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return 1;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return 0;
+            }
+
+            return obj is AssemblyDefinitionMetadata other
+                ? CompareTo(other)
+                : throw new ArgumentException($"Object must be of type {nameof(AssemblyDefinitionMetadata)}");
+        }
+
+        public override int CompareTo(AssemblyDefinitionMetadata other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other))
+            {
+                return 1;
+            }
+
+            void GetMatches(string name, out bool isAppalachiaMatch, out bool isUnityMatch)
+            {
+                isAppalachiaMatch = name.StartsWith("Appalachia");
+                isUnityMatch = name.StartsWith("Unity") ||
+                               name.StartsWith("com.unity") ||
+                               name.StartsWith("TextMeshPro") ||
+                               name.StartsWith("Cinemachine");
+            }
+
+            GetMatches(AssemblyCurrent,       out var appalachiaMatch,      out var unityMatch);
+            GetMatches(other.AssemblyCurrent, out var otherAppalachiaMatch, out var otherUnityMatch);
+
+            if (appalachiaMatch && !otherAppalachiaMatch)
+            {
+                return -1;
+            }
+
+            if (!appalachiaMatch && otherAppalachiaMatch)
+            {
+                return 1;
+            }
+
+            if (unityMatch && !otherUnityMatch)
+            {
+                return -1;
+            }
+
+            if (!unityMatch && otherUnityMatch)
+            {
+                return 1;
+            }
+
+            var assemblyCurrentComparison = string.Compare(
+                AssemblyCurrent,
+                other.AssemblyCurrent,
+                StringComparison.Ordinal
+            );
+            if (assemblyCurrentComparison != 0)
+            {
+                return assemblyCurrentComparison;
+            }
+
+            return string.Compare(Path, other.Path, StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return AssemblyCurrent != null ? AssemblyCurrent.GetHashCode() : 0;
+        }
+
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return AssemblyCurrent;
+            }
+        }
+
+        public override void InitializeForAnalysis()
+        {
+            SetReferences();
+        }
+
         public int GetAssemblyReferenceLevel()
         {
             var name = AssemblyCurrent;
@@ -120,7 +316,7 @@ namespace Appalachia.CI.Integration.Assemblies
                     result += 1;
                     return result;
                 }
-                
+
                 if (name.StartsWith("Appalachia.CI.Integration"))
                 {
                     result += 2;
@@ -266,7 +462,7 @@ namespace Appalachia.CI.Integration.Assemblies
             {
                 return;
             }
-            
+
             csProjPath = $"{assetModel.name}.csproj";
 
             LoadDotSettings();
@@ -340,133 +536,6 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        public override int CompareTo(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return 1;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return 0;
-            }
-
-            return obj is AssemblyDefinitionMetadata other
-                ? CompareTo(other)
-                : throw new ArgumentException($"Object must be of type {nameof(AssemblyDefinitionMetadata)}");
-        }
-
-        public override int CompareTo(AssemblyDefinitionMetadata other)
-        {
-            if (ReferenceEquals(this, other))
-            {
-                return 0;
-            }
-
-            if (ReferenceEquals(null, other))
-            {
-                return 1;
-            }
-
-            void GetMatches(string name, out bool isAppalachiaMatch, out bool isUnityMatch)
-            {
-                isAppalachiaMatch = name.StartsWith("Appalachia");
-                isUnityMatch = name.StartsWith("Unity") ||
-                               name.StartsWith("com.unity") ||
-                               name.StartsWith("TextMeshPro") ||
-                               name.StartsWith("Cinemachine");
-            }
-
-            GetMatches(AssemblyCurrent,       out var appalachiaMatch,      out var unityMatch);
-            GetMatches(other.AssemblyCurrent, out var otherAppalachiaMatch, out var otherUnityMatch);
-
-            if (appalachiaMatch && !otherAppalachiaMatch)
-            {
-                return -1;
-            }
-
-            if (!appalachiaMatch && otherAppalachiaMatch)
-            {
-                return 1;
-            }
-
-            if (unityMatch && !otherUnityMatch)
-            {
-                return -1;
-            }
-
-            if (!unityMatch && otherUnityMatch)
-            {
-                return 1;
-            }
-
-            var assemblyCurrentComparison = string.Compare(
-                AssemblyCurrent,
-                other.AssemblyCurrent,
-                StringComparison.Ordinal
-            );
-            if (assemblyCurrentComparison != 0)
-            {
-                return assemblyCurrentComparison;
-            }
-
-            return string.Compare(Path, other.Path, StringComparison.Ordinal);
-        }
-
-        public override bool Equals(AssemblyDefinitionMetadata other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return AssemblyCurrent == other.AssemblyCurrent;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((AssemblyDefinitionMetadata) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return AssemblyCurrent != null ? AssemblyCurrent.GetHashCode() : 0;
-        }
-
-        public override void InitializeForAnalysis()
-        {
-            SetReferences();
-        }
-
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
-            {
-                return AssemblyCurrent;
-            }
-        }
-
         protected override IEnumerable<string> GetIds()
         {
             yield return Id;
@@ -497,75 +566,6 @@ namespace Appalachia.CI.Integration.Assemblies
                 var dotSettingsText = AppaFile.ReadAllLines(DotSettingsPath);
                 dotSettings = new DotSettings(dotSettingsText);
             }
-        }
-
-        public static AssemblyDefinitionMetadata CreateNew(string path)
-        {
-            if (InstancesByPath.ContainsKey(path))
-            {
-                return InstancesByPath[path];
-            }
-
-            var newInstance = new AssemblyDefinitionMetadata();
-
-            newInstance.Initialize(path);
-
-            return newInstance;
-        }
-
-        private static void FinalizeInternal()
-        {
-            using (_PRF_FinalizeInternal.Auto())
-            {
-                foreach (var instance in Instances)
-                {
-                    if (instance.repository == null)
-                    {
-                        instance.repository = RepositoryMetadata.FindByName(instance.Name);
-                        instance.SetReferences();
-                    }
-                }
-            }
-        }
-
-        private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
-        {
-            var asmdefs = AssetDatabaseManager.FindProjectPathsByExtension(".asmdef");
-
-            foreach (var asmdef in asmdefs)
-            {
-                yield return CreateNew(asmdef);
-            }
-        }
-
-        public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator >(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) > 0;
-        }
-
-        public static bool operator >=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) >= 0;
-        }
-
-        public static bool operator !=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator <(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) < 0;
-        }
-
-        public static bool operator <=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
-        {
-            return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) <= 0;
         }
     }
 }
