@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Appalachia.CI.Integration.FileSystem;
 using Unity.Profiling;
@@ -48,6 +49,22 @@ namespace Appalachia.CI.Integration.Extensions
         #endregion
 
 
+        public static string WindowsToLinuxPath(this string path)
+        {
+            if (Path.IsPathRooted(path))
+            {
+                var builder = new StringBuilder(path);
+                // C:\Program Files\
+                // /c/Program Files
+
+                builder[1] = char.ToLowerInvariant(builder[0]);
+                builder[0] = '/';
+                path = builder.ToString();
+            }
+            
+            return path.Replace("\\", "/");
+        }
+        
         private static string[] _packagePaths;
         
         public static bool IsPackagePath(this string path)

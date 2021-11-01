@@ -68,6 +68,7 @@ namespace Appalachia.CI.Constants
         public const string Open__asmdef = Open + " " + _asmdef;
         public const string Open__dotSettings = Open + " " + _dotSettings;
         public const string Open_package_json = Open + " " + package_json;
+        public const string Publish = "Publish";
         public const string Opportunities = "Opportunities";
         public const string Opportunity = "Opportunity";
         public const string Opportunity_Count = Opportunity + " " + Count;
