@@ -20,6 +20,7 @@ C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| f3bc711e7c88a6ec78ca75a6713c9e67fbf56ebd | 2021-10-31 | Chris Schubert | Updating changelog and releaselog |
 
 
  ## Tag: `v0.2.1`
@@ -27,7 +28,7 @@ C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
 |------|------|--------|---------|
 
 
- ## Tag: `v0.2.0, origin/main`
+ ## Tag: `v0.2.0`
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
 | 98f4ac0953b4725f73fc97d68bcc0152daf8c6f0 | 2021-10-31 | Chris Schubert | Updating changelog and releaselog |

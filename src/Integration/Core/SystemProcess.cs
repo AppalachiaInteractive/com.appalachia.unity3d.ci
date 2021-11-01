@@ -35,8 +35,6 @@ namespace Appalachia.CI.Integration.Core
             Environment.SetEnvironmentVariable("APPA_PWD",         linuxWorkingDirectory);
             Environment.SetEnvironmentVariable("APPA_LOAD_BASHRC", "1");
 
-
-            Debug.Log(command);
             
             var processStartInfo = new ProcessStartInfo(bashFile3, "-c \" " + command + " \"")
             {
