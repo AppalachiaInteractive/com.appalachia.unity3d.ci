@@ -4,6 +4,8 @@ namespace Appalachia.CI.Constants
 {
     public static partial class APPASTR
     {
+        #region Constants and Static Readonly
+
         public const string _asmdef = ".asmdef";
         public const string _dotSettings = ".dotSettings";
         public const string _git = ".git";
@@ -12,6 +14,7 @@ namespace Appalachia.CI.Constants
         public const string Any = "Any";
         public const string Any_Issues = Any + " " + Issues;
         public const string Appalachia = "Appalachia";
+        public const string Appalachia_Managed_Only = Appalachia + " " + Managed + " " + Only;
         public const string Appalachia_Only = Appalachia + " " + Only;
         public const string ASMDEFBUTTON = "ASMDEFBUTTON";
         public const string Assemblies = "Assemblies";
@@ -61,6 +64,7 @@ namespace Appalachia.CI.Constants
         public const string Level = "Level";
         public const string Maintenance = "Maintenance";
         public const string Maintenance_Tasks = Maintenance + " " + Tasks;
+        public const string Managed = "Managed";
         public const string Menu = "Menu";
         public const string Menu_Width = Menu + " " + Width;
         public const string Metadata = "Metadata";
@@ -77,6 +81,7 @@ namespace Appalachia.CI.Constants
         public const string Opportunity_Count = Opportunity + " " + Count;
         public const string Overview = "Overview";
         public const string Package = "Package";
+        public const string Package_All = Package + " " + All;
         public const string package_json = "package.json";
         public const string Package_Review = Package + " " + Review;
         public const string Package_Search = Package + " " + Search;
@@ -84,6 +89,7 @@ namespace Appalachia.CI.Constants
         public const string Path = "Path";
         public const string Presence = "Presence";
         public const string Publish = "Publish";
+        public const string Publish_All = Publish + " " + All;
         public const string Publish_Status = Publish + " " + Status;
         public const string Published = "Published";
         public const string Published_Version = Published + " " + Version;
@@ -108,10 +114,10 @@ namespace Appalachia.CI.Constants
         public const string Validity = "Validity";
         public const string version = "version";
         public const string Version = "Version";
+        public const string Version_All = Version + " " + All;
         public const string Versions = "Versions";
         public const string Width = "Width";
-        public const string Version_All = Version + " " + All;
-        public const string Package_All = Package + " " + All;
-        public const string Publish_All = Publish + " " + All;
+
+        #endregion
     }
 }

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Repositories;
+using Appalachia.Utility.Enums;
 using Unity.Profiling;
 using UnityEditor;
 
@@ -13,9 +15,9 @@ namespace Appalachia.CI.Integration.Core
     [Serializable, InitializeOnLoad]
     public abstract class IntegrationMetadata
     {
+        public abstract string Id { get; }
         public abstract string Name { get; }
         public abstract string Path { get; }
-        public abstract string Id { get; }
 
         public static IReadOnlyList<T> ClearAll<T>()
             where T : IntegrationMetadata<T>
@@ -88,6 +90,14 @@ namespace Appalachia.CI.Integration.Core
         private static Dictionary<string, T> _instancesByPath;
         private static HashSet<T> _instancesUnique;
         private static List<T> _instances;
+        private static string _lastFlagCheckName;
+
+        private static string _lastFlagCheckPath;
+
+        public AppaDirectoryInfo directory;
+        public bool readOnly;
+
+        public IntegrationTypeFlags flags;
 
         public static IReadOnlyDictionary<string, T> InstancesByID => _instancesByID;
 
@@ -97,13 +107,51 @@ namespace Appalachia.CI.Integration.Core
 
         public static IReadOnlyList<T> Instances => _instances;
 
-        public AppaDirectoryInfo directory;
-        public bool readOnly;
+        public bool IsAsset => flags.HasFlag(IntegrationTypeFlags.IsAsset);
+        public bool IsLibrary => flags.HasFlag(IntegrationTypeFlags.IsLibrary);
+        public bool IsPackage => flags.HasFlag(IntegrationTypeFlags.IsPackage);
+        public bool IsAppalachia => flags.HasFlag(IntegrationTypeFlags.IsAppalachia);
+        public bool IsBuiltinUnity => flags.HasFlag(IntegrationTypeFlags.IsBuiltinUnity);
+        public bool IsCustomUnity => flags.HasFlag(IntegrationTypeFlags.IsCustomUnity);
+        public bool IsAppalachiaManaged => IsAppalachia || IsThirdParty || IsCustomUnity;
+        public bool IsThirdParty => !IsAppalachia && !IsUnity;
+        public bool IsUnity => IsBuiltinUnity || IsCustomUnity;
 
-        public bool IsAppalachia => Name.Contains("Appalachia") || Name.StartsWith("com.appalachia");
-        public bool IsAsset => Path?.StartsWith("Asset") ?? false;
-        public bool IsLibrary => Path?.StartsWith("Library") ?? false;
-        public bool IsPackage => Path?.StartsWith("Package") ?? false;
+        /*
+        private string _unifiedName;
+        
+        public string UnifiedName
+        {
+            get
+            {
+                if (_unifiedName == null)
+                {
+                    var n = Name.ToLowerInvariant();
+
+                    if (n.StartsWith("com."))
+                    {
+                        if (IsAppalachia)
+                        {
+                            n = n.Replace("com.appalachia.unity3d", "appalachia");
+                        }
+                        else
+                        {
+                            n = n.Replace("com.appalachia.unity3d.third-party", null);
+                        }
+                    }
+                    else
+                    {
+                        
+                    }
+                    
+                    
+                }
+                
+                return _unifiedName;
+            }
+        }*/
+
+        public event ReanalyzeHandler OnReanalyzeNecessary;
 
         public abstract void InitializeForAnalysis();
         public abstract int CompareTo(object obj);
@@ -112,6 +160,11 @@ namespace Appalachia.CI.Integration.Core
         public abstract bool Equals(T other);
 
         protected abstract IEnumerable<string> GetIds();
+
+        protected virtual void ExecuteReanalyzeNecessary()
+        {
+            OnReanalyzeNecessary?.Invoke();
+        }
 
         public static IReadOnlyList<T> FindAll()
         {
@@ -166,12 +219,12 @@ namespace Appalachia.CI.Integration.Core
         public static T FindInDirectory(AppaDirectoryInfo directory)
         {
             CheckIntegrationRegistration();
-            
+
             if (!InstancesByPath.ContainsKey(directory.RelativePath))
             {
                 throw new NotSupportedException(directory.RelativePath);
             }
-            
+
             return InstancesByPath[directory.RelativePath];
         }
 
@@ -222,6 +275,8 @@ namespace Appalachia.CI.Integration.Core
 
             foreach (var item in all)
             {
+                item.SetFlags();
+                
                 var ids = item.GetIds().ToArray();
 
                 foreach (var id in ids)
@@ -273,16 +328,59 @@ namespace Appalachia.CI.Integration.Core
             }
         }
 
+        private void SetFlags()
+        {
+            var n = Name.ToLowerInvariant();
+            var p = Path.ToLowerInvariant();
+
+            if ((n == _lastFlagCheckName) && (p == _lastFlagCheckPath))
+            {
+                return;
+            }
+
+            _lastFlagCheckName = n;
+            _lastFlagCheckPath = p;
+
+            flags = IntegrationTypeFlags.None;
+
+            if (p.StartsWith("assets"))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsAsset);
+            }
+
+            if (p.StartsWith("library"))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsLibrary);
+            }
+
+            if (p.StartsWith("package"))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsPackage);
+            }
+
+            if (n.Contains("appalachia") && !n.Contains("third-party.") && !n.Contains("unity."))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsAppalachia);
+            }
+
+            if (n.StartsWith("unity.") || n.StartsWith("com.unity") || n.Contains("textmeshpro") || n.StartsWith("com.autodesk"))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsBuiltinUnity);
+            }
+
+            if ((n == "com.appalachia.unity3d.third-party.unity") ||
+                n.StartsWith("unity.visualeffectgraph") ||
+                n.StartsWith("cinemachine") ||
+                n.StartsWith("unity.postprocessing") ||
+                n.StartsWith("unity.ai.navigation"))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsCustomUnity);
+            }
+        }
+
         #region Nested Types
 
-        public event ReanalyzeHandler OnReanalyzeNecessary;
-        
         public delegate void ReanalyzeHandler();
-
-        protected virtual void ExecuteReanalyzeNecessary()
-        {
-            OnReanalyzeNecessary?.Invoke();
-        }
 
         #endregion
     }

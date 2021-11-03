@@ -8,7 +8,7 @@ namespace Appalachia.CI.SemVer
 {
     internal static partial class PKG
     {
-        public const int Priority = -320000;
+        public const int Priority = -322000;
         public const string Name = "CI/SemVer";
         public const string Prefix = Root + Name + "/";
         public const string Root = "Appalachia/";

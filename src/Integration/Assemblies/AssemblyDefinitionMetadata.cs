@@ -11,6 +11,7 @@ using Appalachia.CI.Integration.Rider;
 using Newtonsoft.Json;
 using Unity.Profiling;
 using UnityEditorInternal;
+using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assemblies
 {
@@ -272,112 +273,116 @@ namespace Appalachia.CI.Integration.Assemblies
 
         public int GetAssemblyReferenceLevel()
         {
-            var name = AssemblyCurrent;
+            var name = AssemblyCurrent.ToLowerInvariant();
             var result = 0;
 
-            if (name.EndsWith("Examples") ||
-                name.EndsWith("Example") ||
-                name.EndsWith("Tests") ||
-                name.EndsWith("Tests.Playmode") ||
-                name.EndsWith("CodeGen"))
+            if (name.EndsWith("examples") ||
+                name.EndsWith("example") ||
+                name.EndsWith("samples") ||
+                name.EndsWith("sample") ||
+                name.EndsWith("demos") ||
+                name.EndsWith("demo") ||
+                name.EndsWith("tests") ||
+                name.EndsWith("tests.playmode") ||
+                name.EndsWith("codegen"))
             {
                 result += 10000;
             }
 
-            if ((name.StartsWith("Appalachia.Editor") || name.EndsWith(".Editor")) &&
-                (name != "Unity.EditorCoroutines.Editor") &&
-                (name != "Amplify.Shader.Editor"))
+            if ((name.StartsWith("appalachia.editor") || name.EndsWith(".editor")) &&
+                (name != "unity.editorcoroutines.editor") &&
+                (name != "amplify.shader.editor"))
             {
                 result += 100;
             }
 
-            if (name.StartsWith("Unity."))
+            if (name.StartsWith("unity."))
             {
                 result += 0;
                 return result;
             }
 
-            if (name.StartsWith("UnityEditor."))
+            if (name.StartsWith("unityeditor."))
             {
                 result += 50;
                 return result;
             }
 
-            if (name.StartsWith("Appalachia."))
+            if (name.StartsWith("appalachia."))
             {
-                if (name.StartsWith("Appalachia.Utility"))
+                if (name.StartsWith("appalachia.utility"))
                 {
-                    result += 0;
+                    result += 3;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.CI.Constants"))
+                if (name.StartsWith("appalachia.ci.constants"))
                 {
-                    result += 1;
+                    result += 4;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.CI.Integration"))
+                if (name.StartsWith("appalachia.ci.integration"))
                 {
-                    result += 2;
+                    result += 5;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.CI"))
+                if (name.StartsWith("appalachia.ci"))
                 {
                     result += 10;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Core"))
+                if (name.StartsWith("appalachia.core"))
                 {
                     result += 20;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Editing"))
+                if (name.StartsWith("appalachia.editing"))
                 {
                     result += 50;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Jobs"))
+                if (name.StartsWith("appalachia.jobs"))
                 {
                     result += 70;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Audio"))
+                if (name.StartsWith("appalachia.audio"))
                 {
                     result += 90;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Globals"))
+                if (name.StartsWith("appalachia.globals"))
                 {
                     result += 110;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Spatial") || name.StartsWith("Appalachia.Simulation"))
+                if (name.StartsWith("appalachia.spatial") || name.StartsWith("appalachia.simulation"))
                 {
                     result += 130;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.Rendering"))
+                if (name.StartsWith("appalachia.rendering"))
                 {
                     result += 150;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.UI"))
+                if (name.StartsWith("appalachia.ui"))
                 {
                     result += 170;
                     return result;
                 }
 
-                if (name.StartsWith("Appalachia.KOC") || name.StartsWith("Appalachia.Editor"))
+                if (name.StartsWith("appalachia.koc") || name.StartsWith("appalachia.editor"))
                 {
                     result += 200;
                     return result;
@@ -387,7 +392,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 return result;
             }
 
-            result += 2;
+            result += 0;
             return result;
         }
 
@@ -516,8 +521,15 @@ namespace Appalachia.CI.Integration.Assemblies
                 LoadAsset(_path);
             }
 
-            foreach (var referenceString in referenceStrings)
+            for (var index = 0; index < referenceStrings.Count; index++)
             {
+                var referenceString = referenceStrings[index];
+                if (referenceString == null)
+                {
+                    Debug.LogWarning($"Reference string [{index}] is null for [{Name}].");
+                    continue;
+                }
+
                 AssemblyDefinitionReference reference;
 
                 if (!InstancesByID.ContainsKey(referenceString))

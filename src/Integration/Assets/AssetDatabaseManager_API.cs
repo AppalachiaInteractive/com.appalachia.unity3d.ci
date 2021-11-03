@@ -250,6 +250,9 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_ShiftCleanPathsLeft =
             new(_PRF_PFX + nameof(ShiftCleanPathsLeft));
 
+        private static readonly ProfilerMarker _PRF_OpenAssetAtPath =
+            new ProfilerMarker(_PRF_PFX + nameof(OpenAssetAtPath));
+
         #endregion
 
         /// <summary>
@@ -1087,6 +1090,23 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_OpenAsset.Auto())
             {
                 return AssetDatabase.OpenAsset(objects);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Opens the asset with associated application.</para>
+        /// </summary>
+        /// <param name="instanceID"></param>
+        /// <param name="lineNumber"></param>
+        /// <param name="columnNumber"></param>
+        /// <param name="target"></param>
+        public static bool OpenAssetAtPath(string assetPath)
+        {
+            using (_PRF_OpenAssetAtPath.Auto())
+            {
+                var type = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+                var asset = AssetDatabase.LoadAssetAtPath(assetPath, type);
+                return AssetDatabase.OpenAsset(asset);
             }
         }
 

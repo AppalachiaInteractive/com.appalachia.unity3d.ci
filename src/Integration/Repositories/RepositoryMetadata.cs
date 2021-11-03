@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +14,7 @@ using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Packages.NpmModel;
 using Appalachia.CI.Integration.Repositories.Publishing;
 using Appalachia.CI.Integration.SourceControl;
-using Appalachia.Core.Extensions;
+using Appalachia.Utility.Extensions;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEngine;
@@ -271,6 +272,8 @@ namespace Appalachia.CI.Integration.Repositories
             }
         }
 
+        public string NameAndVersion => $"{Name}@{PackageVersion}";
+
         public string NpmPackagePath => AppaPath.Combine(directory.FullPath, "package.json");
 
         public string PackageName
@@ -318,7 +321,7 @@ namespace Appalachia.CI.Integration.Repositories
             {
                 using (_PRF_PublishedVersion.Auto())
                 {
-                    if (IsAppalachia)
+                    if (IsAppalachiaManaged)
                     {
                         SetPackageVersion();
                     }
@@ -658,8 +661,14 @@ namespace Appalachia.CI.Integration.Repositories
         public override void InitializeForAnalysis()
         {
             _distributableFile = null;
-            _npmIgnore = null;
+            _distributableVersion = null;
             _gitIgnore = null;
+            _hasDistributableFile = null;
+            _lookingForVersion = false;
+            _npmIgnore = null;
+            _packageName = null;
+            _packageVersion = null;
+            _publishedVersion = null;
         }
 
         public IEnumerable<AppaFileInfo> GetLargestFiles(int count)
@@ -689,6 +698,57 @@ namespace Appalachia.CI.Integration.Repositories
                                     f.FullPath.IsPathIgnored(NpmIgnore))
                          )
                         .Take(count);
+        }
+
+        public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
+        {
+            try
+            {
+                if (!dryRun && suspendImport)
+                {
+                    AssetDatabaseManager.StartAssetEditing();
+                }
+
+                var root = Path;
+                var meta = root + ".meta";
+
+                var newRoot = root + "~";
+
+                if (dryRun)
+                {
+                    Debug.Log($"MOVEDIR: [{root}] to [{newRoot}]");
+                    Debug.Log($"DELETE: [{meta}]");
+                }
+                else
+                {
+                    AppaDirectory.Move(root, newRoot);
+                    AppaFile.Delete(meta);
+                }
+
+                if (executeClient)
+                {
+                    if (dryRun)
+                    {
+                        Debug.Log($"PKGMANAGER: Adding [{NameAndVersion}]");
+                    }
+                    else
+                    {
+                        var addition = UnityEditor.PackageManager.Client.Add(NameAndVersion);
+
+                        while (!addition.IsCompleted)
+                        {
+                            yield return null;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (!dryRun && suspendImport)
+                {
+                    AssetDatabaseManager.StopAssetEditing();
+                }
+            }
         }
 
         public void PopulateDependencies()
@@ -762,7 +822,7 @@ namespace Appalachia.CI.Integration.Repositories
             {
                 if ((_publishedVersion == null) && !_lookingForVersion)
                 {
-                    if (!IsAppalachia || !IsAsset || !directory.Exists)
+                    if (!IsAppalachiaManaged || !IsAsset || !directory.Exists)
                     {
                         return;
                     }

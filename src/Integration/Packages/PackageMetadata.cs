@@ -1,12 +1,16 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
+using Appalachia.CI.Integration.Core.Shell;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
 using Unity.Profiling;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
+using UnityEngine;
 
 namespace Appalachia.CI.Integration.Packages
 {
@@ -57,6 +61,9 @@ namespace Appalachia.CI.Integration.Packages
 
         private static ListRequest _request;
 
+        public PackageInfo packageInfo;
+        public RepositoryMetadata repository;
+
         public static PackageCollection Packages
         {
             get
@@ -78,9 +85,6 @@ namespace Appalachia.CI.Integration.Packages
             }
         }
 
-        public PackageInfo packageInfo;
-        public RepositoryMetadata repository;
-
         public override string Id => packageInfo.name;
         public override string Name => packageInfo.name;
         public override string Path => packageInfo.assetPath;
@@ -91,6 +95,75 @@ namespace Appalachia.CI.Integration.Packages
         public string NameAndVersion => $"{Name}@{Version}";
 
         public string Version => packageInfo?.version ?? string.Empty;
+
+        public static bool operator ==(PackageMetadata left, PackageMetadata right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(PackageMetadata left, PackageMetadata right)
+        {
+            return Comparer<PackageMetadata>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(PackageMetadata left, PackageMetadata right)
+        {
+            return Comparer<PackageMetadata>.Default.Compare(left, right) >= 0;
+        }
+
+        public static bool operator !=(PackageMetadata left, PackageMetadata right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(PackageMetadata left, PackageMetadata right)
+        {
+            return Comparer<PackageMetadata>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(PackageMetadata left, PackageMetadata right)
+        {
+            return Comparer<PackageMetadata>.Default.Compare(left, right) <= 0;
+        }
+
+        private static ListRequest ExecutePackageListRequest()
+        {
+            using (_PRF_ExecutePackageListRequest.Auto())
+            {
+                return Client.List(false, false);
+            }
+        }
+
+        private static void FinalizeInternal()
+        {
+            using (_PRF_FinalizeInternal.Auto())
+            {
+                foreach (var instance in Instances)
+                {
+                    instance.repository = RepositoryMetadata.FindByName(instance.Name);
+                }
+            }
+        }
+
+        private static IEnumerable<PackageMetadata> FindAllInternal()
+        {
+            using (_PRF_FindAllInternal.Auto())
+            {
+                while (!_request.IsCompleted)
+                {
+                    Task.Delay(1);
+                }
+
+                foreach (var packageInfo in Packages)
+                {
+                    var newMetadata = new PackageMetadata();
+
+                    newMetadata.InitializeInternal(packageInfo);
+
+                    yield return newMetadata;
+                }
+            }
+        }
 
         public override int CompareTo(PackageMetadata other)
         {
@@ -173,6 +246,91 @@ namespace Appalachia.CI.Integration.Packages
             return NameAndVersion;
         }
 
+        public IEnumerator ConvertToRepository(bool suspendImport, bool executeClient, bool dryRun = true)
+        {
+            try
+            {
+                if (!dryRun && suspendImport)
+                {
+                    AssetDatabaseManager.StartAssetEditing();
+                }
+
+                var repo = packageInfo.repository;
+
+                string folder;
+                if (IsThirdParty || IsUnity)
+                {
+                    var lastPart = packageInfo.author.name.Replace(" ", string.Empty);
+                    folder = $"Assets/Third-Party/{lastPart}";
+                }
+                else
+                {
+                    folder = $"Assets/{Name}";
+                }
+
+                var hideFolder = folder + "~";
+
+                if (AppaDirectory.Exists(folder))
+                {
+                }
+                else if (AppaDirectory.Exists(hideFolder))
+                {
+                    if (dryRun)
+                    {
+                        Debug.Log($"MOVEDIR: [{hideFolder}] to [{folder}]");
+                    }
+                    else
+                    {
+                        AppaDirectory.Move(hideFolder, folder);
+                    }
+                }
+                else
+                {
+                    var result = new ShellResult();
+                    var command = $"git clone {repo.url} {folder}";
+                    var workingDirectory = Application.dataPath;
+
+                    if (dryRun)
+                    {
+                        Debug.Log($"COMMAND: [{command}] WORKDIR: [{workingDirectory}]");
+                    }
+                    else
+                    {
+                        var execution = SystemShell.Execute(command, workingDirectory, result);
+
+                        while (execution.MoveNext())
+                        {
+                            yield return execution.Current;
+                        }
+                    }
+                }
+
+                if (executeClient)
+                {
+                    if (dryRun)
+                    {
+                        Debug.Log($"PKGMANAGER: Removing [{Name}]");
+                    }
+                    else
+                    {
+                        var removal = Client.Remove(Name);
+
+                        while (!removal.IsCompleted)
+                        {
+                            yield return null;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (!dryRun && suspendImport)
+                {
+                    AssetDatabaseManager.StopAssetEditing();
+                }
+            }
+        }
+
         protected override IEnumerable<string> GetIds()
         {
             yield return packageInfo.name;
@@ -187,75 +345,6 @@ namespace Appalachia.CI.Integration.Packages
                 packageInfo = pkg;
                 repository = RepositoryMetadata.FindByName(pkg.name);
             }
-        }
-
-        private static ListRequest ExecutePackageListRequest()
-        {
-            using (_PRF_ExecutePackageListRequest.Auto())
-            {
-                return Client.List(false, false);
-            }
-        }
-
-        private static void FinalizeInternal()
-        {
-            using (_PRF_FinalizeInternal.Auto())
-            {
-                foreach (var instance in Instances)
-                {
-                    instance.repository = RepositoryMetadata.FindByName(instance.Name);
-                }
-            }
-        }
-
-        private static IEnumerable<PackageMetadata> FindAllInternal()
-        {
-            using (_PRF_FindAllInternal.Auto())
-            {
-                while (!_request.IsCompleted)
-                {
-                    Task.Delay(1);
-                }
-
-                foreach (var packageInfo in Packages)
-                {
-                    var newMetadata = new PackageMetadata();
-
-                    newMetadata.InitializeInternal(packageInfo);
-
-                    yield return newMetadata;
-                }
-            }
-        }
-
-        public static bool operator ==(PackageMetadata left, PackageMetadata right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator >(PackageMetadata left, PackageMetadata right)
-        {
-            return Comparer<PackageMetadata>.Default.Compare(left, right) > 0;
-        }
-
-        public static bool operator >=(PackageMetadata left, PackageMetadata right)
-        {
-            return Comparer<PackageMetadata>.Default.Compare(left, right) >= 0;
-        }
-
-        public static bool operator !=(PackageMetadata left, PackageMetadata right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator <(PackageMetadata left, PackageMetadata right)
-        {
-            return Comparer<PackageMetadata>.Default.Compare(left, right) < 0;
-        }
-
-        public static bool operator <=(PackageMetadata left, PackageMetadata right)
-        {
-            return Comparer<PackageMetadata>.Default.Compare(left, right) <= 0;
         }
     }
 }

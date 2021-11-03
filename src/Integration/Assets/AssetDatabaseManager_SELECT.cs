@@ -25,7 +25,6 @@ namespace Appalachia.CI.Integration.Assets
             var asset = LoadAssetAtPath(relativePath, assetType);
 
             SetSelection(asset);
-            ;
         }
 
         public static void SetSelection(Object o)

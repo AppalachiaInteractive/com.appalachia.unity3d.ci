@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.Core.Extensions;
+using Appalachia.Utility.Extensions;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.SourceControl

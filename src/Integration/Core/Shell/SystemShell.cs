@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Appalachia.CI.Integration.Core.Shell
 {
-    public static class SystemShell
+    public static partial class SystemShell
     {
         #region Profiling And Tracing Markers
 
