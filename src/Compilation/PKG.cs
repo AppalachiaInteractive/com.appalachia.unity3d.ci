@@ -8,7 +8,7 @@ namespace Appalachia.CI.Compilation
 {
     internal static partial class PKG
     {
-        public const int Priority = -410000;
+        public const int Priority = -413000;
         public const string Name = "CI/Compilation";
         public const string Prefix = Root + Name + "/";
         public const string Root = "Appalachia/";

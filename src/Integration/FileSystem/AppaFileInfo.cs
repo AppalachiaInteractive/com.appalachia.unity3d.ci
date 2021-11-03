@@ -138,6 +138,8 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
         public string DirectoryPath => _fileInfo.DirectoryName.CleanFullPath();
 
+        public string WindowsDirectoryPath => _fileInfo.DirectoryName;
+
         /// <summary>Gets a string representing the directory's last folder name.</summary>
         /// <returns>A string representing the directory's full path.</returns>
         /// <exception cref="T:System.ArgumentNullException">

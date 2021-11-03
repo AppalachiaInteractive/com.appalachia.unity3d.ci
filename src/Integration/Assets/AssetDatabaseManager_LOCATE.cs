@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Paths;
@@ -12,6 +13,7 @@ using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
+using UnityEngine.Rendering;
 using UnityEngine.TextCore.Text;
 using UnityEngine.U2D;
 using Object = UnityEngine.Object;
@@ -397,6 +399,20 @@ namespace Appalachia.CI.Integration.Assets
                 atfl.Add(typeof(SpriteAsset),      (_, _) => "Sprites");
                 atfl.Add(typeof(SpriteAtlas),      (_, _) => "Sprites");
                 atfl.Add(typeof(SpriteAtlasAsset), (_, _) => "Sprites");
+            }
+        }
+   
+        public static void OpenFolderInExplorer(string folderPath)
+        {
+            if (AppaDirectory.Exists(folderPath))
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    Arguments = folderPath,
+                    FileName = "explorer.exe"
+                };
+
+                Process.Start(startInfo);
             }
         }
     }

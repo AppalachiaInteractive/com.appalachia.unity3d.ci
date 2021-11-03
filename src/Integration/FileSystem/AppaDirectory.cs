@@ -883,6 +883,11 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_GetFiles.Auto())
             {
+                if (!Directory.Exists(path))
+                {
+                    return Array.Empty<string>();
+                }
+                
                 var files = Directory.GetFiles(path, searchPattern, searchOption);
 
                 var destinationFileIndex = 0;

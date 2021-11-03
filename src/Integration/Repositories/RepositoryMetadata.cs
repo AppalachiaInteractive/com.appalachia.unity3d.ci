@@ -1,14 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
+using Appalachia.CI.Integration.Core.Shell;
+using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Packages.NpmModel;
-using Appalachia.Utility.Extensions;
+using Appalachia.CI.Integration.Repositories.Publishing;
+using Appalachia.CI.Integration.SourceControl;
+using Appalachia.Core.Extensions;
+using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -33,7 +39,44 @@ namespace Appalachia.CI.Integration.Repositories
         private static readonly ProfilerMarker _PRF_FinalizeInternal =
             new(_PRF_PFX + nameof(FinalizeInternal));
 
+        private static readonly ProfilerMarker _PRF_PackageVersion =
+            new ProfilerMarker(_PRF_PFX + nameof(PackageVersion));
+
+        private static readonly ProfilerMarker _PRF_DistributableFile =
+            new ProfilerMarker(_PRF_PFX + nameof(DistributableFile));
+
+        private static readonly ProfilerMarker _PRF_DistributableVersion =
+            new ProfilerMarker(_PRF_PFX + nameof(DistributableVersion));
+
+        private static readonly ProfilerMarker _PRF_PublishedVersion =
+            new ProfilerMarker(_PRF_PFX + nameof(PublishedVersion));
+
+        private static readonly ProfilerMarker
+            _PRF_RepoName = new ProfilerMarker(_PRF_PFX + nameof(RepoName));
+
+        private static readonly ProfilerMarker _PRF_AssetsDirectory =
+            new ProfilerMarker(_PRF_PFX + nameof(AssetsDirectory));
+
+        private static readonly ProfilerMarker
+            _PRF_RealPath = new ProfilerMarker(_PRF_PFX + nameof(RealPath));
+
+        private static readonly ProfilerMarker _PRF_PopulateDependencies =
+            new ProfilerMarker(_PRF_PFX + nameof(PopulateDependencies));
+
+        private static readonly ProfilerMarker _PRF_SavePackageJson =
+            new ProfilerMarker(_PRF_PFX + nameof(SavePackageJson));
+
+        private static readonly ProfilerMarker _PRF_PopulateDependency =
+            new ProfilerMarker(_PRF_PFX + nameof(PopulateDependency));
+
+        private static readonly ProfilerMarker _PRF_SetPackageVersion =
+            new ProfilerMarker(_PRF_PFX + nameof(SetPackageVersion));
+
         #endregion
+
+        public const long TARGET_FILE_MAX_SIZE = (long) 1024 * 1024 * 8;
+
+        public const long TARGET_MAX_SIZE = (long) 1024 * 1024 * 50;
 
         static RepositoryMetadata()
         {
@@ -67,29 +110,118 @@ namespace Appalachia.CI.Integration.Repositories
 
         private AppaDirectoryInfo _srcDirectory;
 
+        private AppaFileInfo _distributableFile;
+
+        private bool _lookingForVersion;
+
+        private bool? _hasDistributableFile;
+
+        private IgnoreFile _gitIgnore;
+
+        private IgnoreFile _npmIgnore;
+
         private Object _packageJsonAsset;
+
+        private PublishMetadataCollection _publishStatus;
+
+        private string _distributableVersion;
 
         private string _packageName;
 
         private string _packageVersion;
-
         private string _publishedVersion;
 
+        private string _realPath;
+
         private string _repoName;
-
-        private PublishStatus _publishStatus;
-
-        public PublishStatus publishStatus
-        {
-            get => _publishStatus;
-            set => _publishStatus = value;
-        }
 
         public override string Id => Name;
         public override string Name => PackageName ?? RepoName;
         public override string Path => directory.RelativePath;
 
+        public AppaFileInfo DistributableFile
+        {
+            get
+            {
+                using (_PRF_DistributableFile.Auto())
+                {
+                    if ((_distributableFile == null) && !_hasDistributableFile.HasValue)
+                    {
+                        if (!directory.Exists)
+                        {
+                            _hasDistributableFile = false;
+                            return _distributableFile;
+                        }
+
+                        var searchPath = AppaPath.Combine(Path, "dist");
+
+                        if (!Directory.Exists(searchPath))
+                        {
+                            _hasDistributableFile = false;
+                            return _distributableFile;
+                        }
+
+                        var packagedPath = AppaDirectory
+                                          .EnumerateFiles(searchPath, "*.tgz", SearchOption.TopDirectoryOnly)
+                                          .OrderBy(f => f)
+                                          .ToList()
+                                          .FirstOrDefault();
+
+                        if (packagedPath != null)
+                        {
+                            _hasDistributableFile = true;
+                            _distributableFile = new AppaFileInfo(packagedPath);
+                        }
+                        else
+                        {
+                            _hasDistributableFile = false;
+                        }
+                    }
+
+                    return _distributableFile;
+                }
+            }
+        }
+
         public bool HasPackage => npmPackage != null;
+
+        public bool? HasDistributableFile => _hasDistributableFile;
+
+        public IgnoreFile GitIgnore
+        {
+            get
+            {
+                if (_gitIgnore == null)
+                {
+                    var gitIgnorePath = AppaPath.Combine(Path, ".gitignore");
+
+                    if (AppaFile.Exists(gitIgnorePath))
+                    {
+                        _gitIgnore = new IgnoreFile(gitIgnorePath);
+                    }
+                }
+
+                return _gitIgnore;
+            }
+        }
+
+        public IgnoreFile NpmIgnore
+        {
+            get
+            {
+                if (_npmIgnore == null)
+                {
+                    var npmIgnorePath = AppaPath.Combine(Path, ".npmignore");
+
+                    if (AppaFile.Exists(npmIgnorePath))
+                    {
+                        _npmIgnore = new IgnoreFile(npmIgnorePath);
+                    }
+                }
+
+                return _npmIgnore;
+            }
+        }
 
         public Object PackageJsonAsset
         {
@@ -103,6 +235,39 @@ namespace Appalachia.CI.Integration.Repositories
                 _packageJsonAsset = AssetDatabaseManager.LoadAssetAtPath(NpmPackagePath, typeof(TextAsset));
 
                 return _packageJsonAsset;
+            }
+        }
+
+        public PublishMetadataCollection publishStatus
+        {
+            get
+            {
+                _publishStatus ??= new PublishMetadataCollection();
+                return _publishStatus;
+            }
+        }
+
+        public string DistributableVersion
+        {
+            get
+            {
+                using (_PRF_DistributableVersion.Auto())
+                {
+                    if ((_distributableVersion == null) &&
+                        (!HasDistributableFile.HasValue || HasDistributableFile.Value))
+                    {
+                        var file = DistributableFile;
+
+                        if (file == null)
+                        {
+                            return null;
+                        }
+
+                        _distributableVersion = file.FullPath.ParseNpmPackageVersion();
+                    }
+
+                    return _distributableVersion;
+                }
             }
         }
 
@@ -130,17 +295,20 @@ namespace Appalachia.CI.Integration.Repositories
         {
             get
             {
-                if (npmPackage == null)
+                using (_PRF_PackageVersion.Auto())
                 {
-                    return null;
-                }
+                    if (npmPackage == null)
+                    {
+                        return null;
+                    }
 
-                if (_packageVersion == null)
-                {
-                    _packageVersion = npmPackage.Version;
-                }
+                    if (_packageVersion == null)
+                    {
+                        _packageVersion = npmPackage.Version;
+                    }
 
-                return _packageVersion;
+                    return _packageVersion;
+                }
             }
         }
 
@@ -148,20 +316,37 @@ namespace Appalachia.CI.Integration.Repositories
         {
             get
             {
-                if (_publishedVersion == null)
+                using (_PRF_PublishedVersion.Auto())
                 {
-                    var result = new SystemShell.Result();
+                    if (IsAppalachia)
+                    {
+                        SetPackageVersion();
+                    }
 
-                    SystemShell.Execute("npm v | grep latest", this, result, synchronous: true).Complete();
-
-                    var lastPartIndex = result.output.LastIndexOf(":", StringComparison.Ordinal);
-
-                    var substring = result.output.Substring(lastPartIndex);
-                    
-                    _publishedVersion = substring.Trim();
+                    return _publishedVersion;
                 }
+            }
+        }
 
-                return _publishedVersion;
+        public string RealPath
+        {
+            get
+            {
+                using (_PRF_RealPath.Auto())
+                {
+                    if (_realPath == null)
+                    {
+                        _realPath = Path;
+
+                        if (_realPath.StartsWith("Packages"))
+                        {
+                            _realPath = _realPath.Replace("Packages", "Library/PackageCache");
+                            _realPath += $"@{PackageVersion}";
+                        }
+                    }
+
+                    return _realPath;
+                }
             }
         }
 
@@ -169,50 +354,53 @@ namespace Appalachia.CI.Integration.Repositories
         {
             get
             {
-                if (_repoName != null)
+                using (_PRF_RepoName.Auto())
                 {
-                    return _repoName;
-                }
-
-                if (GitDirectory is not {Exists: true})
-                {
-                    _repoName = PackageName;
-                    return _repoName;
-                }
-
-                var repoFiles = GitDirectory.GetFiles();
-                var repoConfig = repoFiles.First(f => f.Name == APPASTR.config);
-
-                var repoConfigStrings = new List<string>();
-
-                repoConfigStrings.AddRange(repoConfig.ReadAllLines());
-
-                for (var stringIndex = 0; stringIndex < repoConfigStrings.Count; stringIndex++)
-                {
-                    var repoConfigString = repoConfigStrings[stringIndex];
-
-                    //url = https://github.com/AppalachiaInteractive/com.appalachia.unity3d.audio.git
-                    if (!repoConfigString.Contains(APPASTR.url))
+                    if (_repoName != null)
                     {
-                        continue;
+                        return _repoName;
                     }
 
-                    var clean = repoConfigString.Trim();
+                    if (GitDirectory is not {Exists: true})
+                    {
+                        _repoName = PackageName;
+                        return _repoName;
+                    }
 
-                    var lastSlash = clean.LastIndexOf('/');
-                    var subset = clean.Substring(lastSlash + 1);
-                    subset = subset.Substring(0, subset.Length - 4);
+                    var repoFiles = GitDirectory.EnumerateFiles();
+                    var repoConfig = repoFiles.First(f => f.Name == APPASTR.config);
 
-                    _repoName = subset;
-                    break;
+                    var repoConfigStrings = new List<string>();
+
+                    repoConfigStrings.AddRange(repoConfig.ReadAllLines());
+
+                    for (var stringIndex = 0; stringIndex < repoConfigStrings.Count; stringIndex++)
+                    {
+                        var repoConfigString = repoConfigStrings[stringIndex];
+
+                        //url = https://github.com/AppalachiaInteractive/com.appalachia.unity3d.audio.git
+                        if (!repoConfigString.Contains(APPASTR.url))
+                        {
+                            continue;
+                        }
+
+                        var clean = repoConfigString.Trim();
+
+                        var lastSlash = clean.LastIndexOf('/');
+                        var subset = clean.Substring(lastSlash + 1);
+                        subset = subset.Substring(0, subset.Length - 4);
+
+                        _repoName = subset;
+                        break;
+                    }
+
+                    if (_repoName == null)
+                    {
+                        _repoName = string.Empty;
+                    }
+
+                    return _repoName;
                 }
-
-                if (_repoName == null)
-                {
-                    _repoName = string.Empty;
-                }
-
-                return _repoName;
             }
         }
 
@@ -220,18 +408,21 @@ namespace Appalachia.CI.Integration.Repositories
         {
             get
             {
-                if (_assetsDirectory == null)
+                using (_PRF_AssetsDirectory.Auto())
                 {
-                    if (directory == null)
+                    if (_assetsDirectory == null)
                     {
-                        return null;
+                        if (directory == null)
+                        {
+                            return null;
+                        }
+
+                        _assetsDirectory =
+                            new AppaDirectoryInfo(AppaPath.Combine(directory.FullPath, APPASTR.asset));
                     }
 
-                    _assetsDirectory =
-                        new AppaDirectoryInfo(AppaPath.Combine(directory.FullPath, APPASTR.asset));
+                    return _assetsDirectory;
                 }
-
-                return _assetsDirectory;
             }
             set => _assetsDirectory = value;
         }
@@ -466,61 +657,134 @@ namespace Appalachia.CI.Integration.Repositories
 
         public override void InitializeForAnalysis()
         {
+            _distributableFile = null;
+            _npmIgnore = null;
+            _gitIgnore = null;
+        }
+
+        public IEnumerable<AppaFileInfo> GetLargestFiles(int count)
+        {
+            if (!SrcDirectory.Exists)
+            {
+                return Enumerable.Empty<AppaFileInfo>();
+            }
+
+            var files = SrcDirectory.EnumerateFiles("*", SearchOption.AllDirectories);
+
+            if (AssetsDirectory.Exists)
+            {
+                var filesA = AssetsDirectory.EnumerateFiles("*", SearchOption.AllDirectories);
+                files = files.Concat(filesA);
+            }
+
+            if (DataDirectory.Exists)
+            {
+                var filesD = DataDirectory.EnumerateFiles("*", SearchOption.AllDirectories);
+                files = files.Concat(filesD);
+            }
+
+            return files.OrderByDescending(f => f.Length)
+                        .Where(
+                             f => !(f.FullPath.IsPathIgnored(GitIgnore) ||
+                                    f.FullPath.IsPathIgnored(NpmIgnore))
+                         )
+                        .Take(count);
         }
 
         public void PopulateDependencies()
         {
-            if (dependencies == null)
+            using (_PRF_PopulateDependencies.Auto())
             {
-                dependencies = new HashSet<RepositoryDependency>();
-            }
-
-            dependencies.Clear();
-
-            if (npmPackage?.Dependencies != null)
-            {
-                foreach (var dependency in npmPackage.Dependencies)
+                if (dependencies == null)
                 {
-                    var newDep = new RepositoryDependency(dependency.Key, dependency.Value);
-
-                    PopulateDependency(newDep);
-
-                    dependencies.Add(newDep);
+                    dependencies = new HashSet<RepositoryDependency>();
                 }
-            }
 
-            foreach (var dependency in missingDependencies)
-            {
-                PopulateDependency(dependency);
+                dependencies.Clear();
+
+                if (npmPackage?.Dependencies != null)
+                {
+                    foreach (var dependency in npmPackage.Dependencies)
+                    {
+                        var newDep = new RepositoryDependency(dependency.Key, dependency.Value);
+
+                        PopulateDependency(newDep);
+
+                        dependencies.Add(newDep);
+                    }
+                }
+
+                foreach (var dependency in missingDependencies)
+                {
+                    PopulateDependency(dependency);
+                }
             }
         }
 
         public void PopulateDependency(RepositoryDependency dependency)
         {
-            var repoMatch = FindById(dependency.name);
-
-            if (repoMatch != null)
+            using (_PRF_PopulateDependency.Auto())
             {
-                dependency.repository = repoMatch;
+                var repoMatch = FindById(dependency.name);
+
+                if (repoMatch != null)
+                {
+                    dependency.repository = repoMatch;
+                }
             }
         }
 
         public void SavePackageJson(bool useTestFiles, bool reimport)
         {
-            var savePath = NpmPackagePath;
-
-            if (useTestFiles)
+            using (_PRF_SavePackageJson.Auto())
             {
-                savePath += ".test";
+                var savePath = NpmPackagePath;
+
+                if (useTestFiles)
+                {
+                    savePath += ".test";
+                }
+
+                var json = npmPackage.ToJson();
+
+                AppaFile.WriteAllText(savePath, json);
+
+                if (reimport)
+                {
+                    AssetDatabaseManager.ImportAsset(savePath);
+                }
             }
+        }
 
-            var json = npmPackage.ToJson();
-
-            AppaFile.WriteAllText(savePath, json);
-
-            if (reimport)
+        public void SetPackageVersion()
+        {
+            using (_PRF_SetPackageVersion.Auto())
             {
-                AssetDatabaseManager.ImportAsset(savePath);
+                if ((_publishedVersion == null) && !_lookingForVersion)
+                {
+                    if (!IsAppalachia || !IsAsset || !directory.Exists)
+                    {
+                        return;
+                    }
+
+                    _lookingForVersion = true;
+
+                    var result = new ShellResult();
+
+                    var enumerator = SystemShell.Execute(
+                        "npm v | grep latest",
+                        this,
+                        result,
+                        onComplete: () =>
+                        {
+                            _publishedVersion = result.output.ParseNpmPackageVersion();
+                            ExecuteReanalyzeNecessary();
+                            _lookingForVersion = false;
+                        }
+                    );
+
+                    EditorCoroutineUtility.StartCoroutineOwnerless(enumerator);
+                }
             }
         }
 
@@ -557,6 +821,7 @@ namespace Appalachia.CI.Integration.Repositories
                 }
 
                 PopulateDependencies();
+                SetPackageVersion();
             }
         }
     }

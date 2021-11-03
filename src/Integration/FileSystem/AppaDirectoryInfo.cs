@@ -764,7 +764,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_HasSiblingFile.Auto())
             {
-                foreach (var sibling in Parent.GetFiles())
+                foreach (var sibling in Parent.EnumerateFiles())
                 {
                     if (sibling.Name == name)
                     {
@@ -782,7 +782,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_HasSubDirectory.Auto())
             {
-                foreach (var child in GetDirectories())
+                foreach (var child in EnumerateDirectories())
                 {
                     if (child.Name == name)
                     {

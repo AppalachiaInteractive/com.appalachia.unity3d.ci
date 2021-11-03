@@ -24,7 +24,6 @@ namespace Appalachia.CI.Constants
         public const string asset = "asset";
         public const string Asset = "Asset";
         public const string Asset_Generation = "Asset_Generation";
-
         public const string Asset_Review = Asset + " " + Review;
         public const string Assets = "Assets";
         public const string Assets_Only = Assets + " " + Only;
@@ -39,6 +38,9 @@ namespace Appalachia.CI.Constants
         public const string Details = "Details";
         public const string Directories = "Directories";
         public const string Directory = "Directory";
+        public const string Distributable = "Distributable";
+        public const string Distributable_Size = Distributable + " " + Size;
+        public const string Distributable_Version = Distributable + " " + Version;
         public const string Editor = "Editor";
         public const string File = "File";
         public const string File_Current = File + " (" + Ideal + ")";
@@ -59,6 +61,8 @@ namespace Appalachia.CI.Constants
         public const string Level = "Level";
         public const string Maintenance = "Maintenance";
         public const string Maintenance_Tasks = Maintenance + " " + Tasks;
+        public const string Menu = "Menu";
+        public const string Menu_Width = Menu + " " + Width;
         public const string Metadata = "Metadata";
         public const string Name = "Name";
         public const string Namespace = "Namespace";
@@ -68,7 +72,6 @@ namespace Appalachia.CI.Constants
         public const string Open__asmdef = Open + " " + _asmdef;
         public const string Open__dotSettings = Open + " " + _dotSettings;
         public const string Open_package_json = Open + " " + package_json;
-        public const string Publish = "Publish";
         public const string Opportunities = "Opportunities";
         public const string Opportunity = "Opportunity";
         public const string Opportunity_Count = Opportunity + " " + Count;
@@ -80,6 +83,10 @@ namespace Appalachia.CI.Constants
         public const string Packages = "Packages";
         public const string Path = "Path";
         public const string Presence = "Presence";
+        public const string Publish = "Publish";
+        public const string Publish_Status = Publish + " " + Status;
+        public const string Published = "Published";
+        public const string Published_Version = Published + " " + Version;
         public const string Reanalyze = "Reanalyze";
         public const string Ref_ = "Ref.";
         public const string Ref_Assembly_Level = Ref_ + Assembly + Level;
@@ -90,6 +97,7 @@ namespace Appalachia.CI.Constants
         public const string Review = "Review";
         public const string Search = "Search";
         public const string Select = "Select";
+        public const string Size = "Size";
         public const string src = "src";
         public const string Status = "Status";
         public const string Tasks = "Tasks";
@@ -101,5 +109,9 @@ namespace Appalachia.CI.Constants
         public const string version = "version";
         public const string Version = "Version";
         public const string Versions = "Versions";
+        public const string Width = "Width";
+        public const string Version_All = Version + " " + All;
+        public const string Package_All = Package + " " + All;
+        public const string Publish_All = Publish + " " + All;
     }
 }

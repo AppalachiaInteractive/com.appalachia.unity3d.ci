@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Core.Extensions;
 
 namespace Appalachia.CI.Integration.Rider
 {

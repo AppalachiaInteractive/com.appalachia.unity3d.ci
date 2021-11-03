@@ -1,32 +1,19 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.CI.Integration.SourceControl;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.Extensions
 {
-    public static class StringExtensions
+    public static class IntegrationStringExtensions
     {
-        public enum EncodingPrefix
-        {
-            UnicodeDefault,
-            Underscore
-        }
-
         #region Profiling And Tracing Markers
 
-        private const string _PRF_PFX = nameof(StringExtensions) + ".";
+        private const string _PRF_PFX = nameof(IntegrationStringExtensions) + ".";
         private static readonly ProfilerMarker _PRF_CleanFullPath = new(_PRF_PFX + nameof(CleanFullPath));
 
         private static readonly ProfilerMarker _PRF_ToAbsolutePath = new(_PRF_PFX + nameof(ToAbsolutePath));
         private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePaths));
-
-        private static readonly ProfilerMarker _PRF_SetupEncodingReplacements =
-            new(_PRF_PFX + nameof(SetupEncodingReplacements));
-
-        private static readonly ProfilerMarker _PRF_EncodeUnicodePathToASCII =
-            new(_PRF_PFX + nameof(EncodeUnicodePathToASCII));
 
         private static readonly ProfilerMarker _PRF_CleanPackagePath =
             new(_PRF_PFX + nameof(CleanPackagePath));
@@ -34,65 +21,22 @@ namespace Appalachia.CI.Integration.Extensions
         private static readonly ProfilerMarker _PRF_InitializePathLookups =
             new(_PRF_PFX + nameof(InitializePathLookups));
 
-        private static Dictionary<char, string> _encodingReplacements;
-        private static Dictionary<EncodingPrefix, string> _encodingPrefixes;
-        private static Dictionary<string, string> _absoluteToRelativePathLookup;
-        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
-        private static readonly ProfilerMarker _PRF_ToRelativePaths = new(_PRF_PFX + nameof(ToRelativePaths));
-        private static char[] _trims = {' ', '.'};
-        private static string[] _keys = {"\\", "//", "\0", "\a", "\b", "\f", "\n", "\r", "\t", "\v"};
-        private static string[] _values = {"/", "/", "", "", "", "", "", "", "", ""};
-
         private static readonly ProfilerMarker _PRF_CleanRelativePath =
             new(_PRF_PFX + nameof(CleanRelativePath));
 
+        private static readonly ProfilerMarker _PRF_ToRelativePaths = new(_PRF_PFX + nameof(ToRelativePaths));
+
         #endregion
 
+        private static char[] _trims = {' ', '.'};
 
-        public static string WindowsToLinuxPath(this string path)
-        {
-            if (Path.IsPathRooted(path))
-            {
-                var builder = new StringBuilder(path);
-                // C:\Program Files\
-                // /c/Program Files
+        private static Dictionary<string, string> _absoluteToRelativePathLookup;
+        private static Dictionary<string, string> _relativeToAbsolutePathLookup;
 
-                builder[1] = char.ToLowerInvariant(builder[0]);
-                builder[0] = '/';
-                path = builder.ToString();
-            }
-            
-            return path.Replace("\\", "/");
-        }
-        
-        private static string[] _packagePaths;
-        
-        public static bool IsPackagePath(this string path)
-        {
-            if (_packagePaths == null)
-            {
-                _packagePaths = new[]
-                {
-                    "Packages/",
-                    "Packages\\",
-                    "Library/PackageCache",
-                    "Library\\PackageCache",
-                };
-            }
+        private static string[] _keys = {"\\", "//", "\0", "\a", "\b", "\f", "\n", "\r", "\t", "\v"};
 
-            for (var i = 0; i < _packagePaths.Length; i++)
-            {
-                var packagePath = _packagePaths[i];
+        private static string[] _values = {"/", "/", "", "", "", "", "", "", "", ""};
 
-                if (path.Contains(packagePath))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        
         public static string CleanFullPath(this string path)
         {
             using (_PRF_CleanFullPath.Auto())
@@ -100,9 +44,12 @@ namespace Appalachia.CI.Integration.Extensions
                 for (var i = 0; i < _keys.Length; i++)
                 {
                     var key = _keys[i];
-                    var value = _values[i];
-                    
-                    path = path.Replace(key, value);
+
+                    if (path.Contains(key))
+                    {
+                        var value = _values[i];
+                        path = path.Replace(key, value);    
+                    }
                 }
 
                 path = path.Trim(_trims);
@@ -111,7 +58,7 @@ namespace Appalachia.CI.Integration.Extensions
                 {
                     path = path.Substring(1);
                 }
-                
+
                 return path;
             }
         }
@@ -124,12 +71,12 @@ namespace Appalachia.CI.Integration.Extensions
                 {
                     path = CleanPackagePath(path);
                 }
-                
+
                 for (var i = 0; i < _keys.Length; i++)
                 {
                     var key = _keys[i];
                     var value = _values[i];
-                    
+
                     path = path.Replace(key, value);
                 }
 
@@ -139,39 +86,8 @@ namespace Appalachia.CI.Integration.Extensions
                 {
                     path = path.Substring(1);
                 }
-                
+
                 return path;
-            }
-        }
-
-        public static string EncodeUnicodePathToASCII(this string path, EncodingPrefix prefix)
-        {
-            using (_PRF_EncodeUnicodePathToASCII.Auto())
-            {
-                SetupEncodingReplacements();
-
-                var prefixString = _encodingPrefixes[prefix];
-
-                var builder = new StringBuilder();
-
-                for (var i = 0; i < path.Length; i++)
-                {
-                    var character = path[i];
-
-                    if (_encodingReplacements.ContainsKey(character))
-                    {
-                        var replacementSuffix = _encodingReplacements[character];
-                        var replacement = $"{prefixString}{replacementSuffix}";
-
-                        builder.Append(replacement);
-                    }
-                    else
-                    {
-                        builder.Append(character);
-                    }
-                }
-
-                return builder.ToString();
             }
         }
 
@@ -188,12 +104,12 @@ namespace Appalachia.CI.Integration.Extensions
 
                 var cleanRelativePath = relativePath.CleanFullPath();
 
-                var basePath = ProjectLocations.GetProjectDirectoryPath();
-
                 var firstSubfolder = cleanRelativePath.IndexOf('/');
                 var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
 
-                var absolutePath = AppaPath.Combine(basePath, relativePathSubstring);
+                /*var basePath = ProjectLocations.GetProjectDirectoryPath();
+                var absolutePath = AppaPath.Combine(basePath, relativePathSubstring);*/
+                var absolutePath = AppaPath.GetFullPath(relativePathSubstring);
 
                 _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
 
@@ -299,56 +215,14 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        private static void SetupEncodingReplacements()
+        internal static bool IsPathIgnored(this string path, IgnoreFile ignoreFile)
         {
-            using (_PRF_SetupEncodingReplacements.Auto())
+            if (ignoreFile == null)
             {
-                if ((_encodingReplacements != null) && (_encodingReplacements.Count > 0))
-                {
-                    return;
-                }
-
-                _encodingPrefixes = new Dictionary<EncodingPrefix, string>();
-
-                _encodingPrefixes.Add(EncodingPrefix.Underscore,     "_");
-                _encodingPrefixes.Add(EncodingPrefix.UnicodeDefault, "U+");
-
-                _encodingReplacements = new Dictionary<char, string>();
-
-                _encodingReplacements.Add(' ',  "0020"); // Space
-                _encodingReplacements.Add('!',  "0021"); // Exclamation mark
-                _encodingReplacements.Add('"',  "0022"); // Quotation mark
-                _encodingReplacements.Add('#',  "0023"); // Number sign, Hash, Octothorpe, Sharp
-                _encodingReplacements.Add('$',  "0024"); // Dollar sign
-                _encodingReplacements.Add('%',  "0025"); // Percent sign
-                _encodingReplacements.Add('&',  "0026"); // Ampersand
-                _encodingReplacements.Add('\'', "0027"); // Apostrophe
-                _encodingReplacements.Add('(',  "0028"); // Left parenthesis
-                _encodingReplacements.Add(')',  "0029"); // Right parenthesis
-                _encodingReplacements.Add('*',  "002A"); // Asterisk
-                _encodingReplacements.Add('+',  "002B"); // Plus sign
-                _encodingReplacements.Add(',',  "002C"); // Comma
-                _encodingReplacements.Add('-',  "002D"); // Hyphen-minus
-                _encodingReplacements.Add('.',  "002E"); // Full stop
-                _encodingReplacements.Add('/',  "002F"); // Slash (Solidus)
-                _encodingReplacements.Add(':',  "003A"); // Colon
-                _encodingReplacements.Add(';',  "003B"); // Semicolon
-                _encodingReplacements.Add('<',  "003C"); // Less-than sign
-                _encodingReplacements.Add('=',  "003D"); // Equal sign
-                _encodingReplacements.Add('>',  "003E"); // Greater-than sign
-                _encodingReplacements.Add('?',  "003F"); // Question mark
-                _encodingReplacements.Add('@',  "0040"); // At sign
-                _encodingReplacements.Add('[',  "005B"); // Left Square Bracket
-                _encodingReplacements.Add('\\', "005C"); // Backslash
-                _encodingReplacements.Add(']',  "005D"); // Right Square Bracket
-                _encodingReplacements.Add('^',  "005E"); // Circumflex accent
-                _encodingReplacements.Add('_',  "005F"); // Low line
-                _encodingReplacements.Add('`',  "0060"); // Grave accent
-                _encodingReplacements.Add('{',  "007B"); // Left Curly Bracket
-                _encodingReplacements.Add('|',  "007C"); // Vertical bar
-                _encodingReplacements.Add('}',  "007D"); // Right Curly Bracket
-                _encodingReplacements.Add('~',  "007E"); // Tilde
+                return false;
             }
+            
+            return ignoreFile.IsIgnored(path);
         }
     }
 }

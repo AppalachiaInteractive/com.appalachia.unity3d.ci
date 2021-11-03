@@ -272,5 +272,18 @@ namespace Appalachia.CI.Integration.Core
                 IntegrationMetadataRegisterExecutor.Execute();
             }
         }
+
+        #region Nested Types
+
+        public event ReanalyzeHandler OnReanalyzeNecessary;
+        
+        public delegate void ReanalyzeHandler();
+
+        protected virtual void ExecuteReanalyzeNecessary()
+        {
+            OnReanalyzeNecessary?.Invoke();
+        }
+
+        #endregion
     }
 }

@@ -1,4 +1,4 @@
-namespace Appalachia.CI.Integration.Repositories
+namespace Appalachia.CI.Integration.Repositories.Publishing
 {
     public enum PublishStatus
     {

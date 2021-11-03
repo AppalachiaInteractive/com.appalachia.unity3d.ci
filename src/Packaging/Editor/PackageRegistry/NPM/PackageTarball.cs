@@ -46,7 +46,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
             tarArchive.WriteEntry(tarEntry, false);
 
             // Write each file to the tar.
-            var filenames = AppaDirectory.GetFiles(sourceDirectory);
+            var filenames = AppaDirectory.EnumerateFiles(sourceDirectory);
             foreach (var filename in filenames)
             {
                 var fileEntry = TarEntry.CreateEntryFromFile(filename);
@@ -56,7 +56,7 @@ namespace Appalachia.CI.Packaging.PackageRegistry.NPM
 
             if (recurse)
             {
-                var directories = AppaDirectory.GetDirectories(sourceDirectory);
+                var directories = AppaDirectory.EnumerateDirectories(sourceDirectory);
                 foreach (var directory in directories)
                 {
                     var newDirectory = directoryName + new AppaDirectoryInfo(directory).Name + "/";
