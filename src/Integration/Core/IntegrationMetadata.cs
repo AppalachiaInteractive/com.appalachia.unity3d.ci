@@ -107,15 +107,15 @@ namespace Appalachia.CI.Integration.Core
 
         public static IReadOnlyList<T> Instances => _instances;
 
-        public bool IsAsset => flags.HasFlag(IntegrationTypeFlags.IsAsset);
-        public bool IsLibrary => flags.HasFlag(IntegrationTypeFlags.IsLibrary);
-        public bool IsPackage => flags.HasFlag(IntegrationTypeFlags.IsPackage);
-        public bool IsAppalachia => flags.HasFlag(IntegrationTypeFlags.IsAppalachia);
-        public bool IsBuiltinUnity => flags.HasFlag(IntegrationTypeFlags.IsBuiltinUnity);
-        public bool IsCustomUnity => flags.HasFlag(IntegrationTypeFlags.IsCustomUnity);
-        public bool IsAppalachiaManaged => IsAppalachia || IsThirdParty || IsCustomUnity;
-        public bool IsThirdParty => !IsAppalachia && !IsUnity;
-        public bool IsUnity => IsBuiltinUnity || IsCustomUnity;
+        public bool IsAsset => flags.Has(IntegrationTypeFlags.IsAsset);
+        public bool IsLibrary => flags.Has(IntegrationTypeFlags.IsLibrary);
+        public bool IsPackage => flags.Has(IntegrationTypeFlags.IsPackage);
+        public bool IsAppalachia => flags.Has(IntegrationTypeFlags.IsAppalachia);
+        public bool IsBuiltinUnity => flags.Has(IntegrationTypeFlags.IsBuiltinUnity);
+        public bool IsCustomUnity => flags.Has(IntegrationTypeFlags.IsCustomUnity);
+        public bool IsAppalachiaManaged => flags.HasAny(IntegrationTypeFlags.IsAppalachiaManaged);
+        public bool IsThirdParty => flags.Has(IntegrationTypeFlags.IsThirdParty);
+        public bool IsUnity => flags.HasAny(IntegrationTypeFlags.IsUnity);
 
         /*
         private string _unifiedName;
@@ -367,7 +367,7 @@ namespace Appalachia.CI.Integration.Core
             {
                 flags = flags.SetFlag(IntegrationTypeFlags.IsBuiltinUnity);
             }
-
+        
             if ((n == "com.appalachia.unity3d.third-party.unity") ||
                 n.StartsWith("unity.visualeffectgraph") ||
                 n.StartsWith("cinemachine") ||
@@ -375,6 +375,11 @@ namespace Appalachia.CI.Integration.Core
                 n.StartsWith("unity.ai.navigation"))
             {
                 flags = flags.SetFlag(IntegrationTypeFlags.IsCustomUnity);
+            }
+
+            if (flags.HasNone(IntegrationTypeFlags.IsAppalachia | IntegrationTypeFlags.IsUnity))
+            {
+                flags = flags.SetFlag(IntegrationTypeFlags.IsThirdParty);
             }
         }
 

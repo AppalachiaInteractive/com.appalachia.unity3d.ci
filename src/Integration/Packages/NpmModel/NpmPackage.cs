@@ -117,7 +117,7 @@ namespace Appalachia.CI.Integration.Packages
         public NpmPackagePublishConfig PublishConfig { get; set; }
         
         [JsonProperty("dependencies", NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<string, string> Dependencies { get; set; }
+        public SortedDictionary<string, string> Dependencies { get; set; }
         
         [JsonProperty("devDependencies", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> DevDependencies { get; set; }

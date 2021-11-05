@@ -119,16 +119,6 @@ namespace Appalachia.CI.Integration.Assemblies
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) <= 0;
         }
 
-        private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
-        {
-            var asmdefs = AssetDatabaseManager.FindProjectPathsByExtension(".asmdef");
-
-            foreach (var asmdef in asmdefs)
-            {
-                yield return CreateNew(asmdef);
-            }
-        }
-
         private static void FinalizeInternal()
         {
             using (_PRF_FinalizeInternal.Auto())
@@ -144,39 +134,14 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        public override bool Equals(AssemblyDefinitionMetadata other)
+        private static IEnumerable<AssemblyDefinitionMetadata> FindAllInternal()
         {
-            if (ReferenceEquals(null, other))
+            var asmdefs = AssetDatabaseManager.FindProjectPathsByExtension(".asmdef");
+
+            foreach (var asmdef in asmdefs)
             {
-                return false;
+                yield return CreateNew(asmdef);
             }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return AssemblyCurrent == other.AssemblyCurrent;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((AssemblyDefinitionMetadata) obj);
         }
 
         public override int CompareTo(object obj)
@@ -253,9 +218,49 @@ namespace Appalachia.CI.Integration.Assemblies
             return string.Compare(Path, other.Path, StringComparison.Ordinal);
         }
 
+        public override bool Equals(AssemblyDefinitionMetadata other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return AssemblyCurrent == other.AssemblyCurrent;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((AssemblyDefinitionMetadata) obj);
+        }
+
         public override int GetHashCode()
         {
             return AssemblyCurrent != null ? AssemblyCurrent.GetHashCode() : 0;
+        }
+
+        public override void InitializeForAnalysis()
+        {
+            SetReferences();
         }
 
         public override string ToString()
@@ -264,11 +269,6 @@ namespace Appalachia.CI.Integration.Assemblies
             {
                 return AssemblyCurrent;
             }
-        }
-
-        public override void InitializeForAnalysis()
-        {
-            SetReferences();
         }
 
         public int GetAssemblyReferenceLevel()
@@ -405,7 +405,7 @@ namespace Appalachia.CI.Integration.Assemblies
         {
             if (_partExclusions == null)
             {
-                _partExclusions = new[] {"src", "dist", "asmdef", "Runtime", "Scripts"};
+                _partExclusions = new[] {"src", "dist", "asmdef", "Runtime", "Scripts", "Third-Party"};
             }
 
             _path = path.ToRelativePath();
@@ -507,8 +507,9 @@ namespace Appalachia.CI.Integration.Assemblies
 
             if (reimport)
             {
-                LoadAsset(_path);
+                ImportAndLoadAsset(_path);
                 SetReferences();
+                AssetDatabaseManager.Refresh();
             }
         }
 
@@ -554,17 +555,19 @@ namespace Appalachia.CI.Integration.Assemblies
             yield return AssemblyCurrent;
         }
 
+        private void ImportAndLoadAsset(string assemblyDefinitionPath)
+        {
+            asset = AssetDatabaseManager.ImportAndLoadAssetAtPath<AssemblyDefinitionAsset>(
+                assemblyDefinitionPath
+            );
+
+            ProcessImportedAsset(asset);
+        }
+
         private void LoadAsset(string assemblyDefinitionPath)
         {
             asset = AssetDatabaseManager.LoadAssetAtPath<AssemblyDefinitionAsset>(assemblyDefinitionPath);
-
-            if (asset == null)
-            {
-                return;
-            }
-
-            assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
-            referenceStrings = assetModel.references?.ToList() ?? new List<string>();
+            ProcessImportedAsset(asset);
         }
 
         private void LoadDotSettings()
@@ -578,6 +581,17 @@ namespace Appalachia.CI.Integration.Assemblies
                 var dotSettingsText = AppaFile.ReadAllLines(DotSettingsPath);
                 dotSettings = new DotSettings(dotSettingsText);
             }
+        }
+
+        private void ProcessImportedAsset(AssemblyDefinitionAsset asset)
+        {
+            if (asset == null)
+            {
+                return;
+            }
+
+            assetModel = JsonConvert.DeserializeObject<AssemblyDefinitionModel>(asset.text);
+            referenceStrings = assetModel.references?.ToList() ?? new List<string>();
         }
     }
 }

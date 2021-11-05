@@ -9,6 +9,7 @@ using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Appalachia.CI.Integration.Dependencies
 {
@@ -36,7 +37,7 @@ namespace Appalachia.CI.Integration.Dependencies
         private const int MENU_UNITY_PRIORITY = MENU_PRIORITY + 2;
         private const string MENU_APPA_PACK = PKG.Menu.Appalachia.Packages.Base + "Appalachia/To Packages";
         private const string MENU_APPA_REPO = PKG.Menu.Appalachia.Packages.Base + "Appalachia/To Repository";
-        private const string MENU_DRYR = PKG.Menu.Appalachia.Packages.Base + "Dry Run";
+        private const string MENU_ENAB = PKG.Menu.Appalachia.Packages.Base + "Enabled";
         private const string MENU_THIRD_PACK = PKG.Menu.Appalachia.Packages.Base + "Third Party/To Packages";
 
         private const string MENU_THIRD_REPO =
@@ -47,7 +48,8 @@ namespace Appalachia.CI.Integration.Dependencies
 
         #endregion
 
-        private static bool _dryRun;
+        //private static bool _dryRun;
+        private static bool _enabled;
         private static bool _executing;
 
         private static DependencySubset _appalachiaSubset;
@@ -69,7 +71,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_APPA_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void APPAToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_dryRun, _appalachiaSubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_appalachiaSubset));
         }
 
         [UnityEditor.MenuItem(MENU_APPA_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -81,14 +83,13 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_APPA_PACK, _appalachiaSubset.anyPackages);
             return _appalachiaSubset.anyRepositories;
         }
 
         [UnityEditor.MenuItem(MENU_APPA_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void APPAToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_dryRun, _appalachiaSubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_appalachiaSubset));
         }
 
         [UnityEditor.MenuItem(MENU_APPA_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -100,14 +101,13 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_APPA_REPO, _appalachiaSubset.anyRepositories);
             return _appalachiaSubset.anyPackages;
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void THIRDToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_dryRun, _thirdPartySubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_thirdPartySubset));
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -119,14 +119,13 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_THIRD_PACK, _thirdPartySubset.anyPackages);
             return _thirdPartySubset.anyRepositories;
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void THIRDToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_dryRun, _thirdPartySubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_thirdPartySubset));
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -138,20 +137,19 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_THIRD_REPO, _thirdPartySubset.anyRepositories);
             return _thirdPartySubset.anyPackages;
         }
 
-        [UnityEditor.MenuItem(MENU_DRYR, false, priority = MENU_PRIORITY - 1)]
-        private static void ToggleDryRun()
+        [UnityEditor.MenuItem(MENU_ENAB, false, priority = MENU_PRIORITY - 1)]
+        private static void ToggleEnabled()
         {
-            _dryRun = !_dryRun;
+            _enabled = !_enabled;
         }
 
-        [UnityEditor.MenuItem(MENU_DRYR, true, priority = MENU_PRIORITY - 1)]
-        private static bool ToggleDryRunValidate()
+        [UnityEditor.MenuItem(MENU_ENAB, true, priority = MENU_PRIORITY - 1)]
+        private static bool ToggleEnabledValidated()
         {
-            UnityEditor.Menu.SetChecked(MENU_DRYR, _dryRun);
+            UnityEditor.Menu.SetChecked(MENU_ENAB, _enabled);
 
             if (_executing)
             {
@@ -164,7 +162,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_UNITY_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void UNITYToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_dryRun, _unitySubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_unitySubset));
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -176,14 +174,13 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_UNITY_PACK, _unitySubset.anyPackages);
             return _unitySubset.anyRepositories;
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void UNITYToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_dryRun, _unitySubset));
+            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_unitySubset));
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -195,7 +192,6 @@ namespace Appalachia.CI.Integration.Dependencies
             }
 
             Check();
-            UnityEditor.Menu.SetChecked(MENU_UNITY_REPO, _unitySubset.anyRepositories);
             return _unitySubset.anyPackages;
         }
 
@@ -265,13 +261,20 @@ namespace Appalachia.CI.Integration.Dependencies
                             dependency.Value.state = DependencyState.AsRepository;
                         }
 
-                        Debug.Log($"{dependency.Value.state}: {dependency.Key}");
+                        //Debug.Log($"{dependency.Value.state}: {dependency.Key}");
                     }
                 }
+
+                UnityEditor.Menu.SetChecked(MENU_APPA_PACK,  _appalachiaSubset.anyPackages);
+                UnityEditor.Menu.SetChecked(MENU_APPA_REPO,  _appalachiaSubset.anyRepositories);
+                UnityEditor.Menu.SetChecked(MENU_THIRD_PACK, _thirdPartySubset.anyPackages);
+                UnityEditor.Menu.SetChecked(MENU_THIRD_REPO, _thirdPartySubset.anyRepositories);
+                UnityEditor.Menu.SetChecked(MENU_UNITY_PACK, _unitySubset.anyPackages);
+                UnityEditor.Menu.SetChecked(MENU_UNITY_REPO, _unitySubset.anyRepositories);
             }
         }
 
-        private static IEnumerator ExecuteToPackages(bool dryRun, DependencySubset subset)
+        private static IEnumerator ExecuteToPackages(DependencySubset subset)
         {
             using (_PRF_ExecuteToPackages.Auto())
             {
@@ -292,7 +295,7 @@ namespace Appalachia.CI.Integration.Dependencies
 
                         var repository = dependency.repository;
 
-                        var subEnum = repository.ConvertToPackage(false, false, dryRun);
+                        var subEnum = repository.ConvertToPackage(false, false, !_enabled);
 
                         using (_PRF_ExecuteToPackages.Suspend())
                         {
@@ -305,14 +308,7 @@ namespace Appalachia.CI.Integration.Dependencies
                         adds.Add(repository.NameAndVersion);
                     }
 
-                    if (dryRun)
-                    {
-                        foreach (var add in adds)
-                        {
-                            Debug.Log($"PKGMANAGER: Adding [{add}]");
-                        }
-                    }
-                    else
+                    if (_enabled)
                     {
                         var request = Client.AddAndRemove(adds.ToArray());
 
@@ -324,6 +320,13 @@ namespace Appalachia.CI.Integration.Dependencies
                             }
                         }
                     }
+                    else
+                    {
+                        foreach (var add in adds)
+                        {
+                            Debug.Log($"PKGMANAGER: Adding [{add}]");
+                        }
+                    }
                 }
                 finally
                 {
@@ -332,7 +335,7 @@ namespace Appalachia.CI.Integration.Dependencies
             }
         }
 
-        private static IEnumerator ExecuteToRepository(bool dryRun, DependencySubset subset)
+        private static IEnumerator ExecuteToRepository(DependencySubset subset)
         {
             using (_PRF_ExecuteToRepository.Auto())
             {
@@ -353,7 +356,7 @@ namespace Appalachia.CI.Integration.Dependencies
 
                         var package = dependency.package;
 
-                        var subEnum = package.ConvertToRepository(false, false, dryRun);
+                        var subEnum = package.ConvertToRepository(false, false, !_enabled);
 
                         using (_PRF_ExecuteToRepository.Suspend())
                         {
@@ -366,14 +369,7 @@ namespace Appalachia.CI.Integration.Dependencies
                         removes.Add(package.Name);
                     }
 
-                    if (dryRun)
-                    {
-                        foreach (var remove in removes)
-                        {
-                            Debug.Log($"PKGMANAGER: Removing [{remove}]");
-                        }
-                    }
-                    else
+                    if (_enabled)
                     {
                         var request = Client.AddAndRemove(packagesToRemove: removes.ToArray());
 
@@ -383,6 +379,13 @@ namespace Appalachia.CI.Integration.Dependencies
                             {
                                 yield return null;
                             }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var remove in removes)
+                        {
+                            Debug.Log($"PKGMANAGER: Removing [{remove}]");
                         }
                     }
                 }
@@ -397,15 +400,20 @@ namespace Appalachia.CI.Integration.Dependencies
         {
             try
             {
-                if (!_dryRun)
+                if (_enabled)
                 {
-                    AssetDatabaseManager.StopAssetEditing();
                     AssetDatabaseManager.SaveAssets();
                     AssetDatabaseManager.Refresh();
-                }
 
-                IntegrationMetadata.ClearAll<PackageMetadata>();
-                IntegrationMetadata.ClearAll<RepositoryMetadata>();
+                    IntegrationMetadata.ClearAll<PackageMetadata>();
+                    IntegrationMetadata.ClearAll<RepositoryMetadata>();
+                }
+                else
+                {
+                    Debug.Log("[RESUME ASSET IMPORT]");
+                    Debug.Log("[SAVE ASSETS]");
+                    Debug.Log("[REFRESH ASSETS]");
+                }
             }
             finally
             {
@@ -419,9 +427,25 @@ namespace Appalachia.CI.Integration.Dependencies
 
             try
             {
-                if (!_dryRun)
+                if (_enabled)
                 {
-                    AssetDatabaseManager.StartAssetEditing();
+                    AssetDatabaseManager.SetSelection("Assets");
+
+                    UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+
+                    while (SceneManager.sceneCount > 0)
+                    {
+                        var scene = SceneManager.GetSceneAt(0);
+
+                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+                    }
+                    
+                    AssetDatabaseManager.SaveAssets();
+                }
+                else
+                {
+                    Debug.Log("[CLEAR SELECTION]");
+                    Debug.Log("[SUSPEND ASSET IMPORT]");
                 }
             }
             catch

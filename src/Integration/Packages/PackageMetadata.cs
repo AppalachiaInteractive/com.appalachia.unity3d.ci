@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
@@ -60,6 +62,8 @@ namespace Appalachia.CI.Integration.Packages
         }
 
         private static ListRequest _request;
+
+        public HashSet<PackageMetadata> dependents;
 
         public PackageInfo packageInfo;
         public RepositoryMetadata repository;
@@ -248,46 +252,80 @@ namespace Appalachia.CI.Integration.Packages
 
         public IEnumerator ConvertToRepository(bool suspendImport, bool executeClient, bool dryRun = true)
         {
-            try
-            {
-                if (!dryRun && suspendImport)
+           
+                Debug.Log($"Converting [{Name}] from a package to a repository.");
+                
+                PopulateDependents();
+                
+                foreach (var dependent in dependents)
                 {
-                    AssetDatabaseManager.StartAssetEditing();
-                }
+                    if (dependent.IsAppalachiaManaged)
+                    {
+                        var subEnum = dependent.ConvertToRepository(false, executeClient, dryRun);
 
+                        while (subEnum.MoveNext())
+                        {
+                            yield return subEnum;
+                        }
+                    }
+                }
+                
                 var repo = packageInfo.repository;
 
-                string folder;
+                string directoryRoot;
+                string directoryName;
+
                 if (IsThirdParty || IsUnity)
                 {
-                    var lastPart = packageInfo.author.name.Replace(" ", string.Empty);
-                    folder = $"Assets/Third-Party/{lastPart}";
+                    directoryName = packageInfo.name.Split(".").Last();
+                    directoryRoot = "Assets/Third-Party/";
                 }
                 else
                 {
-                    folder = $"Assets/{Name}";
+                    directoryName = Name;
+                    directoryRoot = "Assets/";
                 }
 
-                var hideFolder = folder + "~";
+                var existingDirectory = AppaDirectory.GetDirectories(
+                                                          directoryRoot,
+                                                          directoryName + "*",
+                                                          SearchOption.TopDirectoryOnly
+                                                      )
+                                                     .Select(d => new AppaDirectoryInfo(d))
+                                                     .FirstOrDefault();
 
-                if (AppaDirectory.Exists(folder))
+                var alreadyExists = false;
+                var isHidden = false;
+
+                if (existingDirectory != null)
                 {
-                }
-                else if (AppaDirectory.Exists(hideFolder))
-                {
-                    if (dryRun)
+                    var existingDirectoryPath = existingDirectory.RelativePath;
+
+                    if (existingDirectoryPath.EndsWith("~"))
                     {
-                        Debug.Log($"MOVEDIR: [{hideFolder}] to [{folder}]");
-                    }
-                    else
-                    {
-                        AppaDirectory.Move(hideFolder, folder);
+                        var directory = new AppaDirectoryInfo(
+                            existingDirectoryPath.Substring(0, existingDirectoryPath.Length - 1)
+                        );
+
+                        var hideDirectory = existingDirectory;
+
+                        if (dryRun)
+                        {
+                            Debug.Log(
+                                $"MOVEDIR: [{hideDirectory.RelativePath}] to [{directory.RelativePath}]"
+                            );
+                        }
+                        else
+                        {
+                            AppaDirectory.Move(hideDirectory.RelativePath, directory.RelativePath);
+                        }
                     }
                 }
                 else
                 {
                     var result = new ShellResult();
-                    var command = $"git clone {repo.url} {folder}";
+                    var directoryPath = AppaPath.Combine(directoryRoot, directoryName);
+                    var command = $"git clone \"{repo.url.Replace("git+", "")}\" \"{directoryPath}\"";
                     var workingDirectory = Application.dataPath;
 
                     if (dryRun)
@@ -296,7 +334,12 @@ namespace Appalachia.CI.Integration.Packages
                     }
                     else
                     {
-                        var execution = SystemShell.Execute(command, workingDirectory, result);
+                        var execution = SystemShell.Instance.Execute(
+                            command,
+                            workingDirectory,
+                            false,
+                            result
+                        );
 
                         while (execution.MoveNext())
                         {
@@ -321,14 +364,7 @@ namespace Appalachia.CI.Integration.Packages
                         }
                     }
                 }
-            }
-            finally
-            {
-                if (!dryRun && suspendImport)
-                {
-                    AssetDatabaseManager.StopAssetEditing();
-                }
-            }
+            
         }
 
         protected override IEnumerable<string> GetIds()
@@ -344,6 +380,38 @@ namespace Appalachia.CI.Integration.Packages
                 directory = new AppaDirectoryInfo(pkg.assetPath);
                 packageInfo = pkg;
                 repository = RepositoryMetadata.FindByName(pkg.name);
+            }
+        }
+
+        private void PopulateDependents()
+        {
+            if (dependents != null)
+            {
+                return;
+            }
+
+            dependents = new HashSet<PackageMetadata>();
+
+            var packages = FindAll();
+
+            foreach (var package in packages)
+            {
+                if (package.repository != null)
+                {
+                    if (package.repository.dependencies.Any(
+                        dependency => dependency.repository == repository
+                    ))
+                    {
+                        dependents.Add(package);
+                    }
+                }
+                else
+                {
+                    if (package.packageInfo.dependencies.Any(dependency => dependency.name == Name))
+                    {
+                        dependents.Add(package);
+                    }
+                }
             }
         }
     }

@@ -15,6 +15,8 @@ C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
 `0.2.0`
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| 0b6a8a912f4422e8436dc0a94ec1dcfc8b43b6d1 | 2021-11-03 | Chris Schubert | Committing before testing the package v. repo switch |
+| 86c3c27ae745484822282331b848f249c6b42157 | 2021-11-02 | Chris Schubert | Updating changelog and releaselog |
 | 031ef55b5125dcc4b745eb204041c117d986c22b | 2021-11-02 | Chris Schubert | Updating changelog and releaselog |
 | e051ee6ce5fcde114d87ba6c12524bdc0f0fb771 | 2021-11-02 | Chris Schubert | Updating changelog and releaselog |
 | ba36bc4f452d5fc1066632db9f7a9bed288a609c | 2021-11-02 | Chris Schubert | Updating changelog and releaselog |

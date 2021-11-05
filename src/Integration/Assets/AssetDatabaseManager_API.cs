@@ -253,6 +253,9 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_OpenAssetAtPath =
             new ProfilerMarker(_PRF_PFX + nameof(OpenAssetAtPath));
 
+        private static readonly ProfilerMarker _PRF_ImportAndLoadAssetAtPath =
+            new ProfilerMarker(_PRF_PFX + nameof(ImportAndLoadAssetAtPath));
+
         #endregion
 
         /// <summary>
@@ -314,6 +317,84 @@ namespace Appalachia.CI.Integration.Assets
         {
             add => AssetDatabase.importPackageFailed += value;
             remove => AssetDatabase.importPackageFailed -= value;
+        }
+
+        /// <summary>
+        ///     <para>Adds objectToAdd to an existing asset at path.</para>
+        /// </summary>
+        /// <param name="objectToAdd">Object to add to the existing asset.</param>
+        /// <param name="path">Filesystem path to the asset.</param>
+        public static void AddObjectToAsset(Object objectToAdd, string path)
+        {
+            using (_PRF_AddObjectToAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.AddObjectToAsset(objectToAdd, relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Adds objectToAdd to an existing asset identified by assetObject.</para>
+        /// </summary>
+        /// <param name="objectToAdd"></param>
+        /// <param name="assetObject"></param>
+        public static void AddObjectToAsset(Object objectToAdd, Object assetObject)
+        {
+            using (_PRF_AddObjectToAsset.Auto())
+            {
+                AssetDatabase.AddObjectToAsset(objectToAdd, assetObject);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Decrements an internal counter which Unity uses to determine whether to allow automatic AssetDatabase refreshing behavior.</para>
+        /// </summary>
+        public static void AllowAutoRefresh()
+        {
+            using (_PRF_AllowAutoRefresh.Auto())
+            {
+                AssetDatabase.AllowAutoRefresh();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Get the GUID for the asset at path.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path for the asset.</param>
+        /// <param name="options">
+        ///     Specifies whether this method should return a GUID for recently deleted assets. The default value is
+        ///     AssetPathToGUIDOptions.IncludeRecentlyDeletedAssets.
+        /// </param>
+        /// <returns>
+        ///     <para>GUID.</para>
+        /// </returns>
+        public static string AssetPathToGUID(string path)
+        {
+            using (_PRF_AssetPathToGUID.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.AssetPathToGUID(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Get the GUID for the asset at path.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path for the asset.</param>
+        /// <param name="options">
+        ///     Specifies whether this method should return a GUID for recently deleted assets. The default value is
+        ///     AssetPathToGUIDOptions.IncludeRecentlyDeletedAssets.
+        /// </param>
+        /// <returns>
+        ///     <para>GUID.</para>
+        /// </returns>
+        public static string AssetPathToGUID(string path, AssetPathToGUIDOptions options)
+        {
+            using (_PRF_AssetPathToGUID.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.AssetPathToGUID(relativePath, options);
+            }
         }
 
         /// <summary>
@@ -482,6 +563,53 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static void CanOpenForEdit(
+            string[] assetOrMetaFilePaths,
+            List<string> outNotEditablePaths,
+            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
+        {
+            using (_PRF_CanOpenForEdit.Auto())
+            {
+                AssetDatabase.CanOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Clears the importer override for the asset.</para>
+        /// </summary>
+        /// <param name="path">Asset path.</param>
+        public static void ClearImporterOverride(string path)
+        {
+            using (_PRF_ClearImporterOverride.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ClearImporterOverride(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Removes all labels attached to an asset.</para>
+        /// </summary>
+        /// <param name="obj"></param>
+        public static void ClearLabels(Object obj)
+        {
+            using (_PRF_ClearLabels.Auto())
+            {
+                AssetDatabase.ClearLabels(obj);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Closes an active cache server connection. If no connection is active, then it does nothing.</para>
+        /// </summary>
+        public static void CloseCacheServerConnection()
+        {
+            using (_PRF_CloseCacheServerConnection.Auto())
+            {
+                AssetDatabase.CloseCacheServerConnection();
+            }
+        }
+
         /// <summary>
         ///     <para>Is object an asset?</para>
         /// </summary>
@@ -527,6 +655,87 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         /// <summary>
+        ///     <para>Creates a new native Unity asset.</para>
+        /// </summary>
+        /// <param name="asset">Object to use in creating the asset.</param>
+        /// <param name="path">Filesystem path for the new asset.</param>
+        public static void CreateAsset(Object asset, string path)
+        {
+            using (_PRF_CreateAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                var directory = AppaPath.GetDirectoryName(relativePath);
+
+                CreateFolder(directory, true);
+
+                AssetDatabase.CreateAsset(asset, relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Creates a new folder, in the specified parent folder.
+        ///         The parent folder string must start with the "Assets" folder, and all folders within the parent folder string must already exist. For
+        ///         example, when specifying "AssetsParentFolder1Parentfolder2/", the new folder will be created in "ParentFolder2" only if ParentFolder1 and
+        ///         ParentFolder2 already exist.
+        ///     </para>
+        /// </summary>
+        /// <param name="parentFolder">The path to the parent folder. Must start with "Assets/".</param>
+        /// <param name="newFolderName">The name of the new folder.</param>
+        /// <returns>
+        ///     <para>The GUID of the newly created folder, if the folder was created successfully. Otherwise returns an empty string.</para>
+        /// </returns>
+        public static void CreateFolder(
+            string parentFolder,
+            string newFolderName,
+            bool createStructure = true)
+        {
+            using (_PRF_CreateFolder.Auto())
+            {
+                parentFolder = parentFolder.CleanFullPath();
+
+                if (createStructure)
+                {
+                    var di = new AppaDirectoryInfo(parentFolder);
+
+                    if (!di.Exists)
+                    {
+                        di.Create();
+                        ImportAsset(parentFolder);
+                    }
+                }
+
+                var completeFolder = AppaPath.Combine(parentFolder, newFolderName);
+
+                if (AppaDirectory.Exists(completeFolder))
+                {
+                    return;
+                }
+
+                if (AssetDatabase.IsValidFolder(completeFolder))
+                {
+                    return;
+                }
+
+                AppaDirectory.CreateDirectory(completeFolder);
+                AssetDatabase.ImportAsset(completeFolder);
+            }
+        }
+
+        public static void CreateFolder(string folderPath, bool createStructure)
+        {
+            folderPath = folderPath.CleanFullPath();
+
+            var splits = folderPath.Split('/');
+
+            var lastPart = splits[splits.Length - 1];
+
+            var basePath = folderPath.Replace(lastPart, string.Empty);
+
+            CreateFolder(basePath, lastPart, createStructure);
+        }
+
+        /// <summary>
         ///     <para>Deletes the specified asset or folder.</para>
         /// </summary>
         /// <param name="path">Project relative path of the asset or folder to be deleted.</param>
@@ -546,6 +755,424 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_DeleteAssets.Auto())
             {
                 return AssetDatabase.DeleteAssets(paths, outFailedPaths);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Increments an internal counter which Unity uses to determine whether to allow automatic AssetDatabase refreshing behavior.</para>
+        /// </summary>
+        public static void DisallowAutoRefresh()
+        {
+            using (_PRF_DisallowAutoRefresh.Auto())
+            {
+                AssetDatabase.DisallowAutoRefresh();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="fileName"></param>
+        /// <param name="flags"></param>
+        /// <param name="path"></param>
+        public static void ExportPackage(string path, string fileName)
+        {
+            using (_PRF_ExportPackage.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ExportPackage(relativePath, fileName);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="fileName"></param>
+        /// <param name="flags"></param>
+        /// <param name="path"></param>
+        public static void ExportPackage(string path, string fileName, ExportPackageOptions flags)
+        {
+            using (_PRF_ExportPackage.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ExportPackage(relativePath, fileName, flags);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="fileName"></param>
+        /// <param name="flags"></param>
+        /// <param name="path"></param>
+        public static void ExportPackage(string[] paths, string fileName)
+        {
+            using (_PRF_ExportPackage.Auto())
+            {
+                var relativePaths = paths.ToRelativePaths();
+                AssetDatabase.ExportPackage(relativePaths, fileName);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <param name="fileName"></param>
+        /// <param name="flags"></param>
+        /// <param name="path"></param>
+        public static void ExportPackage(string[] paths, string fileName, ExportPackageOptions flags)
+        {
+            using (_PRF_ExportPackage.Auto())
+            {
+                var relativePaths = paths.ToRelativePaths();
+                AssetDatabase.ExportPackage(relativePaths, fileName, flags);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Creates an external Asset from an object (such as a Material) by extracting it from within an imported asset (such as an FBX file).</para>
+        /// </summary>
+        /// <param name="asset">The sub-asset to extract.</param>
+        /// <param name="newPath">The file path of the new Asset.</param>
+        /// <returns>
+        ///     <para>An empty string if Unity has successfully extracted the Asset, or an error message if not.</para>
+        /// </returns>
+        public static string ExtractAsset(Object asset, string newPath)
+        {
+            using (_PRF_ExtractAsset.Auto())
+            {
+                return AssetDatabase.ExtractAsset(asset, newPath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Search the asset database using the search filter string.</para>
+        /// </summary>
+        /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
+        /// <param name="searchInFolders">The folders where the search will start.</param>
+        /// <returns>
+        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
+        /// </returns>
+        public static string[] FindAssets(string filter)
+        {
+            using (_PRF_FindAssets.Auto())
+            {
+                return AssetDatabase.FindAssets(filter);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Search the asset database using the search filter string.</para>
+        /// </summary>
+        /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
+        /// <param name="searchInFolders">The folders where the search will start.</param>
+        /// <returns>
+        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
+        /// </returns>
+        public static string[] FindAssets(string filter, string[] searchInFolders)
+        {
+            using (_PRF_FindAssets.Auto())
+            {
+                return AssetDatabase.FindAssets(filter, searchInFolders);
+            }
+        }
+
+        public static void ForceReserializeAssets(
+            IEnumerable<string> assetPaths,
+            ForceReserializeAssetsOptions options =
+                ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
+        {
+            using (_PRF_ForceReserializeAssets.Auto())
+            {
+                AssetDatabase.ForceReserializeAssets(assetPaths, options);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Forcibly load and re-serialize the given assets, flushing any outstanding data changes to disk.</para>
+        /// </summary>
+        /// <param name="assetPaths">The paths to the assets that should be reserialized. If omitted, will reserialize all assets in the project.</param>
+        /// <param name="options">Specify whether you want to reserialize the assets themselves, their .meta files, or both. If omitted, defaults to both.</param>
+        public static void ForceReserializeAssets()
+        {
+            using (_PRF_ForceReserializeAssets.Auto())
+            {
+                AssetDatabase.ForceReserializeAssets();
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Forces the Editor to use the desired amount of worker processes. Unity will either spawn new worker processes or shut down idle worker
+        ///         processes to reach the desired number.
+        ///     </para>
+        /// </summary>
+        public static void ForceToDesiredWorkerCount()
+        {
+            using (_PRF_ForceToDesiredWorkerCount.Auto())
+            {
+                AssetDatabase.ForceToDesiredWorkerCount();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Creates a new unique path for an asset.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static string GenerateUniqueAssetPath(string path)
+        {
+            using (_PRF_GenerateUniqueAssetPath.Auto())
+            {
+                return AssetDatabase.GenerateUniqueAssetPath(path);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Return all the AssetBundle names in the asset database.</para>
+        /// </summary>
+        /// <returns>
+        ///     <para>Array of asset bundle names.</para>
+        /// </returns>
+        public static string[] GetAllAssetBundleNames()
+        {
+            using (_PRF_GetAllAssetBundleNames.Auto())
+            {
+                return AssetDatabase.GetAllAssetBundleNames();
+            }
+        }
+
+        public static string[] GetAllAssetPaths()
+        {
+            using (_PRF_GetAllAssetPaths.Auto())
+            {
+                return AssetDatabase.GetAllAssetPaths();
+            }
+        }
+
+        public static string[] GetAllProjectPaths()
+        {
+            using (_PRF_GetAllProjectPaths.Auto())
+            {
+                var assets = GetAllAssetPaths();
+
+                var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
+
+                var files = AppaDirectory.GetFiles(packageLocation, "*.*", SearchOption.AllDirectories);
+
+                var cleanFiles = ShiftCleanPathsLeft(files, assets);
+
+                var assetsLength = assets.Length;
+
+                Array.Resize(ref assets, assetsLength + cleanFiles);
+
+                Array.Copy(files, 0, assets, assetsLength, cleanFiles);
+
+                return assets;
+            }
+        }
+
+        /// <summary>
+        ///     <para>Given an assetBundleName, returns the list of AssetBundles that it depends on.</para>
+        /// </summary>
+        /// <param name="assetBundleName">The name of the AssetBundle for which dependencies are required.</param>
+        /// <param name="recursive">
+        ///     If false, returns only AssetBundles which are direct dependencies of the input; if true, includes all indirect dependencies
+        ///     of the input.
+        /// </param>
+        /// <returns>
+        ///     <para>The names of all AssetBundles that the input depends on.</para>
+        /// </returns>
+        public static string[] GetAssetBundleDependencies(string assetBundleName, bool recursive)
+        {
+            using (_PRF_GetAssetBundleDependencies.Auto())
+            {
+                return AssetDatabase.GetAssetBundleDependencies(assetBundleName, recursive);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the hash of all the dependencies of an asset.</para>
+        /// </summary>
+        /// <param name="path">Path to the asset.</param>
+        /// <param name="guid">GUID of the asset.</param>
+        /// <returns>
+        ///     <para>Aggregate hash.</para>
+        /// </returns>
+        public static Hash128 GetAssetDependencyHash(GUID guid)
+        {
+            using (_PRF_GetAssetDependencyHash.Auto())
+            {
+                return AssetDatabase.GetAssetDependencyHash(guid);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the hash of all the dependencies of an asset.</para>
+        /// </summary>
+        /// <param name="path">Path to the asset.</param>
+        /// <param name="guid">GUID of the asset.</param>
+        /// <returns>
+        ///     <para>Aggregate hash.</para>
+        /// </returns>
+        public static Hash128 GetAssetDependencyHash(string path)
+        {
+            using (_PRF_GetAssetDependencyHash.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetAssetDependencyHash(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
+        /// </summary>
+        /// <param name="assetObject"></param>
+        public static string GetAssetOrScenePath(Object assetObject)
+        {
+            using (_PRF_GetAssetOrScenePath.Auto())
+            {
+                return AssetDatabase.GetAssetOrScenePath(assetObject);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
+        /// </summary>
+        /// <param name="instanceID">The instance ID of the asset.</param>
+        /// <param name="assetObject">A reference to the asset.</param>
+        /// <returns>
+        ///     <para>The asset path name, or null, or an empty string if the asset does not exist.</para>
+        /// </returns>
+        public static string GetAssetPath(Object assetObject)
+        {
+            using (_PRF_GetAssetPath.Auto())
+            {
+                return AssetDatabase.GetAssetPath(assetObject);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
+        /// </summary>
+        /// <param name="instanceID">The instance ID of the asset.</param>
+        /// <param name="assetObject">A reference to the asset.</param>
+        /// <returns>
+        ///     <para>The asset path name, or null, or an empty string if the asset does not exist.</para>
+        /// </returns>
+        public static string GetAssetPath(int instanceID)
+        {
+            using (_PRF_GetAssetPath.Auto())
+            {
+                return AssetDatabase.GetAssetPath(instanceID);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the path to the asset file associated with a text .meta file.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static string GetAssetPathFromTextMetaFilePath(string path)
+        {
+            using (_PRF_GetAssetPathFromTextMetaFilePath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetAssetPathFromTextMetaFilePath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns an array containing the paths of all assets marked with the specified Asset Bundle name.</para>
+        /// </summary>
+        /// <param name="assetBundleName"></param>
+        public static string[] GetAssetPathsFromAssetBundle(string assetBundleName)
+        {
+            using (_PRF_GetAssetPathsFromAssetBundle.Auto())
+            {
+                return AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Get the Asset paths for all Assets tagged with assetBundleName and
+        ///         named assetName.
+        ///     </para>
+        /// </summary>
+        /// <param name="assetBundleName"></param>
+        /// <param name="assetName"></param>
+        public static string[] GetAssetPathsFromAssetBundleAndAssetName(
+            string assetBundleName,
+            string assetName)
+        {
+            using (_PRF_GetAssetPathsFromAssetBundleAndAssetName.Auto())
+            {
+                return AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(assetBundleName, assetName);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the importer types associated with a given Asset type.</para>
+        /// </summary>
+        /// <param name="path">The Asset path.</param>
+        /// <returns>
+        ///     <para>Returns an array of importer types that can handle the specified Asset.</para>
+        /// </returns>
+        public static Type[] GetAvailableImporterTypes(string path)
+        {
+            using (_PRF_GetAvailableImporterTypes.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetAvailableImporterTypes(relativePath);
+            }
+        }
+
+        public static Object GetBuiltinExtraResource(Type type, string path)
+        {
+            using (_PRF_GetBuiltinExtraResource.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetBuiltinExtraResource(type, relativePath);
+            }
+        }
+
+        public static T GetBuiltinExtraResource<T>(string path)
+            where T : Object
+        {
+            using (_PRF_GetBuiltinExtraResource.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetBuiltinExtraResource<T>(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Retrieves an icon for the asset at the given asset path.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static Texture GetCachedIcon(string path)
+        {
+            using (_PRF_GetCachedIcon.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetCachedIcon(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the IP address of the Cache Server in Editor Settings.</para>
+        /// </summary>
+        /// <returns>
+        ///     <para>Returns the IP address of the Cache Server in Editor Settings. Returns empty string if IP address is not set in Editor settings.</para>
+        /// </returns>
+        public static string GetCacheServerAddress()
+        {
+            using (_PRF_GetCacheServerAddress.Auto())
+            {
+                return AssetDatabase.GetCacheServerAddress();
             }
         }
 
@@ -574,6 +1201,403 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetCacheServerEnableUpload.Auto())
             {
                 return AssetDatabase.GetCacheServerEnableUpload();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the Cache Server Namespace prefix set in Editor Settings.</para>
+        /// </summary>
+        /// <returns>
+        ///     <para>Returns the Namespace prefix for the Cache Server.</para>
+        /// </returns>
+        public static string GetCacheServerNamespacePrefix()
+        {
+            using (_PRF_GetCacheServerNamespacePrefix.Auto())
+            {
+                return AssetDatabase.GetCacheServerNamespacePrefix();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the Port number of the Cache Server in Editor Settings.</para>
+        /// </summary>
+        /// <returns>
+        ///     <para>Returns the Port number of the Cache Server in Editor Settings. Returns 0 if Port number is not set in Editor Settings.</para>
+        /// </returns>
+        public static ushort GetCacheServerPort()
+        {
+            using (_PRF_GetCacheServerPort.Auto())
+            {
+                return AssetDatabase.GetCacheServerPort();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the IP address of the Cache Server currently in use by the Editor.</para>
+        /// </summary>
+        /// <returns>
+        ///     <para>Returns a string representation of the current Cache Server IP address.</para>
+        /// </returns>
+        public static string GetCurrentCacheServerIp()
+        {
+            using (_PRF_GetCurrentCacheServerIp.Auto())
+            {
+                return AssetDatabase.GetCurrentCacheServerIp();
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
+        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
+        ///         not Assets on your disk.
+        ///     </para>
+        /// </summary>
+        /// <param name="path">The path to the asset for which dependencies are required.</param>
+        /// <param name="recursive">
+        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
+        ///     true), or whether it only returns direct dependencies (when set to false).
+        /// </param>
+        /// <returns>
+        ///     <para>The paths of all assets that the input depends on.</para>
+        /// </returns>
+        public static string[] GetDependencies(string path)
+        {
+            using (_PRF_GetDependencies.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetDependencies(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
+        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
+        ///         not Assets on your disk.
+        ///     </para>
+        /// </summary>
+        /// <param name="path">The path to the asset for which dependencies are required.</param>
+        /// <param name="recursive">
+        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
+        ///     true), or whether it only returns direct dependencies (when set to false).
+        /// </param>
+        /// <returns>
+        ///     <para>The paths of all assets that the input depends on.</para>
+        /// </returns>
+        public static string[] GetDependencies(string path, bool recursive)
+        {
+            using (_PRF_GetDependencies.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetDependencies(relativePath, recursive);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
+        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
+        ///         not Assets on your disk.
+        ///     </para>
+        /// </summary>
+        /// <param name="paths">The path to the assets for which dependencies are required.</param>
+        /// <param name="recursive">
+        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
+        ///     true), or whether it only returns direct dependencies (when set to false).
+        /// </param>
+        /// <returns>
+        ///     <para>The paths of all assets that the input depends on.</para>
+        /// </returns>
+        public static string[] GetDependencies(string[] paths)
+        {
+            using (_PRF_GetDependencies.Auto())
+            {
+                var relativePaths = paths.ToRelativePaths();
+                return AssetDatabase.GetDependencies(relativePaths);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
+        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
+        ///         not Assets on your disk.
+        ///     </para>
+        /// </summary>
+        /// <param name="paths">The path to the assets for which dependencies are required.</param>
+        /// <param name="recursive">
+        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
+        ///     true), or whether it only returns direct dependencies (when set to false).
+        /// </param>
+        /// <returns>
+        ///     <para>The paths of all assets that the input depends on.</para>
+        /// </returns>
+        public static string[] GetDependencies(string[] paths, bool recursive)
+        {
+            using (_PRF_GetDependencies.Auto())
+            {
+                var relativePaths = paths.ToRelativePaths();
+                return AssetDatabase.GetDependencies(relativePaths, recursive);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the name of the AssetBundle that a given asset belongs to.</para>
+        /// </summary>
+        /// <param name="path">The asset's path.</param>
+        /// <returns>
+        ///     <para>Returns the name of the AssetBundle that a given asset belongs to. See the method description for more details.</para>
+        /// </returns>
+        public static string GetImplicitAssetBundleName(string path)
+        {
+            using (_PRF_GetImplicitAssetBundleName.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetImplicitAssetBundleName(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the name of the AssetBundle Variant that a given asset belongs to.</para>
+        /// </summary>
+        /// <param name="path">The asset's path.</param>
+        /// <returns>
+        ///     <para>Returns the name of the AssetBundle Variant that a given asset belongs to. See the method description for more details.</para>
+        /// </returns>
+        public static string GetImplicitAssetBundleVariantName(string path)
+        {
+            using (_PRF_GetImplicitAssetBundleVariantName.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetImplicitAssetBundleVariantName(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the type of the override importer.</para>
+        /// </summary>
+        /// <param name="path">Asset path.</param>
+        /// <returns>
+        ///     <para>Importer type.</para>
+        /// </returns>
+        public static Type GetImporterOverride(string path)
+        {
+            using (_PRF_GetImporterOverride.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetImporterOverride(relativePath);
+            }
+        }
+
+        public static string[] GetLabels(GUID guid)
+        {
+            using (_PRF_GetLabels.Auto())
+            {
+                return AssetDatabase.GetLabels(guid);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns all labels attached to a given asset.</para>
+        /// </summary>
+        /// <param name="obj"></param>
+        public static string[] GetLabels(Object obj)
+        {
+            using (_PRF_GetLabels.Auto())
+            {
+                return AssetDatabase.GetLabels(obj);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the type of the main asset object at assetPath.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path of the asset to load.</param>
+        public static Type GetMainAssetTypeAtPath(string path)
+        {
+            using (_PRF_GetMainAssetTypeAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetMainAssetTypeAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Given a path to a directory in the Assets folder, relative to the project folder, this method will return an array of all its
+        ///         subdirectories.
+        ///     </para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static string[] GetSubFolders(string path)
+        {
+            using (_PRF_GetSubFolders.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetSubFolders(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the path to the text .meta file associated with an asset.</para>
+        /// </summary>
+        /// <param name="path">The path to the asset.</param>
+        /// <returns>
+        ///     <para>The path to the .meta text file or empty string if the file does not exist.</para>
+        /// </returns>
+        public static string GetTextMetaDataPathFromAssetPath(string path)
+        {
+            using (_PRF_GetTextMetaDataPathFromAssetPath.Auto())
+            {
+                return AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the path to the text .meta file associated with an asset.</para>
+        /// </summary>
+        /// <param name="path">The path to the asset.</param>
+        /// <returns>
+        ///     <para>The path to the .meta text file or an empty string if the file does not exist.</para>
+        /// </returns>
+        public static string GetTextMetaFilePathFromAssetPath(string path)
+        {
+            using (_PRF_GetTextMetaFilePathFromAssetPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetTextMetaFilePathFromAssetPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets an object's type from an Asset path and a local file identifier.</para>
+        /// </summary>
+        /// <param name="path">The Asset's path.</param>
+        /// <param name="localIdentifierInFile">The object's local file identifier.</param>
+        /// <returns>
+        ///     <para>The object's type.</para>
+        /// </returns>
+        public static Type GetTypeFromPathAndFileID(string path, long localIdentifierInFile)
+        {
+            using (_PRF_GetTypeFromPathAndFileID.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GetTypeFromPathAndFileID(relativePath, localIdentifierInFile);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Return all the unused assetBundle names in the asset database.</para>
+        /// </summary>
+        public static string[] GetUnusedAssetBundleNames()
+        {
+            using (_PRF_GetUnusedAssetBundleNames.Auto())
+            {
+                return AssetDatabase.GetUnusedAssetBundleNames();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Get the GUID for the asset at path.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path for the asset. All paths are relative to the project folder.</param>
+        /// <returns>
+        ///     <para>The GUID of the asset. An all-zero GUID denotes an invalid asset path.</para>
+        /// </returns>
+        public static GUID GUIDFromAssetPath(string path)
+        {
+            using (_PRF_GUIDFromAssetPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.GUIDFromAssetPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.</para>
+        /// </summary>
+        /// <param name="guid">The GUID of an asset.</param>
+        /// <returns>
+        ///     <para>Path of the asset relative to the project folder.</para>
+        /// </returns>
+        public static string GUIDToAssetPath(string guid)
+        {
+            using (_PRF_GUIDToAssetPath.Auto())
+            {
+                return AssetDatabase.GUIDToAssetPath(guid);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.</para>
+        /// </summary>
+        /// <param name="guid">The GUID of an asset.</param>
+        /// <returns>
+        ///     <para>Path of the asset relative to the project folder.</para>
+        /// </returns>
+        public static string GUIDToAssetPath(GUID guid)
+        {
+            using (_PRF_GUIDToAssetPath.Auto())
+            {
+                return AssetDatabase.GUIDToAssetPath(guid);
+            }
+        }
+
+        public static T ImportAndLoadAssetAtPath<T>(string path)
+            where T : Object
+        {
+            using (_PRF_ImportAndLoadAssetAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ImportAsset(relativePath);
+                return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Import asset at path.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="options"></param>
+        public static void ImportAsset(string path)
+        {
+            using (_PRF_ImportAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ImportAsset(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Import asset at path.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="options"></param>
+        public static void ImportAsset(string path, ImportAssetOptions options)
+        {
+            using (_PRF_ImportAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ImportAsset(relativePath, options);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Imports package at packagePath into the current project.</para>
+        /// </summary>
+        /// <param name="packagePath"></param>
+        /// <param name="interactive"></param>
+        public static void ImportPackage(string path, bool interactive)
+        {
+            using (_PRF_ImportPackage.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                AssetDatabase.ImportPackage(relativePath, interactive);
             }
         }
 
@@ -900,6 +1924,17 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static void IsOpenForEdit(
+            string[] assetOrMetaFilePaths,
+            List<string> outNotEditablePaths,
+            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
+        {
+            using (_PRF_IsOpenForEdit.Auto())
+            {
+                AssetDatabase.IsOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
+            }
+        }
+
         /// <summary>
         ///     <para>Does the asset form part of another asset?</para>
         /// </summary>
@@ -943,6 +1978,75 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         /// <summary>
+        ///     <para>Returns all sub Assets at assetPath.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static Object[] LoadAllAssetRepresentationsAtPath(string path)
+        {
+            using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns an array of all Assets at assetPath.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path to the asset.</param>
+        public static Object[] LoadAllAssetsAtPath(string path)
+        {
+            using (_PRF_LoadAllAssetsAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.LoadAllAssetsAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the first asset object of type type at given path assetPath.</para>
+        /// </summary>
+        /// <param name="path">Path of the asset to load.</param>
+        /// <param name="type">Data type of the asset.</param>
+        /// <returns>
+        ///     <para>The asset matching the parameters.</para>
+        /// </returns>
+        public static Object LoadAssetAtPath(string path, Type type)
+        {
+            using (_PRF_LoadAssetAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.LoadAssetAtPath(relativePath, type);
+            }
+        }
+
+        public static T LoadAssetAtPath<T>(string path)
+            where T : Object
+        {
+            using (_PRF_LoadAssetAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns the main asset object at assetPath.
+        ///         The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file which may contain multiples meshes and GameObjects).
+        ///     </para>
+        /// </summary>
+        /// <param name="path">Filesystem path of the asset to load.</param>
+        public static Object LoadMainAssetAtPath(string path)
+        {
+            using (_PRF_LoadMainAssetAtPath.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.LoadMainAssetAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
         ///     <para>Makes a file open for editing in version control.</para>
         /// </summary>
         /// <param name="path">Specifies the path to a file relative to the project root.</param>
@@ -965,6 +2069,22 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_MakeEditable.Auto())
             {
                 return AssetDatabase.MakeEditable(paths, prompt, outNotEditablePaths);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Move an asset file (or folder) from one folder to another.</para>
+        /// </summary>
+        /// <param name="oldPath">The path where the asset currently resides.</param>
+        /// <param name="newPath">The path which the asset should be moved to.</param>
+        /// <returns>
+        ///     <para>An empty string if the asset has been successfully moved, otherwise an error message.</para>
+        /// </returns>
+        public static string MoveAsset(string oldPath, string newPath)
+        {
+            using (_PRF_MoveAsset.Auto())
+            {
+                return AssetDatabase.MoveAsset(oldPath, newPath);
             }
         }
 
@@ -1110,1214 +2230,6 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        /// <summary>
-        ///     <para>Remove the assetBundle name from the asset database. The forceRemove flag is used to indicate if you want to remove it even it's in use.</para>
-        /// </summary>
-        /// <param name="assetBundleName">The assetBundle name you want to remove.</param>
-        /// <param name="forceRemove">Flag to indicate if you want to remove the assetBundle name even it's in use.</param>
-        public static bool RemoveAssetBundleName(string assetBundleName, bool forceRemove)
-        {
-            using (_PRF_RemoveAssetBundleName.Auto())
-            {
-                return AssetDatabase.RemoveAssetBundleName(assetBundleName, forceRemove);
-            }
-        }
-
-        public static bool TryGetGUIDAndLocalFileIdentifier(Object obj, out string guid, out long localId)
-        {
-            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
-            {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out guid, out localId);
-            }
-        }
-
-        public static bool TryGetGUIDAndLocalFileIdentifier(int instanceID, out string guid, out long localId)
-        {
-            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
-            {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(instanceID, out guid, out localId);
-            }
-        }
-
-        public static bool TryGetGUIDAndLocalFileIdentifier<T>(
-            LazyLoadReference<T> assetRef,
-            out string guid,
-            out long localId)
-            where T : Object
-        {
-            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
-            {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetRef, out guid, out localId);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Writes the import settings to disk.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static bool WriteImportSettingsIfDirty(string path)
-        {
-            using (_PRF_WriteImportSettingsIfDirty.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.WriteImportSettingsIfDirty(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Get the GUID for the asset at path.</para>
-        /// </summary>
-        /// <param name="path">Filesystem path for the asset. All paths are relative to the project folder.</param>
-        /// <returns>
-        ///     <para>The GUID of the asset. An all-zero GUID denotes an invalid asset path.</para>
-        /// </returns>
-        public static GUID GUIDFromAssetPath(string path)
-        {
-            using (_PRF_GUIDFromAssetPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GUIDFromAssetPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the hash of all the dependencies of an asset.</para>
-        /// </summary>
-        /// <param name="path">Path to the asset.</param>
-        /// <param name="guid">GUID of the asset.</param>
-        /// <returns>
-        ///     <para>Aggregate hash.</para>
-        /// </returns>
-        public static Hash128 GetAssetDependencyHash(GUID guid)
-        {
-            using (_PRF_GetAssetDependencyHash.Auto())
-            {
-                return AssetDatabase.GetAssetDependencyHash(guid);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the hash of all the dependencies of an asset.</para>
-        /// </summary>
-        /// <param name="path">Path to the asset.</param>
-        /// <param name="guid">GUID of the asset.</param>
-        /// <returns>
-        ///     <para>Aggregate hash.</para>
-        /// </returns>
-        public static Hash128 GetAssetDependencyHash(string path)
-        {
-            using (_PRF_GetAssetDependencyHash.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAssetDependencyHash(relativePath);
-            }
-        }
-
-        public static Object GetBuiltinExtraResource(Type type, string path)
-        {
-            using (_PRF_GetBuiltinExtraResource.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetBuiltinExtraResource(type, relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the first asset object of type type at given path assetPath.</para>
-        /// </summary>
-        /// <param name="path">Path of the asset to load.</param>
-        /// <param name="type">Data type of the asset.</param>
-        /// <returns>
-        ///     <para>The asset matching the parameters.</para>
-        /// </returns>
-        public static Object LoadAssetAtPath(string path, Type type)
-        {
-            using (_PRF_LoadAssetAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAssetAtPath(relativePath, type);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Returns the main asset object at assetPath.
-        ///         The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file which may contain multiples meshes and GameObjects).
-        ///     </para>
-        /// </summary>
-        /// <param name="path">Filesystem path of the asset to load.</param>
-        public static Object LoadMainAssetAtPath(string path)
-        {
-            using (_PRF_LoadMainAssetAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadMainAssetAtPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns all sub Assets at assetPath.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static Object[] LoadAllAssetRepresentationsAtPath(string path)
-        {
-            using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns an array of all Assets at assetPath.</para>
-        /// </summary>
-        /// <param name="path">Filesystem path to the asset.</param>
-        public static Object[] LoadAllAssetsAtPath(string path)
-        {
-            using (_PRF_LoadAllAssetsAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAllAssetsAtPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Get the GUID for the asset at path.</para>
-        /// </summary>
-        /// <param name="path">Filesystem path for the asset.</param>
-        /// <param name="options">
-        ///     Specifies whether this method should return a GUID for recently deleted assets. The default value is
-        ///     AssetPathToGUIDOptions.IncludeRecentlyDeletedAssets.
-        /// </param>
-        /// <returns>
-        ///     <para>GUID.</para>
-        /// </returns>
-        public static string AssetPathToGUID(string path)
-        {
-            using (_PRF_AssetPathToGUID.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.AssetPathToGUID(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Get the GUID for the asset at path.</para>
-        /// </summary>
-        /// <param name="path">Filesystem path for the asset.</param>
-        /// <param name="options">
-        ///     Specifies whether this method should return a GUID for recently deleted assets. The default value is
-        ///     AssetPathToGUIDOptions.IncludeRecentlyDeletedAssets.
-        /// </param>
-        /// <returns>
-        ///     <para>GUID.</para>
-        /// </returns>
-        public static string AssetPathToGUID(string path, AssetPathToGUIDOptions options)
-        {
-            using (_PRF_AssetPathToGUID.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.AssetPathToGUID(relativePath, options);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Creates an external Asset from an object (such as a Material) by extracting it from within an imported asset (such as an FBX file).</para>
-        /// </summary>
-        /// <param name="asset">The sub-asset to extract.</param>
-        /// <param name="newPath">The file path of the new Asset.</param>
-        /// <returns>
-        ///     <para>An empty string if Unity has successfully extracted the Asset, or an error message if not.</para>
-        /// </returns>
-        public static string ExtractAsset(Object asset, string newPath)
-        {
-            using (_PRF_ExtractAsset.Auto())
-            {
-                return AssetDatabase.ExtractAsset(asset, newPath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Creates a new unique path for an asset.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static string GenerateUniqueAssetPath(string path)
-        {
-            using (_PRF_GenerateUniqueAssetPath.Auto())
-            {
-                return AssetDatabase.GenerateUniqueAssetPath(path);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
-        /// </summary>
-        /// <param name="assetObject"></param>
-        public static string GetAssetOrScenePath(Object assetObject)
-        {
-            using (_PRF_GetAssetOrScenePath.Auto())
-            {
-                return AssetDatabase.GetAssetOrScenePath(assetObject);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
-        /// </summary>
-        /// <param name="instanceID">The instance ID of the asset.</param>
-        /// <param name="assetObject">A reference to the asset.</param>
-        /// <returns>
-        ///     <para>The asset path name, or null, or an empty string if the asset does not exist.</para>
-        /// </returns>
-        public static string GetAssetPath(Object assetObject)
-        {
-            using (_PRF_GetAssetPath.Auto())
-            {
-                return AssetDatabase.GetAssetPath(assetObject);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the path name relative to the project folder where the asset is stored.</para>
-        /// </summary>
-        /// <param name="instanceID">The instance ID of the asset.</param>
-        /// <param name="assetObject">A reference to the asset.</param>
-        /// <returns>
-        ///     <para>The asset path name, or null, or an empty string if the asset does not exist.</para>
-        /// </returns>
-        public static string GetAssetPath(int instanceID)
-        {
-            using (_PRF_GetAssetPath.Auto())
-            {
-                return AssetDatabase.GetAssetPath(instanceID);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the path to the asset file associated with a text .meta file.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static string GetAssetPathFromTextMetaFilePath(string path)
-        {
-            using (_PRF_GetAssetPathFromTextMetaFilePath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAssetPathFromTextMetaFilePath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the IP address of the Cache Server in Editor Settings.</para>
-        /// </summary>
-        /// <returns>
-        ///     <para>Returns the IP address of the Cache Server in Editor Settings. Returns empty string if IP address is not set in Editor settings.</para>
-        /// </returns>
-        public static string GetCacheServerAddress()
-        {
-            using (_PRF_GetCacheServerAddress.Auto())
-            {
-                return AssetDatabase.GetCacheServerAddress();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the Cache Server Namespace prefix set in Editor Settings.</para>
-        /// </summary>
-        /// <returns>
-        ///     <para>Returns the Namespace prefix for the Cache Server.</para>
-        /// </returns>
-        public static string GetCacheServerNamespacePrefix()
-        {
-            using (_PRF_GetCacheServerNamespacePrefix.Auto())
-            {
-                return AssetDatabase.GetCacheServerNamespacePrefix();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the IP address of the Cache Server currently in use by the Editor.</para>
-        /// </summary>
-        /// <returns>
-        ///     <para>Returns a string representation of the current Cache Server IP address.</para>
-        /// </returns>
-        public static string GetCurrentCacheServerIp()
-        {
-            using (_PRF_GetCurrentCacheServerIp.Auto())
-            {
-                return AssetDatabase.GetCurrentCacheServerIp();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the name of the AssetBundle that a given asset belongs to.</para>
-        /// </summary>
-        /// <param name="path">The asset's path.</param>
-        /// <returns>
-        ///     <para>Returns the name of the AssetBundle that a given asset belongs to. See the method description for more details.</para>
-        /// </returns>
-        public static string GetImplicitAssetBundleName(string path)
-        {
-            using (_PRF_GetImplicitAssetBundleName.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImplicitAssetBundleName(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the name of the AssetBundle Variant that a given asset belongs to.</para>
-        /// </summary>
-        /// <param name="path">The asset's path.</param>
-        /// <returns>
-        ///     <para>Returns the name of the AssetBundle Variant that a given asset belongs to. See the method description for more details.</para>
-        /// </returns>
-        public static string GetImplicitAssetBundleVariantName(string path)
-        {
-            using (_PRF_GetImplicitAssetBundleVariantName.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImplicitAssetBundleVariantName(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the path to the text .meta file associated with an asset.</para>
-        /// </summary>
-        /// <param name="path">The path to the asset.</param>
-        /// <returns>
-        ///     <para>The path to the .meta text file or empty string if the file does not exist.</para>
-        /// </returns>
-        public static string GetTextMetaDataPathFromAssetPath(string path)
-        {
-            using (_PRF_GetTextMetaDataPathFromAssetPath.Auto())
-            {
-                return AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the path to the text .meta file associated with an asset.</para>
-        /// </summary>
-        /// <param name="path">The path to the asset.</param>
-        /// <returns>
-        ///     <para>The path to the .meta text file or an empty string if the file does not exist.</para>
-        /// </returns>
-        public static string GetTextMetaFilePathFromAssetPath(string path)
-        {
-            using (_PRF_GetTextMetaFilePathFromAssetPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetTextMetaFilePathFromAssetPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.</para>
-        /// </summary>
-        /// <param name="guid">The GUID of an asset.</param>
-        /// <returns>
-        ///     <para>Path of the asset relative to the project folder.</para>
-        /// </returns>
-        public static string GUIDToAssetPath(string guid)
-        {
-            using (_PRF_GUIDToAssetPath.Auto())
-            {
-                return AssetDatabase.GUIDToAssetPath(guid);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.</para>
-        /// </summary>
-        /// <param name="guid">The GUID of an asset.</param>
-        /// <returns>
-        ///     <para>Path of the asset relative to the project folder.</para>
-        /// </returns>
-        public static string GUIDToAssetPath(GUID guid)
-        {
-            using (_PRF_GUIDToAssetPath.Auto())
-            {
-                return AssetDatabase.GUIDToAssetPath(guid);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Move an asset file (or folder) from one folder to another.</para>
-        /// </summary>
-        /// <param name="oldPath">The path where the asset currently resides.</param>
-        /// <param name="newPath">The path which the asset should be moved to.</param>
-        /// <returns>
-        ///     <para>An empty string if the asset has been successfully moved, otherwise an error message.</para>
-        /// </returns>
-        public static string MoveAsset(string oldPath, string newPath)
-        {
-            using (_PRF_MoveAsset.Auto())
-            {
-                return AssetDatabase.MoveAsset(oldPath, newPath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Rename an asset file.</para>
-        /// </summary>
-        /// <param name="path">The path where the asset currently resides.</param>
-        /// <param name="newName">The new name which should be given to the asset.</param>
-        /// <returns>
-        ///     <para>An empty string, if the asset has been successfully renamed, otherwise an error message.</para>
-        /// </returns>
-        public static string RenameAsset(string path, string newName)
-        {
-            using (_PRF_RenameAsset.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.RenameAsset(relativePath, newName);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Checks if an asset file can be moved from one folder to another. (Without actually moving the file).</para>
-        /// </summary>
-        /// <param name="oldPath">The path where the asset currently resides.</param>
-        /// <param name="newPath">The path which the asset should be moved to.</param>
-        /// <returns>
-        ///     <para>An empty string if the asset can be moved, otherwise an error message.</para>
-        /// </returns>
-        public static string ValidateMoveAsset(string oldPath, string newPath)
-        {
-            using (_PRF_ValidateMoveAsset.Auto())
-            {
-                return AssetDatabase.ValidateMoveAsset(oldPath, newPath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Search the asset database using the search filter string.</para>
-        /// </summary>
-        /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
-        /// <param name="searchInFolders">The folders where the search will start.</param>
-        /// <returns>
-        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
-        /// </returns>
-        public static string[] FindAssets(string filter)
-        {
-            using (_PRF_FindAssets.Auto())
-            {
-                return AssetDatabase.FindAssets(filter);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Search the asset database using the search filter string.</para>
-        /// </summary>
-        /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
-        /// <param name="searchInFolders">The folders where the search will start.</param>
-        /// <returns>
-        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
-        /// </returns>
-        public static string[] FindAssets(string filter, string[] searchInFolders)
-        {
-            using (_PRF_FindAssets.Auto())
-            {
-                return AssetDatabase.FindAssets(filter, searchInFolders);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Return all the AssetBundle names in the asset database.</para>
-        /// </summary>
-        /// <returns>
-        ///     <para>Array of asset bundle names.</para>
-        /// </returns>
-        public static string[] GetAllAssetBundleNames()
-        {
-            using (_PRF_GetAllAssetBundleNames.Auto())
-            {
-                return AssetDatabase.GetAllAssetBundleNames();
-            }
-        }
-
-        public static string[] GetAllAssetPaths()
-        {
-            using (_PRF_GetAllAssetPaths.Auto())
-            {
-                return AssetDatabase.GetAllAssetPaths();
-            }
-        }
-
-        public static string[] GetAllProjectPaths()
-        {
-            using (_PRF_GetAllProjectPaths.Auto())
-            {
-                var assets = GetAllAssetPaths();
-
-                var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
-
-                var files = AppaDirectory.GetFiles(packageLocation, "*.*", SearchOption.AllDirectories);
-
-                var cleanFiles = ShiftCleanPathsLeft(files, assets);
-
-                var assetsLength = assets.Length;
-
-                Array.Resize(ref assets, assetsLength + cleanFiles);
-
-                Array.Copy(files, 0, assets, assetsLength, cleanFiles);
-
-                return assets;
-            }
-        }
-
-        /// <summary>
-        ///     <para>Given an assetBundleName, returns the list of AssetBundles that it depends on.</para>
-        /// </summary>
-        /// <param name="assetBundleName">The name of the AssetBundle for which dependencies are required.</param>
-        /// <param name="recursive">
-        ///     If false, returns only AssetBundles which are direct dependencies of the input; if true, includes all indirect dependencies
-        ///     of the input.
-        /// </param>
-        /// <returns>
-        ///     <para>The names of all AssetBundles that the input depends on.</para>
-        /// </returns>
-        public static string[] GetAssetBundleDependencies(string assetBundleName, bool recursive)
-        {
-            using (_PRF_GetAssetBundleDependencies.Auto())
-            {
-                return AssetDatabase.GetAssetBundleDependencies(assetBundleName, recursive);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns an array containing the paths of all assets marked with the specified Asset Bundle name.</para>
-        /// </summary>
-        /// <param name="assetBundleName"></param>
-        public static string[] GetAssetPathsFromAssetBundle(string assetBundleName)
-        {
-            using (_PRF_GetAssetPathsFromAssetBundle.Auto())
-            {
-                return AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Get the Asset paths for all Assets tagged with assetBundleName and
-        ///         named assetName.
-        ///     </para>
-        /// </summary>
-        /// <param name="assetBundleName"></param>
-        /// <param name="assetName"></param>
-        public static string[] GetAssetPathsFromAssetBundleAndAssetName(
-            string assetBundleName,
-            string assetName)
-        {
-            using (_PRF_GetAssetPathsFromAssetBundleAndAssetName.Auto())
-            {
-                return AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(assetBundleName, assetName);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Returns an array of all the assets that are dependencies of the asset at the specified pathName.
-        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
-        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
-        ///         not Assets on your disk.
-        ///     </para>
-        /// </summary>
-        /// <param name="path">The path to the asset for which dependencies are required.</param>
-        /// <param name="recursive">
-        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
-        ///     true), or whether it only returns direct dependencies (when set to false).
-        /// </param>
-        /// <returns>
-        ///     <para>The paths of all assets that the input depends on.</para>
-        /// </returns>
-        public static string[] GetDependencies(string path)
-        {
-            using (_PRF_GetDependencies.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetDependencies(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Returns an array of all the assets that are dependencies of the asset at the specified pathName.
-        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
-        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
-        ///         not Assets on your disk.
-        ///     </para>
-        /// </summary>
-        /// <param name="path">The path to the asset for which dependencies are required.</param>
-        /// <param name="recursive">
-        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
-        ///     true), or whether it only returns direct dependencies (when set to false).
-        /// </param>
-        /// <returns>
-        ///     <para>The paths of all assets that the input depends on.</para>
-        /// </returns>
-        public static string[] GetDependencies(string path, bool recursive)
-        {
-            using (_PRF_GetDependencies.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetDependencies(relativePath, recursive);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
-        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
-        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
-        ///         not Assets on your disk.
-        ///     </para>
-        /// </summary>
-        /// <param name="paths">The path to the assets for which dependencies are required.</param>
-        /// <param name="recursive">
-        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
-        ///     true), or whether it only returns direct dependencies (when set to false).
-        /// </param>
-        /// <returns>
-        ///     <para>The paths of all assets that the input depends on.</para>
-        /// </returns>
-        public static string[] GetDependencies(string[] paths)
-        {
-            using (_PRF_GetDependencies.Auto())
-            {
-                var relativePaths = paths.ToRelativePaths();
-                return AssetDatabase.GetDependencies(relativePaths);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
-        ///         Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a
-        ///         Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are
-        ///         not Assets on your disk.
-        ///     </para>
-        /// </summary>
-        /// <param name="paths">The path to the assets for which dependencies are required.</param>
-        /// <param name="recursive">
-        ///     Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to
-        ///     true), or whether it only returns direct dependencies (when set to false).
-        /// </param>
-        /// <returns>
-        ///     <para>The paths of all assets that the input depends on.</para>
-        /// </returns>
-        public static string[] GetDependencies(string[] paths, bool recursive)
-        {
-            using (_PRF_GetDependencies.Auto())
-            {
-                var relativePaths = paths.ToRelativePaths();
-                return AssetDatabase.GetDependencies(relativePaths, recursive);
-            }
-        }
-
-        public static string[] GetLabels(GUID guid)
-        {
-            using (_PRF_GetLabels.Auto())
-            {
-                return AssetDatabase.GetLabels(guid);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns all labels attached to a given asset.</para>
-        /// </summary>
-        /// <param name="obj"></param>
-        public static string[] GetLabels(Object obj)
-        {
-            using (_PRF_GetLabels.Auto())
-            {
-                return AssetDatabase.GetLabels(obj);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Given a path to a directory in the Assets folder, relative to the project folder, this method will return an array of all its
-        ///         subdirectories.
-        ///     </para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static string[] GetSubFolders(string path)
-        {
-            using (_PRF_GetSubFolders.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetSubFolders(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Return all the unused assetBundle names in the asset database.</para>
-        /// </summary>
-        public static string[] GetUnusedAssetBundleNames()
-        {
-            using (_PRF_GetUnusedAssetBundleNames.Auto())
-            {
-                return AssetDatabase.GetUnusedAssetBundleNames();
-            }
-        }
-
-        public static T GetBuiltinExtraResource<T>(string path)
-            where T : Object
-        {
-            using (_PRF_GetBuiltinExtraResource.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetBuiltinExtraResource<T>(relativePath);
-            }
-        }
-
-        public static T LoadAssetAtPath<T>(string path)
-            where T : Object
-        {
-            using (_PRF_LoadAssetAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAssetAtPath<T>(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Retrieves an icon for the asset at the given asset path.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        public static Texture GetCachedIcon(string path)
-        {
-            using (_PRF_GetCachedIcon.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetCachedIcon(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the type of the override importer.</para>
-        /// </summary>
-        /// <param name="path">Asset path.</param>
-        /// <returns>
-        ///     <para>Importer type.</para>
-        /// </returns>
-        public static Type GetImporterOverride(string path)
-        {
-            using (_PRF_GetImporterOverride.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImporterOverride(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Returns the type of the main asset object at assetPath.</para>
-        /// </summary>
-        /// <param name="path">Filesystem path of the asset to load.</param>
-        public static Type GetMainAssetTypeAtPath(string path)
-        {
-            using (_PRF_GetMainAssetTypeAtPath.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetMainAssetTypeAtPath(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets an object's type from an Asset path and a local file identifier.</para>
-        /// </summary>
-        /// <param name="path">The Asset's path.</param>
-        /// <param name="localIdentifierInFile">The object's local file identifier.</param>
-        /// <returns>
-        ///     <para>The object's type.</para>
-        /// </returns>
-        public static Type GetTypeFromPathAndFileID(string path, long localIdentifierInFile)
-        {
-            using (_PRF_GetTypeFromPathAndFileID.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetTypeFromPathAndFileID(relativePath, localIdentifierInFile);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the importer types associated with a given Asset type.</para>
-        /// </summary>
-        /// <param name="path">The Asset path.</param>
-        /// <returns>
-        ///     <para>Returns an array of importer types that can handle the specified Asset.</para>
-        /// </returns>
-        public static Type[] GetAvailableImporterTypes(string path)
-        {
-            using (_PRF_GetAvailableImporterTypes.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAvailableImporterTypes(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Removes custom dependencies that match the prefixFilter.</para>
-        /// </summary>
-        /// <param name="prefixFilter">Prefix filter for the custom dependencies to unregister.</param>
-        /// <returns>
-        ///     <para>Number of custom dependencies removed.</para>
-        /// </returns>
-        public static uint UnregisterCustomDependencyPrefixFilter(string prefixFilter)
-        {
-            using (_PRF_UnregisterCustomDependencyPrefixFilter.Auto())
-            {
-                return AssetDatabase.UnregisterCustomDependencyPrefixFilter(prefixFilter);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Gets the Port number of the Cache Server in Editor Settings.</para>
-        /// </summary>
-        /// <returns>
-        ///     <para>Returns the Port number of the Cache Server in Editor Settings. Returns 0 if Port number is not set in Editor Settings.</para>
-        /// </returns>
-        public static ushort GetCacheServerPort()
-        {
-            using (_PRF_GetCacheServerPort.Auto())
-            {
-                return AssetDatabase.GetCacheServerPort();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Adds objectToAdd to an existing asset at path.</para>
-        /// </summary>
-        /// <param name="objectToAdd">Object to add to the existing asset.</param>
-        /// <param name="path">Filesystem path to the asset.</param>
-        public static void AddObjectToAsset(Object objectToAdd, string path)
-        {
-            using (_PRF_AddObjectToAsset.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.AddObjectToAsset(objectToAdd, relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Adds objectToAdd to an existing asset identified by assetObject.</para>
-        /// </summary>
-        /// <param name="objectToAdd"></param>
-        /// <param name="assetObject"></param>
-        public static void AddObjectToAsset(Object objectToAdd, Object assetObject)
-        {
-            using (_PRF_AddObjectToAsset.Auto())
-            {
-                AssetDatabase.AddObjectToAsset(objectToAdd, assetObject);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Decrements an internal counter which Unity uses to determine whether to allow automatic AssetDatabase refreshing behavior.</para>
-        /// </summary>
-        public static void AllowAutoRefresh()
-        {
-            using (_PRF_AllowAutoRefresh.Auto())
-            {
-                AssetDatabase.AllowAutoRefresh();
-            }
-        }
-
-        public static void CanOpenForEdit(
-            string[] assetOrMetaFilePaths,
-            List<string> outNotEditablePaths,
-            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
-        {
-            using (_PRF_CanOpenForEdit.Auto())
-            {
-                AssetDatabase.CanOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Clears the importer override for the asset.</para>
-        /// </summary>
-        /// <param name="path">Asset path.</param>
-        public static void ClearImporterOverride(string path)
-        {
-            using (_PRF_ClearImporterOverride.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ClearImporterOverride(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Removes all labels attached to an asset.</para>
-        /// </summary>
-        /// <param name="obj"></param>
-        public static void ClearLabels(Object obj)
-        {
-            using (_PRF_ClearLabels.Auto())
-            {
-                AssetDatabase.ClearLabels(obj);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Closes an active cache server connection. If no connection is active, then it does nothing.</para>
-        /// </summary>
-        public static void CloseCacheServerConnection()
-        {
-            using (_PRF_CloseCacheServerConnection.Auto())
-            {
-                AssetDatabase.CloseCacheServerConnection();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Creates a new native Unity asset.</para>
-        /// </summary>
-        /// <param name="asset">Object to use in creating the asset.</param>
-        /// <param name="path">Filesystem path for the new asset.</param>
-        public static void CreateAsset(Object asset, string path)
-        {
-            using (_PRF_CreateAsset.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                var directory = AppaPath.GetDirectoryName(relativePath);
-
-                CreateFolder(directory, true);
-
-                AssetDatabase.CreateAsset(asset, relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Creates a new folder, in the specified parent folder.
-        ///         The parent folder string must start with the "Assets" folder, and all folders within the parent folder string must already exist. For
-        ///         example, when specifying "AssetsParentFolder1Parentfolder2/", the new folder will be created in "ParentFolder2" only if ParentFolder1 and
-        ///         ParentFolder2 already exist.
-        ///     </para>
-        /// </summary>
-        /// <param name="parentFolder">The path to the parent folder. Must start with "Assets/".</param>
-        /// <param name="newFolderName">The name of the new folder.</param>
-        /// <returns>
-        ///     <para>The GUID of the newly created folder, if the folder was created successfully. Otherwise returns an empty string.</para>
-        /// </returns>
-        public static void CreateFolder(
-            string parentFolder,
-            string newFolderName,
-            bool createStructure = true)
-        {
-            using (_PRF_CreateFolder.Auto())
-            {
-                parentFolder = parentFolder.CleanFullPath();
-
-                if (createStructure)
-                {
-                    var di = new AppaDirectoryInfo(parentFolder);
-
-                    if (!di.Exists)
-                    {
-                        di.Create();
-                        ImportAsset(parentFolder);
-                    }
-                }
-
-                var completeFolder = AppaPath.Combine(parentFolder, newFolderName);
-
-                if (AppaDirectory.Exists(completeFolder))
-                {
-                    return;
-                }
-
-                if (AssetDatabase.IsValidFolder(completeFolder))
-                {
-                    return;
-                }
-
-                AppaDirectory.CreateDirectory(completeFolder);
-                AssetDatabase.ImportAsset(completeFolder);
-            }
-        }
-
-        public static void CreateFolder(string folderPath, bool createStructure)
-        {
-            folderPath = folderPath.CleanFullPath();
-
-            var splits = folderPath.Split('/');
-
-            var lastPart = splits[splits.Length - 1];
-
-            var basePath = folderPath.Replace(lastPart, string.Empty);
-
-            CreateFolder(basePath, lastPart, createStructure);
-        }
-
-        /// <summary>
-        ///     <para>Increments an internal counter which Unity uses to determine whether to allow automatic AssetDatabase refreshing behavior.</para>
-        /// </summary>
-        public static void DisallowAutoRefresh()
-        {
-            using (_PRF_DisallowAutoRefresh.Auto())
-            {
-                AssetDatabase.DisallowAutoRefresh();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <param name="fileName"></param>
-        /// <param name="flags"></param>
-        /// <param name="path"></param>
-        public static void ExportPackage(string path, string fileName)
-        {
-            using (_PRF_ExportPackage.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ExportPackage(relativePath, fileName);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <param name="fileName"></param>
-        /// <param name="flags"></param>
-        /// <param name="path"></param>
-        public static void ExportPackage(string path, string fileName, ExportPackageOptions flags)
-        {
-            using (_PRF_ExportPackage.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ExportPackage(relativePath, fileName, flags);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <param name="fileName"></param>
-        /// <param name="flags"></param>
-        /// <param name="path"></param>
-        public static void ExportPackage(string[] paths, string fileName)
-        {
-            using (_PRF_ExportPackage.Auto())
-            {
-                var relativePaths = paths.ToRelativePaths();
-                AssetDatabase.ExportPackage(relativePaths, fileName);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Exports the assets identified by assetPathNames to a unitypackage file in fileName.</para>
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <param name="fileName"></param>
-        /// <param name="flags"></param>
-        /// <param name="path"></param>
-        public static void ExportPackage(string[] paths, string fileName, ExportPackageOptions flags)
-        {
-            using (_PRF_ExportPackage.Auto())
-            {
-                var relativePaths = paths.ToRelativePaths();
-                AssetDatabase.ExportPackage(relativePaths, fileName, flags);
-            }
-        }
-
-        public static void ForceReserializeAssets(
-            IEnumerable<string> assetPaths,
-            ForceReserializeAssetsOptions options =
-                ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
-        {
-            using (_PRF_ForceReserializeAssets.Auto())
-            {
-                AssetDatabase.ForceReserializeAssets(assetPaths, options);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Forcibly load and re-serialize the given assets, flushing any outstanding data changes to disk.</para>
-        /// </summary>
-        /// <param name="assetPaths">The paths to the assets that should be reserialized. If omitted, will reserialize all assets in the project.</param>
-        /// <param name="options">Specify whether you want to reserialize the assets themselves, their .meta files, or both. If omitted, defaults to both.</param>
-        public static void ForceReserializeAssets()
-        {
-            using (_PRF_ForceReserializeAssets.Auto())
-            {
-                AssetDatabase.ForceReserializeAssets();
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Forces the Editor to use the desired amount of worker processes. Unity will either spawn new worker processes or shut down idle worker
-        ///         processes to reach the desired number.
-        ///     </para>
-        /// </summary>
-        public static void ForceToDesiredWorkerCount()
-        {
-            using (_PRF_ForceToDesiredWorkerCount.Auto())
-            {
-                AssetDatabase.ForceToDesiredWorkerCount();
-            }
-        }
-
-        /// <summary>
-        ///     <para>Import asset at path.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="options"></param>
-        public static void ImportAsset(string path)
-        {
-            using (_PRF_ImportAsset.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportAsset(relativePath);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Import asset at path.</para>
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="options"></param>
-        public static void ImportAsset(string path, ImportAssetOptions options)
-        {
-            using (_PRF_ImportAsset.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportAsset(relativePath, options);
-            }
-        }
-
-        /// <summary>
-        ///     <para>Imports package at packagePath into the current project.</para>
-        /// </summary>
-        /// <param name="packagePath"></param>
-        /// <param name="interactive"></param>
-        public static void ImportPackage(string path, bool interactive)
-        {
-            using (_PRF_ImportPackage.Auto())
-            {
-                var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportPackage(relativePath, interactive);
-            }
-        }
-
-        public static void IsOpenForEdit(
-            string[] assetOrMetaFilePaths,
-            List<string> outNotEditablePaths,
-            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
-        {
-            using (_PRF_IsOpenForEdit.Auto())
-            {
-                AssetDatabase.IsOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
-            }
-        }
-
         public static void Refresh()
         {
             using (_PRF_Refresh.Auto())
@@ -2383,6 +2295,19 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         /// <summary>
+        ///     <para>Remove the assetBundle name from the asset database. The forceRemove flag is used to indicate if you want to remove it even it's in use.</para>
+        /// </summary>
+        /// <param name="assetBundleName">The assetBundle name you want to remove.</param>
+        /// <param name="forceRemove">Flag to indicate if you want to remove the assetBundle name even it's in use.</param>
+        public static bool RemoveAssetBundleName(string assetBundleName, bool forceRemove)
+        {
+            using (_PRF_RemoveAssetBundleName.Auto())
+            {
+                return AssetDatabase.RemoveAssetBundleName(assetBundleName, forceRemove);
+            }
+        }
+
+        /// <summary>
         ///     <para>Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).</para>
         /// </summary>
         /// <param name="objectToRemove"></param>
@@ -2402,6 +2327,23 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_RemoveUnusedAssetBundleNames.Auto())
             {
                 AssetDatabase.RemoveUnusedAssetBundleNames();
+            }
+        }
+
+        /// <summary>
+        ///     <para>Rename an asset file.</para>
+        /// </summary>
+        /// <param name="path">The path where the asset currently resides.</param>
+        /// <param name="newName">The new name which should be given to the asset.</param>
+        /// <returns>
+        ///     <para>An empty string, if the asset has been successfully renamed, otherwise an error message.</para>
+        /// </returns>
+        public static string RenameAsset(string path, string newName)
+        {
+            using (_PRF_RenameAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.RenameAsset(relativePath, newName);
             }
         }
 
@@ -2528,6 +2470,78 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_StopAssetEditing.Auto())
             {
                 AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        public static bool TryGetGUIDAndLocalFileIdentifier(Object obj, out string guid, out long localId)
+        {
+            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
+            {
+                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out guid, out localId);
+            }
+        }
+
+        public static bool TryGetGUIDAndLocalFileIdentifier(int instanceID, out string guid, out long localId)
+        {
+            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
+            {
+                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(instanceID, out guid, out localId);
+            }
+        }
+
+        public static bool TryGetGUIDAndLocalFileIdentifier<T>(
+            LazyLoadReference<T> assetRef,
+            out string guid,
+            out long localId)
+            where T : Object
+        {
+            using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
+            {
+                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetRef, out guid, out localId);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Removes custom dependencies that match the prefixFilter.</para>
+        /// </summary>
+        /// <param name="prefixFilter">Prefix filter for the custom dependencies to unregister.</param>
+        /// <returns>
+        ///     <para>Number of custom dependencies removed.</para>
+        /// </returns>
+        public static uint UnregisterCustomDependencyPrefixFilter(string prefixFilter)
+        {
+            using (_PRF_UnregisterCustomDependencyPrefixFilter.Auto())
+            {
+                return AssetDatabase.UnregisterCustomDependencyPrefixFilter(prefixFilter);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Checks if an asset file can be moved from one folder to another. (Without actually moving the file).</para>
+        /// </summary>
+        /// <param name="oldPath">The path where the asset currently resides.</param>
+        /// <param name="newPath">The path which the asset should be moved to.</param>
+        /// <returns>
+        ///     <para>An empty string if the asset can be moved, otherwise an error message.</para>
+        /// </returns>
+        public static string ValidateMoveAsset(string oldPath, string newPath)
+        {
+            using (_PRF_ValidateMoveAsset.Auto())
+            {
+                return AssetDatabase.ValidateMoveAsset(oldPath, newPath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Writes the import settings to disk.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static bool WriteImportSettingsIfDirty(string path)
+        {
+            using (_PRF_WriteImportSettingsIfDirty.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return AssetDatabase.WriteImportSettingsIfDirty(relativePath);
             }
         }
 

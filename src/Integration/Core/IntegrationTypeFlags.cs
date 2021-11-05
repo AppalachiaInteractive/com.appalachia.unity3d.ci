@@ -12,5 +12,9 @@ namespace Appalachia.CI.Integration.Core
         IsAppalachia = 1 << 3,
         IsBuiltinUnity = 1 << 4,
         IsCustomUnity = 1 << 5,
+        IsThirdParty = 1 << 6,
+
+        IsUnity = IsBuiltinUnity | IsCustomUnity,
+        IsAppalachiaManaged = IsAppalachia | IsThirdParty | IsCustomUnity,
     }
 }

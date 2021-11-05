@@ -96,6 +96,7 @@ namespace Appalachia.CI.Integration.Repositories
             assemblies = new List<AssemblyDefinitionMetadata>();
         }
 
+        public HashSet<RepositoryMetadata> dependents;
         public HashSet<RepositoryDependency> dependencies;
         public HashSet<RepositoryDependency> missingDependencies;
 
@@ -702,11 +703,21 @@ namespace Appalachia.CI.Integration.Repositories
 
         public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
         {
-            try
-            {
-                if (!dryRun && suspendImport)
+            
+                Debug.Log($"Converting [{Name}] from a repository to a package.");
+               
+                
+                foreach (var dependency in this.dependencies)
                 {
-                    AssetDatabaseManager.StartAssetEditing();
+                    if (dependency.repository.IsAppalachiaManaged)
+                    {
+                        var subEnum = dependency.repository.ConvertToPackage(false, executeClient, dryRun);
+
+                        while (subEnum.MoveNext())
+                        {
+                            yield return subEnum;
+                        }
+                    }
                 }
 
                 var root = Path;
@@ -741,14 +752,7 @@ namespace Appalachia.CI.Integration.Repositories
                         }
                     }
                 }
-            }
-            finally
-            {
-                if (!dryRun && suspendImport)
-                {
-                    AssetDatabaseManager.StopAssetEditing();
-                }
-            }
+            
         }
 
         public void PopulateDependencies()
@@ -793,7 +797,29 @@ namespace Appalachia.CI.Integration.Repositories
                 }
             }
         }
+        
+        private void PopulateDependents()
+        {
+            if (dependents != null)
+            {
+                return;
+            }
 
+            dependents = new HashSet<RepositoryMetadata>();
+
+            var repositories = FindAll();
+
+            foreach (var repository in repositories)
+            {
+                repository.PopulateDependencies();
+                
+                if (repository.dependencies.Any(d => d.repository == this))
+                {
+                    dependents.Add(repository);
+                }
+            }
+        }
+        
         public void SavePackageJson(bool useTestFiles, bool reimport)
         {
             using (_PRF_SavePackageJson.Auto())
@@ -831,15 +857,22 @@ namespace Appalachia.CI.Integration.Repositories
 
                     var result = new ShellResult();
 
-                    var enumerator = SystemShell.Execute(
+                    var enumerator = SystemShell.Instance.Execute(
                         "npm v | grep latest",
                         this,
+                        false,
                         result,
                         onComplete: () =>
                         {
-                            _publishedVersion = result.output.ParseNpmPackageVersion();
-                            ExecuteReanalyzeNecessary();
-                            _lookingForVersion = false;
+                            try
+                            {
+                                _publishedVersion = result.output.ParseNpmPackageVersion();
+                                ExecuteReanalyzeNecessary();
+                            }
+                            catch
+                            {
+                                _lookingForVersion = false;
+                            }
                         }
                     );
 
