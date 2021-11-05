@@ -488,7 +488,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                     ShellLogger.Log<SystemShellManager>(
                         processKey,
-                        $"[{nameof(process.OutputDataReceived)}]: " + args.Data
+                        $"[OutputDataReceived]: {args.Data}"
                     );
                     
                     outBuilder.AppendLine(args.Data);
@@ -504,7 +504,7 @@ namespace Appalachia.CI.Integration.Core.Shell
                     
                     ShellLogger.Log<SystemShellManager>(
                         processKey,
-                        $"[{nameof(process.ErrorDataReceived)}]: " + args.Data
+                        $"[ErrorDataReceived]: {args.Data}"
                     );
                     
                     errorBuilder.AppendLine(args.Data);
