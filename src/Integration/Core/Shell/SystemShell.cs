@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
-using Appalachia.CI.Integration.Repositories;
 using Appalachia.Utility.Extensions;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
@@ -75,20 +74,18 @@ namespace Appalachia.CI.Integration.Core.Shell
             ShellResult shellResult = null,
             DataReceivedEventHandler standardOutHandler = null,
             DataReceivedEventHandler standardErrorHandler = null,
-            Action onComplete = null,
-            int timeout = 60)
+            Action onComplete = null)
         {
             using (_PRF_Execute.Auto())
             {
                 var processKey = workingDir + ": " + command;
-                
+
                 ShellLogger.Log<SystemShell>(processKey, $"[{nameof(Execute)}] requested.");
 
                 manager.EnsureInitialized();
-                
+
                 try
                 {
-                    
                     if (manager.IsAlreadyPreparedToRun(processKey))
                     {
                         yield break;
@@ -96,8 +93,6 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                     var outBuilder = new StringBuilder();
                     var errorBuilder = new StringBuilder();
-
-                    var start = Time.realtimeSinceStartup;
 
                     var process = manager.PrepareAndSubmitProcess(
                         processKey,
@@ -116,7 +111,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                         while (manager.ShouldWaitForProcess(processKey))
                         {
-                            yield return new EditorWaitForSeconds(SystemShellManager.BLINK_TIME*.25F);
+                            yield return new EditorWaitForSeconds(SystemShellManager.BLINK_TIME * .25F);
 
                             if (UnityEditor.EditorApplication.isCompiling)
                             {
@@ -144,8 +139,7 @@ namespace Appalachia.CI.Integration.Core.Shell
             ShellResult shellResult = null,
             DataReceivedEventHandler standardOutHandler = null,
             DataReceivedEventHandler standardErrorHandler = null,
-            Action onComplete = null,
-            int timeout = 60)
+            Action onComplete = null)
         {
             return Execute(
                 command,
@@ -154,8 +148,7 @@ namespace Appalachia.CI.Integration.Core.Shell
                 shellResult,
                 standardOutHandler,
                 standardErrorHandler,
-                onComplete,
-                timeout
+                onComplete
             );
         }
 
