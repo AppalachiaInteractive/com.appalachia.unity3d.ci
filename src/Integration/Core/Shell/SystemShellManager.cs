@@ -486,6 +486,11 @@ namespace Appalachia.CI.Integration.Core.Shell
                         return;
                     }
 
+                    ShellLogger.Log<SystemShellManager>(
+                        processKey,
+                        $"[{nameof(process.OutputDataReceived)}]: " + args.Data
+                    );
+                    
                     outBuilder.AppendLine(args.Data);
                     standardOutHandler?.Invoke(sender, args);
                 };
@@ -496,7 +501,12 @@ namespace Appalachia.CI.Integration.Core.Shell
                     {
                         return;
                     }
-
+                    
+                    ShellLogger.Log<SystemShellManager>(
+                        processKey,
+                        $"[{nameof(process.ErrorDataReceived)}]: " + args.Data
+                    );
+                    
                     errorBuilder.AppendLine(args.Data);
                     standardErrorHandler?.Invoke(sender, args);
                 };
