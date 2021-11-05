@@ -16,7 +16,6 @@ using Appalachia.CI.Integration.Repositories.Publishing;
 using Appalachia.CI.Integration.SourceControl;
 using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
-using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -76,9 +75,13 @@ namespace Appalachia.CI.Integration.Repositories
 
         #endregion
 
+        #region Constants and Static Readonly
+
         public const long TARGET_FILE_MAX_SIZE = (long) 1024 * 1024 * 8;
 
         public const long TARGET_MAX_SIZE = (long) 1024 * 1024 * 50;
+
+        #endregion
 
         static RepositoryMetadata()
         {
@@ -97,9 +100,10 @@ namespace Appalachia.CI.Integration.Repositories
             assemblies = new List<AssemblyDefinitionMetadata>();
         }
 
-        public HashSet<RepositoryMetadata> dependents;
         public HashSet<RepositoryDependency> dependencies;
         public HashSet<RepositoryDependency> missingDependencies;
+
+        public HashSet<RepositoryMetadata> dependents;
 
         public List<AssemblyDefinitionMetadata> assemblies;
 
@@ -490,6 +494,11 @@ namespace Appalachia.CI.Integration.Repositories
             set => _srcDirectory = value;
         }
 
+        public static RepositoryMetadata Empty()
+        {
+            return new();
+        }
+
         public static bool operator ==(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Equals(left, right);
@@ -520,9 +529,17 @@ namespace Appalachia.CI.Integration.Repositories
             return Comparer<RepositoryMetadata>.Default.Compare(left, right) <= 0;
         }
 
-        public static RepositoryMetadata Empty()
+        private static void FinalizeInternal()
         {
-            return new();
+            using (_PRF_FinalizeInternal.Auto())
+            {
+                var assemblies = AssemblyDefinitionMetadata.Instances;
+
+                foreach (var assembly in assemblies)
+                {
+                    assembly.repository.assemblies.Add(assembly);
+                }
+            }
         }
 
         private static IEnumerable<RepositoryMetadata> FindAllInternal()
@@ -543,56 +560,6 @@ namespace Appalachia.CI.Integration.Repositories
                     yield return instance;
                 }
             }
-        }
-
-        private static void FinalizeInternal()
-        {
-            using (_PRF_FinalizeInternal.Auto())
-            {
-                var assemblies = AssemblyDefinitionMetadata.Instances;
-
-                foreach (var assembly in assemblies)
-                {
-                    assembly.repository.assemblies.Add(assembly);
-                }
-            }
-        }
-
-        public override bool Equals(RepositoryMetadata other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return Equals(directory?.FullPath,    other.directory?.FullPath) &&
-                   Equals(GitDirectory?.FullPath, other.GitDirectory?.FullPath) &&
-                   Equals(SrcDirectory?.FullPath, other.SrcDirectory?.FullPath);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((RepositoryMetadata) obj);
         }
 
         public override int CompareTo(RepositoryMetadata other)
@@ -637,6 +604,43 @@ namespace Appalachia.CI.Integration.Repositories
                 : throw new ArgumentException($"Object must be of type {nameof(RepositoryMetadata)}");
         }
 
+        public override bool Equals(RepositoryMetadata other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(directory?.FullPath,    other.directory?.FullPath) &&
+                   Equals(GitDirectory?.FullPath, other.GitDirectory?.FullPath) &&
+                   Equals(SrcDirectory?.FullPath, other.SrcDirectory?.FullPath);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((RepositoryMetadata) obj);
+        }
+
         public override int GetHashCode()
         {
             unchecked
@@ -650,16 +654,6 @@ namespace Appalachia.CI.Integration.Repositories
             }
         }
 
-        public override string ToString()
-        {
-            if (!HasPackage)
-            {
-                return directory.RelativePath;
-            }
-
-            return $"{directory.RelativePath}: {PackageVersion}";
-        }
-
         public override void InitializeForAnalysis()
         {
             _distributableFile = null;
@@ -671,6 +665,67 @@ namespace Appalachia.CI.Integration.Repositories
             _packageName = null;
             _packageVersion = null;
             _publishedVersion = null;
+        }
+
+        public override string ToString()
+        {
+            if (!HasPackage)
+            {
+                return directory.RelativePath;
+            }
+
+            return $"{directory.RelativePath}: {PackageVersion}";
+        }
+
+        public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
+        {
+            Debug.Log($"Converting [{Name}] from a repository to a package.");
+
+            foreach (var dependency in dependencies)
+            {
+                if (dependency.repository.IsAppalachiaManaged)
+                {
+                    var subEnum = dependency.repository.ConvertToPackage(false, executeClient, dryRun);
+
+                    while (subEnum.MoveNext())
+                    {
+                        yield return subEnum;
+                    }
+                }
+            }
+
+            var root = Path;
+            var meta = root + ".meta";
+
+            var newRoot = root + "~";
+
+            if (dryRun)
+            {
+                Debug.Log($"MOVEDIR: [{root}] to [{newRoot}]");
+                Debug.Log($"DELETE: [{meta}]");
+            }
+            else
+            {
+                AppaDirectory.Move(root, newRoot);
+                AppaFile.Delete(meta);
+            }
+
+            if (executeClient)
+            {
+                if (dryRun)
+                {
+                    Debug.Log($"PKGMANAGER: Adding [{NameAndVersion}]");
+                }
+                else
+                {
+                    var addition = UnityEditor.PackageManager.Client.Add(NameAndVersion);
+
+                    while (!addition.IsCompleted)
+                    {
+                        yield return null;
+                    }
+                }
+            }
         }
 
         public IEnumerable<AppaFileInfo> GetLargestFiles(int count)
@@ -700,60 +755,6 @@ namespace Appalachia.CI.Integration.Repositories
                                     f.FullPath.IsPathIgnored(NpmIgnore))
                          )
                         .Take(count);
-        }
-
-        public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
-        {
-            
-                Debug.Log($"Converting [{Name}] from a repository to a package.");
-               
-                
-                foreach (var dependency in this.dependencies)
-                {
-                    if (dependency.repository.IsAppalachiaManaged)
-                    {
-                        var subEnum = dependency.repository.ConvertToPackage(false, executeClient, dryRun);
-
-                        while (subEnum.MoveNext())
-                        {
-                            yield return subEnum;
-                        }
-                    }
-                }
-
-                var root = Path;
-                var meta = root + ".meta";
-
-                var newRoot = root + "~";
-
-                if (dryRun)
-                {
-                    Debug.Log($"MOVEDIR: [{root}] to [{newRoot}]");
-                    Debug.Log($"DELETE: [{meta}]");
-                }
-                else
-                {
-                    AppaDirectory.Move(root, newRoot);
-                    AppaFile.Delete(meta);
-                }
-
-                if (executeClient)
-                {
-                    if (dryRun)
-                    {
-                        Debug.Log($"PKGMANAGER: Adding [{NameAndVersion}]");
-                    }
-                    else
-                    {
-                        var addition = UnityEditor.PackageManager.Client.Add(NameAndVersion);
-
-                        while (!addition.IsCompleted)
-                        {
-                            yield return null;
-                        }
-                    }
-                }
-            
         }
 
         public void PopulateDependencies()
@@ -798,29 +799,7 @@ namespace Appalachia.CI.Integration.Repositories
                 }
             }
         }
-        
-        private void PopulateDependents()
-        {
-            if (dependents != null)
-            {
-                return;
-            }
 
-            dependents = new HashSet<RepositoryMetadata>();
-
-            var repositories = FindAll();
-
-            foreach (var repository in repositories)
-            {
-                repository.PopulateDependencies();
-                
-                if (repository.dependencies.Any(d => d.repository == this))
-                {
-                    dependents.Add(repository);
-                }
-            }
-        }
-        
         public void SavePackageJson(bool useTestFiles, bool reimport)
         {
             using (_PRF_SavePackageJson.Auto())
@@ -858,9 +837,13 @@ namespace Appalachia.CI.Integration.Repositories
 
                     var result = new ShellResult();
 
+                    var command = "npm v | grep latest";
+                    var workingDir = RealPath;
+                    var processKey = workingDir + ": " + command;
+
                     var enumerator = SystemShell.Instance.Execute(
-                        "npm v | grep latest",
-                        this,
+                        command,
+                        workingDir,
                         false,
                         result,
                         onComplete: () =>
@@ -877,7 +860,7 @@ namespace Appalachia.CI.Integration.Repositories
                         }
                     );
 
-                    enumerator.ToSafe().ExecuteAsEditorCoroutine();
+                    enumerator.ToSafe(processKey).ExecuteAsEditorCoroutine();
                 }
             }
         }
@@ -916,6 +899,28 @@ namespace Appalachia.CI.Integration.Repositories
 
                 PopulateDependencies();
                 SetPackageVersion();
+            }
+        }
+
+        private void PopulateDependents()
+        {
+            if (dependents != null)
+            {
+                return;
+            }
+
+            dependents = new HashSet<RepositoryMetadata>();
+
+            var repositories = FindAll();
+
+            foreach (var repository in repositories)
+            {
+                repository.PopulateDependencies();
+
+                if (repository.dependencies.Any(d => d.repository == this))
+                {
+                    dependents.Add(repository);
+                }
             }
         }
     }

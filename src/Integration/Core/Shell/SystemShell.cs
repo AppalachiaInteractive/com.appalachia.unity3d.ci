@@ -70,29 +70,6 @@ namespace Appalachia.CI.Integration.Core.Shell
 
         public IEnumerator Execute(
             string command,
-            RepositoryMetadata repository,
-            bool elevated = false,
-            ShellResult shellResult = null,
-            DataReceivedEventHandler standardOutHandler = null,
-            DataReceivedEventHandler standardErrorHandler = null,
-            Action onComplete = null)
-        {
-            using (_PRF_Execute.Auto())
-            {
-                return Execute(
-                    command,
-                    repository.RealPath,
-                    elevated,
-                    shellResult,
-                    standardOutHandler,
-                    standardErrorHandler,
-                    onComplete
-                );
-            }
-        }
-
-        public IEnumerator Execute(
-            string command,
             string workingDir,
             bool elevated = false,
             ShellResult shellResult = null,
