@@ -14,6 +14,7 @@ using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Packages.NpmModel;
 using Appalachia.CI.Integration.Repositories.Publishing;
 using Appalachia.CI.Integration.SourceControl;
+using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
@@ -876,7 +877,7 @@ namespace Appalachia.CI.Integration.Repositories
                         }
                     );
 
-                    EditorCoroutineUtility.StartCoroutineOwnerless(enumerator);
+                    enumerator.ToSafe().ExecuteAsEditorCoroutine();
                 }
             }
         }

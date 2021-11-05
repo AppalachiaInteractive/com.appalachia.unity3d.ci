@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
@@ -13,7 +14,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Appalachia.CI.Integration.Core.Shell
 {
-    internal class SystemShellManager : ScriptableObject//, ISerializationCallbackReceiver
+    internal class SystemShellManager : ScriptableObject //, ISerializationCallbackReceiver
     {
         #region Profiling And Tracing Markers
 
@@ -155,47 +156,6 @@ namespace Appalachia.CI.Integration.Core.Shell
             return _commandProcessLookup.ContainsKey(processKey);
         }
 
-        public Process PrepareAndSubmitProcess(
-            string processKey,
-            string command,
-            string workingDir,
-            bool elevated,
-            DataReceivedEventHandler standardOutHandler,
-            DataReceivedEventHandler standardErrorHandler,
-            StringBuilder outBuilder,
-            StringBuilder errorBuilder)
-        {
-            var process = PrepareProcess(
-                processKey,
-                command,
-                workingDir,
-                elevated,
-                standardOutHandler,
-                standardErrorHandler,
-                outBuilder,
-                errorBuilder
-            );
-
-            SubmitProcess(processKey, process);
-
-            return process;
-        }
-
-        public bool ShouldWaitForProcess(string processKey)
-        {
-            if (_finishedProcesses.Contains(processKey))
-            {
-                return false;
-            }
-
-            if (_failedProcesses.Contains(processKey))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public void OnAfterDeserialize()
         {
             try
@@ -249,6 +209,47 @@ namespace Appalachia.CI.Integration.Core.Shell
             {
                 Debug.LogException(ex);
             }
+        }
+
+        public Process PrepareAndSubmitProcess(
+            string processKey,
+            string command,
+            string workingDir,
+            bool elevated,
+            DataReceivedEventHandler standardOutHandler,
+            DataReceivedEventHandler standardErrorHandler,
+            StringBuilder outBuilder,
+            StringBuilder errorBuilder)
+        {
+            var process = PrepareProcess(
+                processKey,
+                command,
+                workingDir,
+                elevated,
+                standardOutHandler,
+                standardErrorHandler,
+                outBuilder,
+                errorBuilder
+            );
+
+            SubmitProcess(processKey, process);
+
+            return process;
+        }
+
+        public bool ShouldWaitForProcess(string processKey)
+        {
+            if (_finishedProcesses.Contains(processKey))
+            {
+                return false;
+            }
+
+            if (_failedProcesses.Contains(processKey))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void CloseProcess(string processKey)
@@ -329,26 +330,13 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                 if (!oldProcess.HasExited)
                 {
-                    if (IEnumeratorExtensions.ShouldTimeout(elapsed, 60f))
-                    {
-                        ShellLogger.Log<SystemShellManager>(
-                            processKey,
-                            elapsed,
-                            $"[{nameof(ExecuteProcessingLoop)}] forcing timeout."
-                        );
+                    ShellLogger.Log<SystemShellManager>(
+                        processKey,
+                        elapsed,
+                        $"[{nameof(ExecuteProcessingLoop)}] requeueing."
+                    );
 
-                        _failedProcesses.Add(processKey);
-                    }
-                    else
-                    {
-                        ShellLogger.Log<SystemShellManager>(
-                            processKey,
-                            elapsed,
-                            $"[{nameof(ExecuteProcessingLoop)}] requeueing."
-                        );
-
-                        _pendingProcessesTemp.Enqueue(processKey);
-                    }
+                    _pendingProcessesTemp.Enqueue(processKey);
                 }
                 else
                 {
@@ -519,7 +507,8 @@ namespace Appalachia.CI.Integration.Core.Shell
 
         private void ProcessPending()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ProcessPendingEnumerator());
+            var wrapper = ProcessPendingEnumerator().ToSafe();
+            wrapper.ExecuteAsEditorCoroutine();
         }
 
         private IEnumerator ProcessPendingEnumerator()

@@ -4,8 +4,8 @@ using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
 using Appalachia.CI.Integration.Packages;
 using Appalachia.CI.Integration.Repositories;
+using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
-using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -71,7 +71,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_APPA_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void APPAToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_appalachiaSubset));
+            ExecuteToPackages(_appalachiaSubset).ToSafe(nameof(APPAToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_APPA_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -89,7 +89,9 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_APPA_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void APPAToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_appalachiaSubset));
+            ExecuteToRepository(_appalachiaSubset)
+               .ToSafe(nameof(APPAToRepository))
+               .ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_APPA_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -107,7 +109,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_THIRD_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void THIRDToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_thirdPartySubset));
+            ExecuteToPackages(_thirdPartySubset).ToSafe(nameof(THIRDToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -125,7 +127,9 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_THIRD_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void THIRDToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_thirdPartySubset));
+            ExecuteToRepository(_thirdPartySubset)
+               .ToSafe(nameof(THIRDToRepository))
+               .ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -162,7 +166,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_UNITY_PACK, false, priority = MENU_PRIORITY + 0)]
         private static void UNITYToPackages()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToPackages(_unitySubset));
+            ExecuteToPackages(_unitySubset).ToSafe(nameof(UNITYToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_PACK, true, priority = MENU_PRIORITY + 0)]
@@ -180,7 +184,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_UNITY_REPO, false, priority = MENU_PRIORITY + 1)]
         private static void UNITYToRepository()
         {
-            EditorCoroutineUtility.StartCoroutineOwnerless(ExecuteToRepository(_unitySubset));
+            ExecuteToRepository(_unitySubset).ToSafe(nameof(UNITYToRepository)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_REPO, true, priority = MENU_PRIORITY + 1)]
@@ -439,7 +443,7 @@ namespace Appalachia.CI.Integration.Dependencies
 
                         UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
                     }
-                    
+
                     AssetDatabaseManager.SaveAssets();
                 }
                 else
@@ -456,12 +460,6 @@ namespace Appalachia.CI.Integration.Dependencies
         }
 
         #region Nested Types
-
-        private enum DependencyState
-        {
-            AsRepository,
-            AsPackage,
-        }
 
         private class DependencyMetadata
         {
@@ -498,5 +496,11 @@ namespace Appalachia.CI.Integration.Dependencies
         }
 
         #endregion
+
+        private enum DependencyState
+        {
+            AsRepository,
+            AsPackage,
+        }
     }
 }

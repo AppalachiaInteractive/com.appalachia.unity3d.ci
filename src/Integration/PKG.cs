@@ -8,7 +8,7 @@ namespace Appalachia.CI.Integration
 {
     internal static partial class PKG
     {
-        public const int Priority = -422000;
+        public const int Priority = -421000;
         public const string Name = "CI/Integration";
         public const string Prefix = Root + Name + "/";
         public const string Root = "Appalachia/";
