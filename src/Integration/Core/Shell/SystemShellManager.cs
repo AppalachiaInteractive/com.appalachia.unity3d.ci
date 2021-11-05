@@ -481,33 +481,37 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                 process.OutputDataReceived += (sender, args) =>
                 {
-                    if (args.Data == null)
+                    var data = args.Data;
+                        
+                    if (data == null)
                     {
                         return;
                     }
 
                     ShellLogger.Log<SystemShellManager>(
                         processKey,
-                        $"[OutputDataReceived]: {args.Data}"
+                        $"[OutputDataReceived]: {data}"
                     );
                     
-                    outBuilder.AppendLine(args.Data);
+                    outBuilder.AppendLine();
                     standardOutHandler?.Invoke(sender, args);
                 };
 
                 process.ErrorDataReceived += (sender, args) =>
                 {
-                    if (args.Data == null)
+                    var data = args.Data;
+                    
+                    if (data == null)
                     {
                         return;
                     }
                     
                     ShellLogger.Log<SystemShellManager>(
                         processKey,
-                        $"[ErrorDataReceived]: {args.Data}"
+                        $"[ErrorDataReceived]: {data}"
                     );
                     
-                    errorBuilder.AppendLine(args.Data);
+                    errorBuilder.AppendLine(data);
                     standardErrorHandler?.Invoke(sender, args);
                 };
 
