@@ -72,7 +72,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_APPA_PACK, false, priority = MENU_APPA_PRIORITY + 0)]
         private static void APPAToPackages()
         {
-            ExecuteToPackages(_appalachiaSubset).ToSafe(nameof(APPAToPackages)).ExecuteAsEditorCoroutine();
+            ExecuteToPackages(_appalachiaSubset).AsSafe(nameof(APPAToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_APPA_PACK, true, priority = MENU_APPA_PRIORITY + 0)]
@@ -91,7 +91,7 @@ namespace Appalachia.CI.Integration.Dependencies
         private static void APPAToRepository()
         {
             ExecuteToRepository(_appalachiaSubset)
-               .ToSafe(nameof(APPAToRepository))
+               .AsSafe(nameof(APPAToRepository))
                .ExecuteAsEditorCoroutine();
         }
 
@@ -110,7 +110,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_THIRD_PACK, false, priority = MENU_THIRD_PRIORITY + 0)]
         private static void THIRDToPackages()
         {
-            ExecuteToPackages(_thirdPartySubset).ToSafe(nameof(THIRDToPackages)).ExecuteAsEditorCoroutine();
+            ExecuteToPackages(_thirdPartySubset).AsSafe(nameof(THIRDToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_THIRD_PACK, true, priority = MENU_THIRD_PRIORITY + 0)]
@@ -129,7 +129,7 @@ namespace Appalachia.CI.Integration.Dependencies
         private static void THIRDToRepository()
         {
             ExecuteToRepository(_thirdPartySubset)
-               .ToSafe(nameof(THIRDToRepository))
+               .AsSafe(nameof(THIRDToRepository))
                .ExecuteAsEditorCoroutine();
         }
 
@@ -167,7 +167,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_UNITY_PACK, false, priority = MENU_UNITY_PRIORITY + 0)]
         private static void UNITYToPackages()
         {
-            ExecuteToPackages(_unitySubset).ToSafe(nameof(UNITYToPackages)).ExecuteAsEditorCoroutine();
+            ExecuteToPackages(_unitySubset).AsSafe(nameof(UNITYToPackages)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_PACK, true, priority = MENU_UNITY_PRIORITY + 0)]
@@ -185,7 +185,7 @@ namespace Appalachia.CI.Integration.Dependencies
         [UnityEditor.MenuItem(MENU_UNITY_REPO, false, priority = MENU_UNITY_PRIORITY + 1)]
         private static void UNITYToRepository()
         {
-            ExecuteToRepository(_unitySubset).ToSafe(nameof(UNITYToRepository)).ExecuteAsEditorCoroutine();
+            ExecuteToRepository(_unitySubset).AsSafe(nameof(UNITYToRepository)).ExecuteAsEditorCoroutine();
         }
 
         [UnityEditor.MenuItem(MENU_UNITY_REPO, true, priority = MENU_UNITY_PRIORITY + 1)]

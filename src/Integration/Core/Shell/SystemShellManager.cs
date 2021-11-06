@@ -553,7 +553,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
         private void ProcessPending()
         {
-            var wrapper = ProcessPendingEnumerator().ToSafe("System Shell Manager Processing");
+            var wrapper = ProcessPendingEnumerator().AsSafe("System Shell Manager Processing");
             wrapper.ExecuteAsEditorCoroutine();
         }
 

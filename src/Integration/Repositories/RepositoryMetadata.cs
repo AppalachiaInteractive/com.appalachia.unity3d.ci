@@ -875,7 +875,7 @@ namespace Appalachia.CI.Integration.Repositories
                         }
                     );*/
 
-                    versionRequest.ToSafe(Name + ".VersionRequest")
+                    versionRequest.AsSafe(Name + ".VersionRequest")
                                   .OnComplete(
                                        () =>
                                        {
