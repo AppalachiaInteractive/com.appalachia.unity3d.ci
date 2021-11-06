@@ -7,7 +7,6 @@ using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
-using Appalachia.CI.Integration.Core.Shell;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Packages;
@@ -550,6 +549,11 @@ namespace Appalachia.CI.Integration.Repositories
 
                 foreach (var packageJson in packageJsons)
                 {
+                    if (packageJson.Contains("~/"))
+                    {
+                        continue;
+                    }
+                    
                     var directoryPath = AppaPath.GetDirectoryName(packageJson);
                     var directory = new AppaDirectoryInfo(directoryPath);
 
@@ -679,7 +683,14 @@ namespace Appalachia.CI.Integration.Repositories
 
         public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
         {
+            if (IsPackage || Path.EndsWith("~") || Path.StartsWith("Package"))
+            {
+                yield break;
+            }
+            
             Debug.Log($"Converting [{Name}] from a repository to a package.");
+
+            AssetDatabaseManager.Refresh();
 
             foreach (var dependency in dependencies)
             {
@@ -835,7 +846,9 @@ namespace Appalachia.CI.Integration.Repositories
 
                     _lookingForVersion = true;
 
-                    var result = new ShellResult();
+                    var versionRequest = UnityEditor.PackageManager.Client.Search(Name);
+
+                    /*var result = new ShellResult();
 
                     var command = "npm v | grep latest";
                     var workingDir = RealPath;
@@ -858,9 +871,18 @@ namespace Appalachia.CI.Integration.Repositories
                                 _lookingForVersion = false;
                             }
                         }
-                    );
+                    );*/
 
-                    enumerator.ToSafe(processKey).ExecuteAsEditorCoroutine();
+                    versionRequest.ToSafe(Name + ".VersionRequest")
+                                  .OnComplete(
+                                       () =>
+                                       {
+                                           _publishedVersion =
+                                               versionRequest.Result.FirstOrDefault()?.version;
+                                           _lookingForVersion = false;
+                                       }
+                                   )
+                                  .ExecuteAsEditorCoroutine();
                 }
             }
         }

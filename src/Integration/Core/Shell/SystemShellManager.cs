@@ -479,43 +479,75 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                 var process = new Process {StartInfo = processStartInfo, EnableRaisingEvents = true};
 
-                process.OutputDataReceived += (sender, args) =>
-                {
-                    var data = args.Data;
-                        
-                    if (data == null)
-                    {
-                        return;
-                    }
+                process.OutputDataReceived += (sender, args) => ProcessOnOutDataReceived(
+                    sender,
+                    args,
+                    processKey,
+                    standardOutHandler,
+                    outBuilder
+                );
 
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        $"[OutputDataReceived]: {data}"
-                    );
-                    
-                    outBuilder.AppendLine();
-                    standardOutHandler?.Invoke(sender, args);
-                };
-
-                process.ErrorDataReceived += (sender, args) =>
-                {
-                    var data = args.Data;
-                    
-                    if (data == null)
-                    {
-                        return;
-                    }
-                    
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        $"[ErrorDataReceived]: {data}"
-                    );
-                    
-                    errorBuilder.AppendLine(data);
-                    standardErrorHandler?.Invoke(sender, args);
-                };
+                process.ErrorDataReceived += (sender, args) => ProcessOnErrorDataReceived(
+                    sender,
+                    args,
+                    processKey,
+                    standardErrorHandler,
+                    errorBuilder
+                );
 
                 return process;
+            }
+        }
+
+        private void ProcessOnErrorDataReceived(
+            object sender,
+            DataReceivedEventArgs args,
+            string processKey,
+            DataReceivedEventHandler standardErrorHandler,
+            StringBuilder errorBuilder)
+        {
+            var data = args.Data;
+
+            if (data == null)
+            {
+                return;
+            }
+
+            try
+            {
+                errorBuilder.AppendLine(data);
+                standardErrorHandler?.Invoke(sender, args);
+                ShellLogger.Log<SystemShellManager>(processKey, $"[ErrorDataReceived]: {data}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        private void ProcessOnOutDataReceived(
+            object sender,
+            DataReceivedEventArgs args,
+            string processKey,
+            DataReceivedEventHandler standardOutHandler,
+            StringBuilder outBuilder)
+        {
+            var data = args.Data;
+
+            if (data == null)
+            {
+                return;
+            }
+
+            try
+            {
+                outBuilder.AppendLine();
+                standardOutHandler?.Invoke(sender, args);
+                ShellLogger.Log<SystemShellManager>(processKey, $"[OutputDataReceived]: {data}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
             }
         }
 

@@ -117,6 +117,8 @@ namespace Appalachia.CI.Integration.Core
         public bool IsThirdParty => flags.Has(IntegrationTypeFlags.IsThirdParty);
         public bool IsUnity => flags.HasAny(IntegrationTypeFlags.IsUnity);
 
+        public bool IsHidden => Path.EndsWith("~");
+
         /*
         private string _unifiedName;
         
@@ -178,6 +180,25 @@ namespace Appalachia.CI.Integration.Core
             CheckIntegrationRegistration();
 
             return InstancesByPath[file.RelativePath];
+        }
+
+        public static T FindByChildFilePath(string path)
+        {
+            CheckIntegrationRegistration();
+
+            var childFile = new AppaFileInfo(path);
+
+            var instanceKeys = InstancesByPath.Keys;
+
+            foreach (var key in instanceKeys)
+            {
+                if (childFile.RelativePath.StartsWith(key))
+                {
+                    return InstancesByPath[key];
+                }
+            }
+
+            return null;
         }
 
         public static T FindByFilePath(string path)

@@ -7,7 +7,7 @@ namespace Appalachia.CI.Integration.Core.Shell
     {
         public static void Log<T>(string message)
         {
-            var time = $"{Time.realtimeSinceStartup:F2}";
+            var time = $"{DateTime.Now:yyyyMMdd-hhmmss.fff}";
 
             var logPrefix = $"{time} {typeof(T).Name}";
 
@@ -18,9 +18,9 @@ namespace Appalachia.CI.Integration.Core.Shell
 
         public static void Log<T>(string processKey, string message)
         {
-            var time = $"{Time.realtimeSinceStartup:F2}";
+            var time = $"{DateTime.Now:yyyyMMdd-hhmmss.fff}";
 
-            var logPrefix = $"{time} {typeof(T).Name} '{processKey}>'";
+            var logPrefix = $"{time} {typeof(T).Name} '{processKey}'";
 
             var log = $"{logPrefix} {message.Trim()}";
 
@@ -29,7 +29,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
         public static void Log<T>(string processKey, double elapsed, string message)
         {
-            var time = $"{Time.realtimeSinceStartup:F2}";
+            var time = $"{DateTime.Now:yyyyMMdd-hhmmss.fff}";
 
             var logPrefix = $"{time} {typeof(T).Name} '{processKey}' [{elapsed:F2} s]";
 

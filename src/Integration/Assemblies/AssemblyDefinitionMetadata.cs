@@ -140,6 +140,11 @@ namespace Appalachia.CI.Integration.Assemblies
 
             foreach (var asmdef in asmdefs)
             {
+                if (asmdef.Contains("~/"))
+                {
+                    continue;
+                }
+                
                 yield return CreateNew(asmdef);
             }
         }

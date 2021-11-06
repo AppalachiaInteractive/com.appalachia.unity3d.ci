@@ -252,119 +252,112 @@ namespace Appalachia.CI.Integration.Packages
 
         public IEnumerator ConvertToRepository(bool suspendImport, bool executeClient, bool dryRun = true)
         {
-           
-                Debug.Log($"Converting [{Name}] from a package to a repository.");
-                
-                PopulateDependents();
-                
-                foreach (var dependent in dependents)
-                {
-                    if (dependent.IsAppalachiaManaged)
-                    {
-                        var subEnum = dependent.ConvertToRepository(false, executeClient, dryRun);
+            Debug.Log($"Converting [{Name}] from a package to a repository.");
 
-                        while (subEnum.MoveNext())
-                        {
-                            yield return subEnum;
-                        }
+            AssetDatabaseManager.Refresh();
+
+            PopulateDependents();
+
+            foreach (var dependent in dependents)
+            {
+                if (dependent.IsAppalachiaManaged)
+                {
+                    var subEnum = dependent.ConvertToRepository(false, executeClient, dryRun);
+
+                    while (subEnum.MoveNext())
+                    {
+                        yield return subEnum;
                     }
                 }
-                
-                var repo = packageInfo.repository;
+            }
 
-                string directoryRoot;
-                string directoryName;
+            var repo = packageInfo.repository;
 
-                if (IsThirdParty || IsUnity)
+            string directoryRoot;
+            string directoryName;
+
+            if (IsThirdParty || IsUnity)
+            {
+                directoryName = packageInfo.name.Split(".").Last();
+                directoryRoot = "Assets/Third-Party/";
+            }
+            else
+            {
+                directoryName = Name;
+                directoryRoot = "Assets/";
+            }
+
+            var existingDirectory = AppaDirectory.GetDirectories(
+                                                      directoryRoot,
+                                                      directoryName + "*",
+                                                      SearchOption.TopDirectoryOnly
+                                                  )
+                                                 .Select(d => new AppaDirectoryInfo(d))
+                                                 .FirstOrDefault();
+
+            var alreadyExists = false;
+            var isHidden = false;
+
+            if (existingDirectory != null)
+            {
+                var existingDirectoryPath = existingDirectory.RelativePath;
+
+                if (existingDirectoryPath.EndsWith("~"))
                 {
-                    directoryName = packageInfo.name.Split(".").Last();
-                    directoryRoot = "Assets/Third-Party/";
-                }
-                else
-                {
-                    directoryName = Name;
-                    directoryRoot = "Assets/";
-                }
+                    var directory = new AppaDirectoryInfo(
+                        existingDirectoryPath.Substring(0, existingDirectoryPath.Length - 1)
+                    );
 
-                var existingDirectory = AppaDirectory.GetDirectories(
-                                                          directoryRoot,
-                                                          directoryName + "*",
-                                                          SearchOption.TopDirectoryOnly
-                                                      )
-                                                     .Select(d => new AppaDirectoryInfo(d))
-                                                     .FirstOrDefault();
-
-                var alreadyExists = false;
-                var isHidden = false;
-
-                if (existingDirectory != null)
-                {
-                    var existingDirectoryPath = existingDirectory.RelativePath;
-
-                    if (existingDirectoryPath.EndsWith("~"))
-                    {
-                        var directory = new AppaDirectoryInfo(
-                            existingDirectoryPath.Substring(0, existingDirectoryPath.Length - 1)
-                        );
-
-                        var hideDirectory = existingDirectory;
-
-                        if (dryRun)
-                        {
-                            Debug.Log(
-                                $"MOVEDIR: [{hideDirectory.RelativePath}] to [{directory.RelativePath}]"
-                            );
-                        }
-                        else
-                        {
-                            AppaDirectory.Move(hideDirectory.RelativePath, directory.RelativePath);
-                        }
-                    }
-                }
-                else
-                {
-                    var result = new ShellResult();
-                    var directoryPath = AppaPath.Combine(directoryRoot, directoryName);
-                    var command = $"git clone \"{repo.url.Replace("git+", "")}\" \"{directoryPath}\"";
-                    var workingDirectory = Application.dataPath;
+                    var hideDirectory = existingDirectory;
 
                     if (dryRun)
                     {
-                        Debug.Log($"COMMAND: [{command}] WORKDIR: [{workingDirectory}]");
+                        Debug.Log($"MOVEDIR: [{hideDirectory.RelativePath}] to [{directory.RelativePath}]");
                     }
                     else
                     {
-                        var execution = SystemShell.Instance.Execute(
-                            command,
-                            workingDirectory,
-                            false,
-                            result
-                        );
-
-                        while (execution.MoveNext())
-                        {
-                            yield return execution.Current;
-                        }
+                        AppaDirectory.Move(hideDirectory.RelativePath, directory.RelativePath);
                     }
                 }
+            }
+            else
+            {
+                var result = new ShellResult();
+                var directoryPath = AppaPath.Combine(directoryRoot, directoryName);
+                var command = $"git clone \"{repo.url.Replace("git+", "")}\" \"{directoryPath}\"";
+                var workingDirectory = Application.dataPath;
 
-                if (executeClient)
+                if (dryRun)
                 {
-                    if (dryRun)
-                    {
-                        Debug.Log($"PKGMANAGER: Removing [{Name}]");
-                    }
-                    else
-                    {
-                        var removal = Client.Remove(Name);
+                    Debug.Log($"COMMAND: [{command}] WORKDIR: [{workingDirectory}]");
+                }
+                else
+                {
+                    var execution = SystemShell.Instance.Execute(command, workingDirectory, false, result);
 
-                        while (!removal.IsCompleted)
-                        {
-                            yield return null;
-                        }
+                    while (execution.MoveNext())
+                    {
+                        yield return execution.Current;
                     }
                 }
-            
+            }
+
+            if (executeClient)
+            {
+                if (dryRun)
+                {
+                    Debug.Log($"PKGMANAGER: Removing [{Name}]");
+                }
+                else
+                {
+                    var removal = Client.Remove(Name);
+
+                    while (!removal.IsCompleted)
+                    {
+                        yield return null;
+                    }
+                }
+            }
         }
 
         protected override IEnumerable<string> GetIds()

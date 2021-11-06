@@ -44,7 +44,7 @@ namespace Appalachia.CI.Integration.FileSystem
         private static readonly ProfilerMarker _PRF_HasSubDirectory = new(_PRF_PFX + nameof(HasSubDirectory));
 
         private static readonly ProfilerMarker _PRF_IsPathInAnySubdirectory =
-            new(_PRF_PFX + nameof(IsPathInAnySubdirectory));
+            new(_PRF_PFX + nameof(DoesPathExistInAnySubdirectory));
 
         private static readonly ProfilerMarker _PRF_IsFileInAnySubdirectory =
             new(_PRF_PFX + nameof(IsFileInAnySubdirectory));
@@ -798,11 +798,11 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_IsFileInAnySubdirectory.Auto())
             {
-                return IsPathInAnySubdirectory(file.FullPath);
+                return DoesPathExistInAnySubdirectory(file.FullPath);
             }
         }
 
-        public bool IsPathInAnySubdirectory(string path)
+        public bool DoesPathExistInAnySubdirectory(string path)
         {
             using (_PRF_IsPathInAnySubdirectory.Auto())
             {
@@ -810,7 +810,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
                 var subset = path.Substring(0, lastIndex).Trim('/');
 
-                var contains = subset.Contains(FullPath);
+                var contains = subset.Contains(RelativePath);
 
                 return contains;
             }

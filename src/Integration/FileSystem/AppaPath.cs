@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.IO;
 using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
 
@@ -31,6 +33,15 @@ namespace Appalachia.CI.Integration.FileSystem
         private static StringCombiner _pathCombiner;
         public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
+        public static string Combine(List<string> paths)
+        {
+            using (_PRF_Combine.Auto())
+            {
+                var internalArray = paths.ToArray();
+                return Path.Combine(internalArray);
+            }
+        }
+        
         public static string Combine(params string[] paths)
         {
             using (_PRF_Combine.Auto())

@@ -8,6 +8,7 @@ using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
 using Unity.Profiling;
 using UnityEditor.PackageManager;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -68,13 +69,13 @@ namespace Appalachia.CI.Integration.Dependencies
 
         #region Menu Items
 
-        [UnityEditor.MenuItem(MENU_APPA_PACK, false, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_APPA_PACK, false, priority = MENU_APPA_PRIORITY + 0)]
         private static void APPAToPackages()
         {
             ExecuteToPackages(_appalachiaSubset).ToSafe(nameof(APPAToPackages)).ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_APPA_PACK, true, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_APPA_PACK, true, priority = MENU_APPA_PRIORITY + 0)]
         private static bool APPAToPackagesValidate()
         {
             if (_executing)
@@ -86,7 +87,7 @@ namespace Appalachia.CI.Integration.Dependencies
             return _appalachiaSubset.anyRepositories;
         }
 
-        [UnityEditor.MenuItem(MENU_APPA_REPO, false, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_APPA_REPO, false, priority = MENU_APPA_PRIORITY + 1)]
         private static void APPAToRepository()
         {
             ExecuteToRepository(_appalachiaSubset)
@@ -94,7 +95,7 @@ namespace Appalachia.CI.Integration.Dependencies
                .ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_APPA_REPO, true, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_APPA_REPO, true, priority = MENU_APPA_PRIORITY + 1)]
         private static bool APPAToRepositoryValidate()
         {
             if (_executing)
@@ -106,13 +107,13 @@ namespace Appalachia.CI.Integration.Dependencies
             return _appalachiaSubset.anyPackages;
         }
 
-        [UnityEditor.MenuItem(MENU_THIRD_PACK, false, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_THIRD_PACK, false, priority = MENU_THIRD_PRIORITY + 0)]
         private static void THIRDToPackages()
         {
             ExecuteToPackages(_thirdPartySubset).ToSafe(nameof(THIRDToPackages)).ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_THIRD_PACK, true, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_THIRD_PACK, true, priority = MENU_THIRD_PRIORITY + 0)]
         private static bool THIRDToPackagesValidate()
         {
             if (_executing)
@@ -124,7 +125,7 @@ namespace Appalachia.CI.Integration.Dependencies
             return _thirdPartySubset.anyRepositories;
         }
 
-        [UnityEditor.MenuItem(MENU_THIRD_REPO, false, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_THIRD_REPO, false, priority = MENU_THIRD_PRIORITY + 1)]
         private static void THIRDToRepository()
         {
             ExecuteToRepository(_thirdPartySubset)
@@ -132,7 +133,7 @@ namespace Appalachia.CI.Integration.Dependencies
                .ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_THIRD_REPO, true, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_THIRD_REPO, true, priority = MENU_THIRD_PRIORITY + 1)]
         private static bool THIRDToRepositoryValidate()
         {
             if (_executing)
@@ -163,13 +164,13 @@ namespace Appalachia.CI.Integration.Dependencies
             return true;
         }
 
-        [UnityEditor.MenuItem(MENU_UNITY_PACK, false, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_UNITY_PACK, false, priority = MENU_UNITY_PRIORITY + 0)]
         private static void UNITYToPackages()
         {
             ExecuteToPackages(_unitySubset).ToSafe(nameof(UNITYToPackages)).ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_UNITY_PACK, true, priority = MENU_PRIORITY + 0)]
+        [UnityEditor.MenuItem(MENU_UNITY_PACK, true, priority = MENU_UNITY_PRIORITY + 0)]
         private static bool UNITYToPackagesValidate()
         {
             if (_executing)
@@ -181,13 +182,13 @@ namespace Appalachia.CI.Integration.Dependencies
             return _unitySubset.anyRepositories;
         }
 
-        [UnityEditor.MenuItem(MENU_UNITY_REPO, false, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_UNITY_REPO, false, priority = MENU_UNITY_PRIORITY + 1)]
         private static void UNITYToRepository()
         {
             ExecuteToRepository(_unitySubset).ToSafe(nameof(UNITYToRepository)).ExecuteAsEditorCoroutine();
         }
 
-        [UnityEditor.MenuItem(MENU_UNITY_REPO, true, priority = MENU_PRIORITY + 1)]
+        [UnityEditor.MenuItem(MENU_UNITY_REPO, true, priority = MENU_UNITY_PRIORITY + 1)]
         private static bool UNITYToRepositoryValidate()
         {
             if (_executing)
@@ -431,20 +432,24 @@ namespace Appalachia.CI.Integration.Dependencies
 
             try
             {
+                Check();
+                
                 if (_enabled)
                 {
                     AssetDatabaseManager.SetSelection("Assets");
 
-                    UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
-
-                    while (SceneManager.sceneCount > 0)
+                    if (EditorSceneManager.GetActiveScene().name != "Untitled")
                     {
-                        var scene = SceneManager.GetSceneAt(0);
+                        UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
 
-                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+                        UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                            NewSceneSetup.EmptyScene,
+                            NewSceneMode.Single
+                        );
                     }
-
+                    
                     AssetDatabaseManager.SaveAssets();
+                    AssetDatabaseManager.Refresh();
                 }
                 else
                 {
