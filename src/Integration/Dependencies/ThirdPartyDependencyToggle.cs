@@ -361,7 +361,7 @@ namespace Appalachia.CI.Integration.Dependencies
 
                         var package = dependency.package;
 
-                        var subEnum = package.ConvertToRepository(false, false, !_enabled);
+                        var subEnum = package.ConvertToRepository(false, !_enabled);
 
                         using (_PRF_ExecuteToRepository.Suspend())
                         {

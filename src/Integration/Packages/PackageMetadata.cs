@@ -250,11 +250,13 @@ namespace Appalachia.CI.Integration.Packages
             return NameAndVersion;
         }
 
-        public IEnumerator ConvertToRepository(bool suspendImport, bool executeClient, bool dryRun = true)
+        public IEnumerator ConvertToRepository(bool executeClient, bool dryRun = true)
         {
-            Debug.Log($"Converting [{Name}] from a package to a repository.");
-
+            Debug.Log($"Refreshing assets before converting [{Name}] from a package to a repository.");
+            
             AssetDatabaseManager.Refresh();
+            
+            Debug.Log($"Converting [{Name}] from a package to a repository.");
 
             PopulateDependents();
 
@@ -262,7 +264,7 @@ namespace Appalachia.CI.Integration.Packages
             {
                 if (dependent.IsAppalachiaManaged)
                 {
-                    var subEnum = dependent.ConvertToRepository(false, executeClient, dryRun);
+                    var subEnum = dependent.ConvertToRepository(executeClient, dryRun);
 
                     while (subEnum.MoveNext())
                     {
@@ -295,16 +297,13 @@ namespace Appalachia.CI.Integration.Packages
                                                  .Select(d => new AppaDirectoryInfo(d))
                                                  .FirstOrDefault();
 
-            var alreadyExists = false;
-            var isHidden = false;
-
             if (existingDirectory != null)
             {
                 var existingDirectoryPath = existingDirectory.RelativePath;
 
                 if (existingDirectoryPath.EndsWith("~"))
                 {
-                    var directory = new AppaDirectoryInfo(
+                    var dir = new AppaDirectoryInfo(
                         existingDirectoryPath.Substring(0, existingDirectoryPath.Length - 1)
                     );
 
@@ -312,11 +311,11 @@ namespace Appalachia.CI.Integration.Packages
 
                     if (dryRun)
                     {
-                        Debug.Log($"MOVEDIR: [{hideDirectory.RelativePath}] to [{directory.RelativePath}]");
+                        Debug.Log($"MOVEDIR: [{hideDirectory.RelativePath}] to [{dir.RelativePath}]");
                     }
                     else
                     {
-                        AppaDirectory.Move(hideDirectory.RelativePath, directory.RelativePath);
+                        AppaDirectory.Move(hideDirectory.RelativePath, dir.RelativePath);
                     }
                 }
             }

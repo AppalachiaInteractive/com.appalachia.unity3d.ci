@@ -50,9 +50,9 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_FindAssets.Auto())
             {
                 var paths = FindAssetPaths(t, searchString);
-                var results = new List<Object>(paths.Length);
+                var results = new List<Object>(paths.Count);
 
-                for (var i = 0; i < paths.Length; i++)
+                for (var i = 0; i < paths.Count; i++)
                 {
                     var path = paths[i];
 
@@ -153,9 +153,9 @@ namespace Appalachia.CI.Integration.Assets
                 var t = typeof(T);
 
                 var paths = FindAssetPaths<T>(searchString);
-                var results = new List<T>(paths.Length);
+                var results = new List<T>(paths.Count);
 
-                for (var i = 0; i < paths.Length; i++)
+                for (var i = 0; i < paths.Count; i++)
                 {
                     var path = paths[i];
 
@@ -195,7 +195,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] FindAssetPaths(string searchString = null)
+        public static List<string> FindAssetPaths(string searchString = null)
         {
             using (_PRF_FindAssetPaths.Auto())
             {
@@ -205,7 +205,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] FindAssetPaths<T>(string searchString = null)
+        public static List<string> FindAssetPaths<T>(string searchString = null)
         {
             using (_PRF_FindAssetPaths.Auto())
             {
@@ -215,21 +215,26 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] FindAssetPaths(Type t, string searchString = null)
+        public static List<string> FindAssetPaths(Type t, string searchString = null)
         {
             using (_PRF_FindAssetPaths.Auto())
             {
                 InitializeAssetPathData();
 
                 var guids = FindAssetGuids(t, searchString);
-                var paths = new string[guids.Length];
+                var paths = new List<string>(guids.Length);
 
                 for (var index = 0; index < guids.Length; index++)
                 {
                     var guid = guids[index];
                     var path = GUIDToAssetPath(guid).CleanFullPath();
 
-                    paths[index] = path;
+                    if (!AppaFile.Exists(path))
+                    {
+                        continue;
+                    }
+
+                    paths.Add(path);
                 }
 
                 return paths;

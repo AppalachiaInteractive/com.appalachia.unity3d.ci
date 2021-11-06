@@ -688,9 +688,11 @@ namespace Appalachia.CI.Integration.Repositories
                 yield break;
             }
             
-            Debug.Log($"Converting [{Name}] from a repository to a package.");
-
+            Debug.Log($"Refreshing assets before converting [{Name}] from a repository to a package.");
+            
             AssetDatabaseManager.Refresh();
+            
+            Debug.Log($"Converting [{Name}] from a repository to a package.");
 
             foreach (var dependency in dependencies)
             {
