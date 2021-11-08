@@ -13,7 +13,6 @@ using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
-using UnityEngine.Rendering;
 using UnityEngine.TextCore.Text;
 using UnityEngine.U2D;
 using Object = UnityEngine.Object;
@@ -22,13 +21,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-#region Profiling And Tracing Markers
-
-        private static Dictionary<MonoScript, Type> _scriptTypeLookup;
-        private static Dictionary<Type, Func<Type, string, string>> _assetTypeFolderLookup;
-        private static Dictionary<Type, MonoScript> _typeScriptLookup;
-        private static List<MonoScript> _allMonoScripts;
-        private static List<MonoScript> _runtimeMonoScripts;
+        #region Profiling And Tracing Markers
 
         private static readonly ProfilerMarker _PRF_GetAllRuntimeMonoScripts =
             new(_PRF_PFX + nameof(GetAllRuntimeMonoScripts));
@@ -65,7 +58,13 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetScriptFromType =
             new(_PRF_PFX + nameof(GetScriptFromType));
 
-#endregion
+        #endregion
+
+        private static Dictionary<MonoScript, Type> _scriptTypeLookup;
+        private static Dictionary<Type, Func<Type, string, string>> _assetTypeFolderLookup;
+        private static Dictionary<Type, MonoScript> _typeScriptLookup;
+        private static List<MonoScript> _allMonoScripts;
+        private static List<MonoScript> _runtimeMonoScripts;
 
         public static bool DoesFileExist(string path)
         {
@@ -192,6 +191,16 @@ namespace Appalachia.CI.Integration.Assets
                 }
 
                 return _scriptTypeLookup[t];
+            }
+        }
+
+        public static void OpenFolderInExplorer(string folderPath)
+        {
+            if (AppaDirectory.Exists(folderPath))
+            {
+                var startInfo = new ProcessStartInfo {Arguments = folderPath, FileName = "explorer.exe"};
+
+                Process.Start(startInfo);
             }
         }
 
@@ -399,20 +408,6 @@ namespace Appalachia.CI.Integration.Assets
                 atfl.Add(typeof(SpriteAsset),      (_, _) => "Sprites");
                 atfl.Add(typeof(SpriteAtlas),      (_, _) => "Sprites");
                 atfl.Add(typeof(SpriteAtlasAsset), (_, _) => "Sprites");
-            }
-        }
-   
-        public static void OpenFolderInExplorer(string folderPath)
-        {
-            if (AppaDirectory.Exists(folderPath))
-            {
-                var startInfo = new ProcessStartInfo
-                {
-                    Arguments = folderPath,
-                    FileName = "explorer.exe"
-                };
-
-                Process.Start(startInfo);
             }
         }
     }

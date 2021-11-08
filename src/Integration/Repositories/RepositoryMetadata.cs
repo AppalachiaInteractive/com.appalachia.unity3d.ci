@@ -681,65 +681,7 @@ namespace Appalachia.CI.Integration.Repositories
             return $"{directory.RelativePath}: {PackageVersion}";
         }
 
-        public IEnumerator ConvertToPackage(bool suspendImport, bool executeClient, bool dryRun = true)
-        {
-            if (IsPackage || Path.EndsWith("~") || Path.StartsWith("Package"))
-            {
-                yield break;
-            }
-            
-            Debug.Log($"Refreshing assets before converting [{Name}] from a repository to a package.");
-            
-            AssetDatabaseManager.Refresh();
-            
-            Debug.Log($"Converting [{Name}] from a repository to a package.");
-
-            foreach (var dependency in dependencies)
-            {
-                if (dependency.repository.IsAppalachiaManaged)
-                {
-                    var subEnum = dependency.repository.ConvertToPackage(false, executeClient, dryRun);
-
-                    while (subEnum.MoveNext())
-                    {
-                        yield return subEnum;
-                    }
-                }
-            }
-
-            var root = Path;
-            var meta = root + ".meta";
-
-            var newRoot = root + "~";
-
-            if (dryRun)
-            {
-                Debug.Log($"MOVEDIR: [{root}] to [{newRoot}]");
-                Debug.Log($"DELETE: [{meta}]");
-            }
-            else
-            {
-                AppaDirectory.Move(root, newRoot);
-                AppaFile.Delete(meta);
-            }
-
-            if (executeClient)
-            {
-                if (dryRun)
-                {
-                    Debug.Log($"PKGMANAGER: Adding [{NameAndVersion}]");
-                }
-                else
-                {
-                    var addition = UnityEditor.PackageManager.Client.Add(NameAndVersion);
-
-                    while (!addition.IsCompleted)
-                    {
-                        yield return null;
-                    }
-                }
-            }
-        }
+       
 
         public IEnumerable<AppaFileInfo> GetLargestFiles(int count)
         {

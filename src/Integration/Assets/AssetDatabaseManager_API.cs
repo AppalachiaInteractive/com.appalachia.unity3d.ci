@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Unity.Profiling;
@@ -2230,10 +2231,11 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static void Refresh()
+        public static void Refresh([CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
         {
             using (_PRF_Refresh.Auto())
             {
+                Console.WriteLine($"[ASSETDB REFRESH INVOKED]: {filePath}:{lineNumber}:{memberName}");
                 AssetDatabase.Refresh();
             }
         }

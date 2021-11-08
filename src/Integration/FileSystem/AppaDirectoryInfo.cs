@@ -10,7 +10,7 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaDirectoryInfo : AppaFileSystemInfo
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AppaDirectoryInfo) + ".";
 
@@ -51,7 +51,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_HasSiblingFile = new(_PRF_PFX + nameof(HasSiblingFile));
 
-#endregion
+        #endregion
 
         /// <summary>Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> class on the specified path.</summary>
         /// <param name="path">A string specifying the path on which to create the <see langword="AppaDirectoryInfo" />. </param>
@@ -99,12 +99,12 @@ namespace Appalachia.CI.Integration.FileSystem
             _directoryInfo = info;
         }
 
-        private readonly DirectoryInfo _directoryInfo;
-
         /// <summary>Gets the root portion of the directory.</summary>
         /// <returns>An object that represents the root of the directory.</returns>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
         public AppaDirectoryInfo Root { get; }
+
+        private readonly DirectoryInfo _directoryInfo;
 
         /// <summary>Gets the parent directory of a specified subdirectory.</summary>
         /// <returns>
@@ -151,6 +151,46 @@ namespace Appalachia.CI.Integration.FileSystem
         public override string Name => _directoryInfo.Name;
 
         public override string RelativePath => FullPath.ToRelativePath();
+
+        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
+        {
+            return new(o);
+        }
+
+        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
+        {
+            return o._directoryInfo;
+        }
+
+        /// <summary>Deletes this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> if it is empty.</summary>
+        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">
+        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
+        ///     exist or could not be found.
+        /// </exception>
+        /// <exception cref="T:System.IO.IOException">
+        ///     The directory is not empty. -or-The directory is the application's current working directory.-or-There is
+        ///     an open handle on the directory, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories. For
+        ///     more information, see How to: Enumerate Directories and Files.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        public override void Delete()
+        {
+            using (_PRF_Delete.Auto())
+            {
+                _directoryInfo.Delete();
+            }
+        }
+
+        /// <summary>Returns the original path that was passed by the user.</summary>
+        /// <returns>Returns the original path that was passed by the user.</returns>
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return _directoryInfo.ToString().CleanFullPath();
+            }
+        }
 
         /// <summary>Creates a directory.</summary>
         /// <exception cref="T:System.IO.IOException">The directory cannot be created. </exception>
@@ -225,6 +265,20 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_Delete.Auto())
             {
                 _directoryInfo.Delete(recursive);
+            }
+        }
+
+        public bool DoesPathExistInAnySubdirectory(string path)
+        {
+            using (_PRF_IsPathInAnySubdirectory.Auto())
+            {
+                var lastIndex = path.LastIndexOf('/');
+
+                var subset = path.Substring(0, lastIndex).Trim('/');
+
+                var contains = subset.Contains(RelativePath);
+
+                return contains;
             }
         }
 
@@ -741,6 +795,54 @@ namespace Appalachia.CI.Integration.FileSystem
                 return n;
             }
         }
+        
+        /// <summary>Returns the date and time the specified file or directory was last accessed.</summary>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in local time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public DateTime GetLastAccessTime()
+        {
+            return AppaDirectory.GetLastAccessTime(FullPath);
+        }
+
+        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last accessed.</summary>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in UTC time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public DateTime GetLastAccessTimeUtc()
+        {
+            return AppaDirectory.GetLastAccessTimeUtc(FullPath);
+        }
+
+        /// <summary>Returns the date and time the specified file or directory was last written to.</summary>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in local time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public DateTime GetLastWriteTime()
+        {
+            return AppaDirectory.GetLastWriteTime(FullPath);
+        }
+
+        /// <summary>Returns the date and time, in Coordinated Universal Time (UTC) format, that the specified file or directory was last written to.</summary>
+        /// <returns>A structure that is set to the date and time the specified file or directory was last written to. This value is expressed in UTC time.</returns>
+        /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
+        /// </exception>
+        public DateTime GetLastWriteTimeUtc()
+        {
+            return AppaDirectory.GetLastWriteTimeUtc(FullPath);
+        }
 
         public bool HasSiblingDirectory(string name, out AppaDirectoryInfo siblingDirectory)
         {
@@ -802,18 +904,12 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public bool DoesPathExistInAnySubdirectory(string path)
+        public bool IsInRepositoryRoot()
         {
-            using (_PRF_IsPathInAnySubdirectory.Auto())
-            {
-                var lastIndex = path.LastIndexOf('/');
+            var gitFolder = HasSiblingDirectory(".git", out _);
+            var packageJson = HasSiblingFile("package.json", out _);
 
-                var subset = path.Substring(0, lastIndex).Trim('/');
-
-                var contains = subset.Contains(RelativePath);
-
-                return contains;
-            }
+            return gitFolder || packageJson;
         }
 
         /// <summary>Moves a <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> instance and its contents to a new path.</summary>
@@ -842,57 +938,9 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Deletes this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> if it is empty.</summary>
-        /// <exception cref="T:System.UnauthorizedAccessException">The directory contains a read-only file.</exception>
-        /// <exception cref="T:System.IO.DirectoryNotFoundException">
-        ///     The directory described by this <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> object does not
-        ///     exist or could not be found.
-        /// </exception>
-        /// <exception cref="T:System.IO.IOException">
-        ///     The directory is not empty. -or-The directory is the application's current working directory.-or-There is
-        ///     an open handle on the directory, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories. For
-        ///     more information, see How to: Enumerate Directories and Files.
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public override void Delete()
-        {
-            using (_PRF_Delete.Auto())
-            {
-                _directoryInfo.Delete();
-            }
-        }
-
-        /// <summary>Returns the original path that was passed by the user.</summary>
-        /// <returns>Returns the original path that was passed by the user.</returns>
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
-            {
-                return _directoryInfo.ToString().CleanFullPath();
-            }
-        }
-
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _directoryInfo;
-        }
-
-        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
-        {
-            return new(o);
-        }
-
-        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
-        {
-            return o._directoryInfo;
-        }
-
-        public bool IsInRepositoryRoot()
-        {
-            var gitFolder = HasSiblingDirectory(".git", out _);
-            var packageJson = HasSiblingFile("package.json", out _);
-
-            return gitFolder || packageJson;
         }
     }
 }

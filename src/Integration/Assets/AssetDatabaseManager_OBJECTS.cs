@@ -8,13 +8,9 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AssetDatabaseManager) + ".";
-
-        private static Dictionary<string, string[]> _guidsByTypeName;
-        private static Dictionary<string, string[]> _pathsByTypeName;
-        private static Dictionary<string, Type[]> _typesByTypeName;
 
         private static readonly ProfilerMarker _PRF_GetAllMonoScripts =
             new(_PRF_PFX + nameof(GetAllMonoScripts));
@@ -34,7 +30,11 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetAllAssetTypes =
             new(_PRF_PFX + nameof(GetAllAssetTypes));
 
-#endregion
+        #endregion
+
+        private static Dictionary<string, string[]> _guidsByTypeName;
+        private static Dictionary<string, string[]> _pathsByTypeName;
+        private static Dictionary<string, Type[]> _typesByTypeName;
 
         public static string[] GetAllAssetGuids(Type type = null)
         {
@@ -44,6 +44,15 @@ namespace Appalachia.CI.Integration.Assets
                 InitializeTypeData(typeName);
 
                 return _guidsByTypeName[typeName];
+            }
+        }
+
+        public static string[] GetAllAssetPaths<T>()
+        where T: UnityEngine.Object
+        {
+            using (_PRF_GetAllAssetPaths.Auto())
+            {
+                return GetAllAssetPaths(typeof(T));
             }
         }
 

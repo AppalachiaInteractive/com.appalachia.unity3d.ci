@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Appalachia.CI.Integration.Cleaning;
@@ -78,6 +79,55 @@ namespace Appalachia.CI.Integration.FileSystem
                     AppaLog.Error(nameof(GetExtension) + ": Error parsing extension! " + path);
                     throw;
                 }
+            }
+        }
+
+        private static readonly ProfilerMarker _PRF_MatchesExtension = new ProfilerMarker(_PRF_PFX + nameof(MatchesExtension));
+
+        public static bool MatchesExtension(string path, StringComparison comparison, params string[] args)
+        {
+            using (_PRF_MatchesExtension.Auto())
+            {
+                var extension = GetExtension(path);
+
+                var extensionStartsWithPeriod = extension.StartsWith('.');
+            
+                foreach (var arg in args)
+                {
+                    var matchStartsWithPeriod = arg.StartsWith('.');
+
+                    if (extensionStartsWithPeriod && !matchStartsWithPeriod)
+                    {
+                        if (extension.Equals($".{arg}", comparison))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (!extensionStartsWithPeriod && matchStartsWithPeriod)
+                    {
+                        if (arg.Equals($".{extension}", comparison))
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (arg.Equals(extension, comparison))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+        
+        public static bool MatchesExtension(string path, params string[] args)
+        {
+            using (_PRF_MatchesExtension.Auto())
+            {
+                return MatchesExtension(path, StringComparison.Ordinal, args);
             }
         }
 

@@ -250,114 +250,7 @@ namespace Appalachia.CI.Integration.Packages
             return NameAndVersion;
         }
 
-        public IEnumerator ConvertToRepository(bool executeClient, bool dryRun = true)
-        {
-            Debug.Log($"Refreshing assets before converting [{Name}] from a package to a repository.");
-            
-            AssetDatabaseManager.Refresh();
-            
-            Debug.Log($"Converting [{Name}] from a package to a repository.");
-
-            PopulateDependents();
-
-            foreach (var dependent in dependents)
-            {
-                if (dependent.IsAppalachiaManaged)
-                {
-                    var subEnum = dependent.ConvertToRepository(executeClient, dryRun);
-
-                    while (subEnum.MoveNext())
-                    {
-                        yield return subEnum;
-                    }
-                }
-            }
-
-            var repo = packageInfo.repository;
-
-            string directoryRoot;
-            string directoryName;
-
-            if (IsThirdParty || IsUnity)
-            {
-                directoryName = packageInfo.name.Split(".").Last();
-                directoryRoot = "Assets/Third-Party/";
-            }
-            else
-            {
-                directoryName = Name;
-                directoryRoot = "Assets/";
-            }
-
-            var existingDirectory = AppaDirectory.GetDirectories(
-                                                      directoryRoot,
-                                                      directoryName + "*",
-                                                      SearchOption.TopDirectoryOnly
-                                                  )
-                                                 .Select(d => new AppaDirectoryInfo(d))
-                                                 .FirstOrDefault();
-
-            if (existingDirectory != null)
-            {
-                var existingDirectoryPath = existingDirectory.RelativePath;
-
-                if (existingDirectoryPath.EndsWith("~"))
-                {
-                    var dir = new AppaDirectoryInfo(
-                        existingDirectoryPath.Substring(0, existingDirectoryPath.Length - 1)
-                    );
-
-                    var hideDirectory = existingDirectory;
-
-                    if (dryRun)
-                    {
-                        Debug.Log($"MOVEDIR: [{hideDirectory.RelativePath}] to [{dir.RelativePath}]");
-                    }
-                    else
-                    {
-                        AppaDirectory.Move(hideDirectory.RelativePath, dir.RelativePath);
-                    }
-                }
-            }
-            else
-            {
-                var result = new ShellResult();
-                var directoryPath = AppaPath.Combine(directoryRoot, directoryName);
-                var command = $"git clone \"{repo.url.Replace("git+", "")}\" \"{directoryPath}\"";
-                var workingDirectory = Application.dataPath;
-
-                if (dryRun)
-                {
-                    Debug.Log($"COMMAND: [{command}] WORKDIR: [{workingDirectory}]");
-                }
-                else
-                {
-                    var execution = SystemShell.Instance.Execute(command, workingDirectory, false, result);
-
-                    while (execution.MoveNext())
-                    {
-                        yield return execution.Current;
-                    }
-                }
-            }
-
-            if (executeClient)
-            {
-                if (dryRun)
-                {
-                    Debug.Log($"PKGMANAGER: Removing [{Name}]");
-                }
-                else
-                {
-                    var removal = Client.Remove(Name);
-
-                    while (!removal.IsCompleted)
-                    {
-                        yield return null;
-                    }
-                }
-            }
-        }
+        
 
         protected override IEnumerable<string> GetIds()
         {
@@ -375,7 +268,7 @@ namespace Appalachia.CI.Integration.Packages
             }
         }
 
-        private void PopulateDependents()
+        internal void PopulateDependents()
         {
             if (dependents != null)
             {
