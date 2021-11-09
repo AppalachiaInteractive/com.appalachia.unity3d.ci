@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,12 +14,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public FluffyBugs FluffyBugs;
         public string String;
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesBugs(FluffyBugs FluffyBugs)
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesBugs(FluffyBugs FluffyBugs)
         {
             return new() {FluffyBugs = FluffyBugs};
         }
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesBugs(string String)
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesBugs(string String)
         {
             return new() {String = String};
         }

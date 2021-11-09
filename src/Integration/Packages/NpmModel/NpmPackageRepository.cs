@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,12 +14,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public FluffyRepository FluffyRepository;
         public string String;
 
-        public static implicit operator NpmPackageRepository(FluffyRepository FluffyRepository)
+        [DebuggerStepThrough] public static implicit operator NpmPackageRepository(FluffyRepository FluffyRepository)
         {
             return new() {FluffyRepository = FluffyRepository};
         }
 
-        public static implicit operator NpmPackageRepository(string String)
+        [DebuggerStepThrough] public static implicit operator NpmPackageRepository(string String)
         {
             return new() {String = String};
         }

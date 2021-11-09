@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,12 +14,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public string String;
         public string[] StringArray;
 
-        public static implicit operator Man(string String)
+        [DebuggerStepThrough] public static implicit operator Man(string String)
         {
             return new() {String = String};
         }
 
-        public static implicit operator Man(string[] StringArray)
+        [DebuggerStepThrough] public static implicit operator Man(string[] StringArray)
         {
             return new() {StringArray = StringArray};
         }

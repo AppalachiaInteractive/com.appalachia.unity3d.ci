@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -32,12 +33,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
             (PackageExportsEntryPackageExportsEntryObject == null) &&
             (String == null);
 
-        public static implicit operator PackageExportsEntryOrFallback(PackageExportsEntry[] AnythingArray)
+        [DebuggerStepThrough] public static implicit operator PackageExportsEntryOrFallback(PackageExportsEntry[] AnythingArray)
         {
             return new() {AnythingArray = AnythingArray};
         }
 
-        public static implicit operator PackageExportsEntryOrFallback(
+        [DebuggerStepThrough] public static implicit operator PackageExportsEntryOrFallback(
             PackageExportsEntryPackageExportsEntryObject PackageExportsEntryPackageExportsEntryObject)
         {
             return new()
@@ -47,7 +48,7 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
             };
         }
 
-        public static implicit operator PackageExportsEntryOrFallback(string String)
+        [DebuggerStepThrough] public static implicit operator PackageExportsEntryOrFallback(string String)
         {
             return new() {String = String};
         }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -12,12 +13,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public PersonClass PersonClass;
         public string String;
 
-        public static implicit operator Person(PersonClass PersonClass)
+        [DebuggerStepThrough] public static implicit operator Person(PersonClass PersonClass)
         {
             return new() {PersonClass = PersonClass};
         }
 
-        public static implicit operator Person(string String)
+        [DebuggerStepThrough] public static implicit operator Person(string String)
         {
             return new() {String = String};
         }

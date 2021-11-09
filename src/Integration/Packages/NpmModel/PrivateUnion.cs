@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -8,12 +9,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public bool? Bool;
         public PrivateEnum? Enum;
 
-        public static implicit operator PrivateUnion(bool Bool)
+        [DebuggerStepThrough] public static implicit operator PrivateUnion(bool Bool)
         {
             return new() {Bool = Bool};
         }
 
-        public static implicit operator PrivateUnion(PrivateEnum Enum)
+        [DebuggerStepThrough] public static implicit operator PrivateUnion(PrivateEnum Enum)
         {
             return new() {Enum = Enum};
         }

@@ -287,7 +287,7 @@ namespace Appalachia.CI.Integration.Development
                                         .Where(p => p.Value.state == DependencyState.AsRepository)
                                         .Select(p => p.Value.repository);
 
-                    DevelopmentPackageSwapper.ConvertToPackage(targets, PackageSwapOptions.MultiExecution);
+                    DevelopmentPackageSwapper.ConvertToPackage(targets, PackageSwapOptions.SingleExecution);
                 }
                 finally
                 {
@@ -312,7 +312,7 @@ namespace Appalachia.CI.Integration.Development
                     var targets = subset.dependencies.Where(p => p.Value.state == DependencyState.AsPackage)
                                         .Select(p => p.Value.package);
 
-                    DevelopmentPackageSwapper.ConvertToRepository(targets, PackageSwapOptions.MultiExecution);
+                    DevelopmentPackageSwapper.ConvertToRepository(targets, PackageSwapOptions.SingleExecution);
                 }
                 finally
                 {

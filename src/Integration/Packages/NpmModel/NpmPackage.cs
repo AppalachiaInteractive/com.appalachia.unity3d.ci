@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 using Appalachia.CI.Integration.Packages.NpmModel;
 using Newtonsoft.Json;
@@ -331,7 +332,7 @@ namespace Appalachia.CI.Integration.Packages
     {
         public static NpmPackage FromJson(string json) => JsonConvert.DeserializeObject<NpmPackage>(json, Converter.Settings);
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             return $"{Name}: {Version}";
         }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NUnit.Framework;
@@ -58,7 +59,7 @@ namespace Appalachia.CI.SemVer.Tests
         }
 
         [TestCaseSource(typeof(Data), nameof(Data.EqualsTestCases))]
-        public void EqualsTest(SemVer left, SemVer right)
+        [DebuggerStepThrough] public void EqualsTest(SemVer left, SemVer right)
         {
             Assert.That(left, Is.EqualTo(right));
         }

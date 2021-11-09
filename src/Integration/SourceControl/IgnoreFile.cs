@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Appalachia.CI.Integration.FileSystem;
@@ -86,7 +87,7 @@ namespace Appalachia.CI.Integration.SourceControl
             public string original;
             public string pattern;
 
-            public override string ToString()
+            [DebuggerStepThrough] public override string ToString()
             {
                 return pattern;
             }

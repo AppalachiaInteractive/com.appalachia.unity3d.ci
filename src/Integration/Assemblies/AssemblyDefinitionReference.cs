@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -69,37 +70,37 @@ namespace Appalachia.CI.Integration.Assemblies
             set => _isDuplicated = value;
         }
 
-        public static bool operator ==(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator ==(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator >(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) > 0;
         }
 
-        public static bool operator >=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator >=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) >= 0;
         }
 
-        public static bool operator !=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator !=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator <(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) < 0;
         }
 
-        public static bool operator <=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
+        [DebuggerStepThrough] public static bool operator <=(AssemblyDefinitionReference left, AssemblyDefinitionReference right)
         {
             return Comparer<AssemblyDefinitionReference>.Default.Compare(left, right) <= 0;
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -119,12 +120,12 @@ namespace Appalachia.CI.Integration.Assemblies
             return Equals((AssemblyDefinitionReference) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             return guid != null ? guid.GetHashCode() : 0;
         }
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
@@ -132,7 +133,7 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        public int CompareTo(object obj)
+        [DebuggerStepThrough] public int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -151,7 +152,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 );
         }
 
-        public int CompareTo(AssemblyDefinitionReference other)
+        [DebuggerStepThrough] public int CompareTo(AssemblyDefinitionReference other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -166,7 +167,7 @@ namespace Appalachia.CI.Integration.Assemblies
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(assembly, other.assembly);
         }
 
-        public bool Equals(AssemblyDefinitionReference other)
+        [DebuggerStepThrough] public bool Equals(AssemblyDefinitionReference other)
         {
             if (ReferenceEquals(null, other))
             {

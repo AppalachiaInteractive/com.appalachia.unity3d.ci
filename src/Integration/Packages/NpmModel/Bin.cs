@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,12 +14,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public string String;
         public Dictionary<string, string> StringMap;
 
-        public static implicit operator Bin(string String)
+        [DebuggerStepThrough] public static implicit operator Bin(string String)
         {
             return new() {String = String};
         }
 
-        public static implicit operator Bin(Dictionary<string, string> StringMap)
+        [DebuggerStepThrough] public static implicit operator Bin(Dictionary<string, string> StringMap)
         {
             return new() {StringMap = StringMap};
         }

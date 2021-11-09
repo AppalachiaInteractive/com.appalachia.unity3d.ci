@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -17,18 +18,18 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public bool IsNull =>
             (AnythingArray == null) && (PurplePackageExportsEntryObject == null) && (String == null);
 
-        public static implicit operator NpmPackageExports(PackageExportsEntry[] AnythingArray)
+        [DebuggerStepThrough] public static implicit operator NpmPackageExports(PackageExportsEntry[] AnythingArray)
         {
             return new() {AnythingArray = AnythingArray};
         }
 
-        public static implicit operator NpmPackageExports(
+        [DebuggerStepThrough] public static implicit operator NpmPackageExports(
             PurplePackageExportsEntryObject PurplePackageExportsEntryObject)
         {
             return new() {PurplePackageExportsEntryObject = PurplePackageExportsEntryObject};
         }
 
-        public static implicit operator NpmPackageExports(string String)
+        [DebuggerStepThrough] public static implicit operator NpmPackageExports(string String)
         {
             return new() {String = String};
         }

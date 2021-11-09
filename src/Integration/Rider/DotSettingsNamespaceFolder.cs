@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Appalachia.CI.Integration.Rider
 {
@@ -17,37 +18,37 @@ namespace Appalachia.CI.Integration.Rider
 
         public bool HasIssue => HasExclusionIssue || HasExclusionIssue;
 
-        public static bool operator ==(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator ==(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator >(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) > 0;
         }
 
-        public static bool operator >=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator >=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) >= 0;
         }
 
-        public static bool operator !=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator !=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator <(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) < 0;
         }
 
-        public static bool operator <=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        [DebuggerStepThrough] public static bool operator <=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
         {
             return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) <= 0;
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -67,12 +68,12 @@ namespace Appalachia.CI.Integration.Rider
             return Equals((DotSettingsNamespaceFolder) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             return encoded != null ? encoded.GetHashCode() : 0;
         }
 
-        public int CompareTo(object obj)
+        [DebuggerStepThrough] public int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -89,7 +90,7 @@ namespace Appalachia.CI.Integration.Rider
                 : throw new ArgumentException($"Object must be of type {nameof(DotSettingsNamespaceFolder)}");
         }
 
-        public int CompareTo(DotSettingsNamespaceFolder other)
+        [DebuggerStepThrough] public int CompareTo(DotSettingsNamespaceFolder other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -104,7 +105,7 @@ namespace Appalachia.CI.Integration.Rider
             return string.Compare(encoded, other.encoded, StringComparison.Ordinal);
         }
 
-        public bool Equals(DotSettingsNamespaceFolder other)
+        [DebuggerStepThrough] public bool Equals(DotSettingsNamespaceFolder other)
         {
             if (ReferenceEquals(null, other))
             {

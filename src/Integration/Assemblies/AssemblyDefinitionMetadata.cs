@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.Assets;
@@ -90,32 +91,32 @@ namespace Appalachia.CI.Integration.Assemblies
             return newInstance;
         }
 
-        public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator ==(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator >(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) > 0;
         }
 
-        public static bool operator >=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator >=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) >= 0;
         }
 
-        public static bool operator !=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator !=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator <(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) < 0;
         }
 
-        public static bool operator <=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
+        [DebuggerStepThrough] public static bool operator <=(AssemblyDefinitionMetadata left, AssemblyDefinitionMetadata right)
         {
             return Comparer<AssemblyDefinitionMetadata>.Default.Compare(left, right) <= 0;
         }
@@ -150,7 +151,7 @@ namespace Appalachia.CI.Integration.Assemblies
             }
         }
 
-        public override int CompareTo(object obj)
+        [DebuggerStepThrough] public override int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -167,7 +168,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 : throw new ArgumentException($"Object must be of type {nameof(AssemblyDefinitionMetadata)}");
         }
 
-        public override int CompareTo(AssemblyDefinitionMetadata other)
+        [DebuggerStepThrough] public override int CompareTo(AssemblyDefinitionMetadata other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -224,7 +225,7 @@ namespace Appalachia.CI.Integration.Assemblies
             return string.Compare(Path, other.Path, StringComparison.Ordinal);
         }
 
-        public override bool Equals(AssemblyDefinitionMetadata other)
+        [DebuggerStepThrough] public override bool Equals(AssemblyDefinitionMetadata other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -239,7 +240,7 @@ namespace Appalachia.CI.Integration.Assemblies
             return AssemblyCurrent == other.AssemblyCurrent;
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -259,7 +260,7 @@ namespace Appalachia.CI.Integration.Assemblies
             return Equals((AssemblyDefinitionMetadata) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             return AssemblyCurrent != null ? AssemblyCurrent.GetHashCode() : 0;
         }
@@ -269,7 +270,7 @@ namespace Appalachia.CI.Integration.Assemblies
             SetReferences();
         }
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
@@ -361,6 +362,12 @@ namespace Appalachia.CI.Integration.Assemblies
                 if (name.StartsWith("appalachia.core"))
                 {
                     result += 20;
+                    return result;
+                }
+
+                if (name.StartsWith("appalachia.editing.core"))
+                {
+                    result += 49;
                     return result;
                 }
 

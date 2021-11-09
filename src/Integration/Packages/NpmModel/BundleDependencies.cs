@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -14,12 +15,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public bool? Bool;
         public string[] StringArray;
 
-        public static implicit operator BundleDependencies(bool Bool)
+        [DebuggerStepThrough] public static implicit operator BundleDependencies(bool Bool)
         {
             return new() {Bool = Bool};
         }
 
-        public static implicit operator BundleDependencies(string[] StringArray)
+        [DebuggerStepThrough] public static implicit operator BundleDependencies(string[] StringArray)
         {
             return new() {StringArray = StringArray};
         }

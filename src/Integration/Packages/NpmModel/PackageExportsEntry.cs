@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,7 +14,7 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public string String;
         public bool IsNull => (PackageExportsEntryPackageExportsEntryObject == null) && (String == null);
 
-        public static implicit operator PackageExportsEntry(
+        [DebuggerStepThrough] public static implicit operator PackageExportsEntry(
             PackageExportsEntryPackageExportsEntryObject PackageExportsEntryPackageExportsEntryObject)
         {
             return new()
@@ -23,7 +24,7 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
             };
         }
 
-        public static implicit operator PackageExportsEntry(string String)
+        [DebuggerStepThrough] public static implicit operator PackageExportsEntry(string String)
         {
             return new() {String = String};
         }

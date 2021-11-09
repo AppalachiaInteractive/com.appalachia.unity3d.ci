@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -15,12 +16,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public FluffyWorkspaces FluffyWorkspaces;
         public string[] StringArray;
 
-        public static implicit operator NpmPackageWorkspaces(FluffyWorkspaces FluffyWorkspaces)
+        [DebuggerStepThrough] public static implicit operator NpmPackageWorkspaces(FluffyWorkspaces FluffyWorkspaces)
         {
             return new() {FluffyWorkspaces = FluffyWorkspaces};
         }
 
-        public static implicit operator NpmPackageWorkspaces(string[] StringArray)
+        [DebuggerStepThrough] public static implicit operator NpmPackageWorkspaces(string[] StringArray)
         {
             return new() {StringArray = StringArray};
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 using Unity.Profiling;
 
@@ -36,7 +37,7 @@ namespace Appalachia.CI.Integration.Assemblies
         public string[] precompiledReferences;
         public string[] references;
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {

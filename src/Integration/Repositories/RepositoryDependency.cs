@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.Repositories
@@ -44,7 +45,7 @@ namespace Appalachia.CI.Integration.Repositories
         public string Name => repository?.PackageName ?? name;
         public string Version => version;
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using Appalachia.CI.Integration.Extensions;
 using UnityEngine;
@@ -55,12 +56,12 @@ namespace Appalachia.CI.Integration.FileSystem
 
         protected abstract FileSystemInfo GetFileSystemInfo();
 
-        public static implicit operator AppaFileSystemInfo(FileSystemInfo o)
+        [DebuggerStepThrough] public static implicit operator AppaFileSystemInfo(FileSystemInfo o)
         {
             return o is FileInfo fi ? (AppaFileInfo) fi : (AppaDirectoryInfo) (DirectoryInfo) o;
         }
 
-        public static implicit operator FileSystemInfo(AppaFileSystemInfo o)
+        [DebuggerStepThrough] public static implicit operator FileSystemInfo(AppaFileSystemInfo o)
         {
             return o.GetFileSystemInfo();
         }

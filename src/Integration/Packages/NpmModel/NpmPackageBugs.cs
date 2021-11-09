@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,12 +14,12 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public PurpleBugs PurpleBugs;
         public string String;
 
-        public static implicit operator NpmPackageBugs(PurpleBugs PurpleBugs)
+        [DebuggerStepThrough] public static implicit operator NpmPackageBugs(PurpleBugs PurpleBugs)
         {
             return new() {PurpleBugs = PurpleBugs};
         }
 
-        public static implicit operator NpmPackageBugs(string String)
+        [DebuggerStepThrough] public static implicit operator NpmPackageBugs(string String)
         {
             return new() {String = String};
         }

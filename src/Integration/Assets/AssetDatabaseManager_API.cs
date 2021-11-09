@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
 using UnityEditor;
@@ -952,7 +953,11 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAllAssetPaths.Auto())
             {
-                return AssetDatabase.GetAllAssetPaths();
+                var paths = AssetDatabase.GetAllAssetPaths();
+                
+                paths.Sort();
+
+                return paths;
             }
         }
 
@@ -974,6 +979,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 Array.Copy(files, 0, assets, assetsLength, cleanFiles);
 
+                Array.Sort(assets);
                 return assets;
             }
         }
@@ -2029,7 +2035,16 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                try
+                {
+                    return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                }
+                catch (Exception ex)
+                {
+                    AppaLog.Exception($"Exception loading the asset at [{path}]", ex);
+                    
+                    throw;
+                }
             }
         }
 

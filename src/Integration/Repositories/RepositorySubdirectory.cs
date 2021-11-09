@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
@@ -39,7 +40,7 @@ namespace Appalachia.CI.Integration.Repositories
         public RepositoryMetadata repository;
         public string relativePath;
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {

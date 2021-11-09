@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -13,13 +14,13 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public PurpleRepository PurpleRepository;
         public string String;
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesRepository(
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesRepository(
             PurpleRepository PurpleRepository)
         {
             return new() {PurpleRepository = PurpleRepository};
         }
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesRepository(string String)
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesRepository(string String)
         {
             return new() {String = String};
         }

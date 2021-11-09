@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.FileSystem;
@@ -157,10 +158,10 @@ namespace Appalachia.CI.Integration.Core
         public event ReanalyzeHandler OnReanalyzeNecessary;
 
         public abstract void InitializeForAnalysis();
-        public abstract int CompareTo(object obj);
+        [DebuggerStepThrough] public abstract int CompareTo(object obj);
 
-        public abstract int CompareTo(T other);
-        public abstract bool Equals(T other);
+        [DebuggerStepThrough] public abstract int CompareTo(T other);
+        [DebuggerStepThrough] public abstract bool Equals(T other);
 
         protected abstract IEnumerable<string> GetIds();
 

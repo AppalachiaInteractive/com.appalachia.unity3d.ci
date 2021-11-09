@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Appalachia.CI.Integration.Attributes;
 
 namespace Appalachia.CI.Integration.Packages.NpmModel
@@ -15,13 +16,13 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
         public PurpleWorkspaces PurpleWorkspaces;
         public string[] StringArray;
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesWorkspaces(
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesWorkspaces(
             PurpleWorkspaces PurpleWorkspaces)
         {
             return new() {PurpleWorkspaces = PurpleWorkspaces};
         }
 
-        public static implicit operator JsonSchemaForNpmPackageJsonFilesWorkspaces(string[] StringArray)
+        [DebuggerStepThrough] public static implicit operator JsonSchemaForNpmPackageJsonFilesWorkspaces(string[] StringArray)
         {
             return new() {StringArray = StringArray};
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Appalachia.CI.Integration.Core;
@@ -95,32 +96,32 @@ namespace Appalachia.CI.Integration.Packages
 
         public string Version => packageInfo?.version ?? string.Empty;
 
-        public static bool operator ==(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator ==(PackageMetadata left, PackageMetadata right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator >(PackageMetadata left, PackageMetadata right)
         {
             return Comparer<PackageMetadata>.Default.Compare(left, right) > 0;
         }
 
-        public static bool operator >=(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator >=(PackageMetadata left, PackageMetadata right)
         {
             return Comparer<PackageMetadata>.Default.Compare(left, right) >= 0;
         }
 
-        public static bool operator !=(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator !=(PackageMetadata left, PackageMetadata right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator <(PackageMetadata left, PackageMetadata right)
         {
             return Comparer<PackageMetadata>.Default.Compare(left, right) < 0;
         }
 
-        public static bool operator <=(PackageMetadata left, PackageMetadata right)
+        [DebuggerStepThrough] public static bool operator <=(PackageMetadata left, PackageMetadata right)
         {
             return Comparer<PackageMetadata>.Default.Compare(left, right) <= 0;
         }
@@ -164,7 +165,7 @@ namespace Appalachia.CI.Integration.Packages
             }
         }
 
-        public override int CompareTo(PackageMetadata other)
+        [DebuggerStepThrough] public override int CompareTo(PackageMetadata other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -179,7 +180,7 @@ namespace Appalachia.CI.Integration.Packages
             return Comparer<string>.Default.Compare(NameAndVersion, other.NameAndVersion);
         }
 
-        public override int CompareTo(object obj)
+        [DebuggerStepThrough] public override int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -196,7 +197,7 @@ namespace Appalachia.CI.Integration.Packages
                 : throw new ArgumentException($"Object must be of type {nameof(PackageMetadata)}");
         }
 
-        public override bool Equals(PackageMetadata other)
+        [DebuggerStepThrough] public override bool Equals(PackageMetadata other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -211,7 +212,7 @@ namespace Appalachia.CI.Integration.Packages
             return Equals(packageInfo, other.packageInfo);
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -231,7 +232,7 @@ namespace Appalachia.CI.Integration.Packages
             return Equals((PackageMetadata) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             return packageInfo != null ? packageInfo.GetHashCode() : 0;
         }
@@ -240,7 +241,7 @@ namespace Appalachia.CI.Integration.Packages
         {
         }
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             return NameAndVersion;
         }
@@ -254,24 +255,42 @@ namespace Appalachia.CI.Integration.Packages
 
             dependents = new HashSet<PackageMetadata>();
 
-            var packages = FindAll();
+            var allPackages = FindAll();
 
-            foreach (var package in packages)
+            foreach (var packageToCheck in allPackages)
             {
-                if (package.repository != null)
+                if (packageToCheck == this)
                 {
-                    if (package.repository.dependencies.Any(
-                        dependency => dependency.repository == repository
-                    ))
+                    continue;
+                }
+                
+                var repositoryToCheck = packageToCheck.repository;
+                
+                if (repositoryToCheck != null)
+                {
+                    foreach (var dependency in packageToCheck.repository.dependencies)
                     {
-                        dependents.Add(package);
+                        if (dependency.name == repository.Name)
+                        {
+                            dependents.Add(packageToCheck);
+                            
+                            break;
+                        }
                     }
                 }
                 else
                 {
-                    if (package.packageInfo.dependencies.Any(dependency => dependency.name == Name))
+                    var packageInfoToCheck = packageToCheck.packageInfo;
+                    var packageDependencies = packageInfoToCheck.dependencies;
+
+                    foreach (var dependency in packageDependencies)
                     {
-                        dependents.Add(package);
+                        if (dependency.name == Name)
+                        {
+                            dependents.Add(packageToCheck);
+                            
+                            break;
+                        }
                     }
                 }
             }

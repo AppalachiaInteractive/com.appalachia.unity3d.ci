@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Appalachia.CI.Integration.Extensions;
@@ -152,12 +153,12 @@ namespace Appalachia.CI.Integration.FileSystem
 
         public override string RelativePath => FullPath.ToRelativePath();
 
-        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
+        [DebuggerStepThrough] public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
         {
             return new(o);
         }
 
-        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
+        [DebuggerStepThrough] public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
         {
             return o._directoryInfo;
         }
@@ -184,7 +185,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         /// <summary>Returns the original path that was passed by the user.</summary>
         /// <returns>Returns the original path that was passed by the user.</returns>
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {

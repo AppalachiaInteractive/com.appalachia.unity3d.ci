@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Appalachia.Utility.Logging;
 using UnityEngine;
 
@@ -147,12 +148,12 @@ namespace Appalachia.CI.SemVer
             return new SemVerValidator().Validate(this);
         }
 
-        public int CompareTo(SemVer other)
+        [DebuggerStepThrough] public int CompareTo(SemVer other)
         {
             return new SemVerComparer().Compare(this, other);
         }
 
-        public bool Equals(SemVer other)
+        [DebuggerStepThrough] public bool Equals(SemVer other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -167,7 +168,7 @@ namespace Appalachia.CI.SemVer
             return CompareTo(other) == 0;
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -182,12 +183,12 @@ namespace Appalachia.CI.SemVer
             return (obj.GetType() == GetType()) && Equals((SemVer) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             throw new NotImplementedException();
         }
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             return SemVerConverter.ToString(this);
         }
@@ -214,42 +215,42 @@ namespace Appalachia.CI.SemVer
             return clamped;
         }
 
-        public static bool operator ==(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator ==(SemVer left, SemVer right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator >(SemVer left, SemVer right)
         {
             return left.CompareTo(right) > 0;
         }
 
-        public static bool operator >=(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator >=(SemVer left, SemVer right)
         {
             return left.CompareTo(right) >= 0;
         }
 
-        public static bool operator !=(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator !=(SemVer left, SemVer right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator <(SemVer left, SemVer right)
         {
             return left.CompareTo(right) < 0;
         }
 
-        public static bool operator <=(SemVer left, SemVer right)
+        [DebuggerStepThrough] public static bool operator <=(SemVer left, SemVer right)
         {
             return left.CompareTo(right) <= 0;
         }
 
-        public static implicit operator SemVer(string s)
+        [DebuggerStepThrough] public static implicit operator SemVer(string s)
         {
             return Parse(s);
         }
 
-        public static implicit operator string(SemVer s)
+        [DebuggerStepThrough] public static implicit operator string(SemVer s)
         {
             return s.ToString();
         }

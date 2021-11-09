@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using Appalachia.CI.Integration.Extensions;
 using Unity.Profiling;
@@ -168,12 +169,12 @@ namespace Appalachia.CI.Integration.FileSystem
             set => _fileInfo.IsReadOnly = value;
         }
 
-        public static implicit operator AppaFileInfo(FileInfo o)
+        [DebuggerStepThrough] public static implicit operator AppaFileInfo(FileInfo o)
         {
             return new(o);
         }
 
-        public static implicit operator FileInfo(AppaFileInfo o)
+        [DebuggerStepThrough] public static implicit operator FileInfo(AppaFileInfo o)
         {
             return o._fileInfo;
         }
@@ -196,7 +197,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         /// <summary>Returns the path as a string.</summary>
         /// <returns>A string representing the path.</returns>
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {

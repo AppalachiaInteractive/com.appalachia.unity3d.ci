@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Appalachia.CI.SemVer
 {
     internal static class SemVerConverter
@@ -45,7 +47,7 @@ namespace Appalachia.CI.SemVer
             return semVer;
         }
 
-        public static string ToString(SemVer semVer)
+        [DebuggerStepThrough] public static string ToString(SemVer semVer)
         {
             var preRelease = string.IsNullOrEmpty(semVer.preRelease)
                 ? string.Empty

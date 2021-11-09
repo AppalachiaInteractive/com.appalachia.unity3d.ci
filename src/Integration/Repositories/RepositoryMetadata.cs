@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Appalachia.CI.Constants;
@@ -498,32 +499,32 @@ namespace Appalachia.CI.Integration.Repositories
             return new();
         }
 
-        public static bool operator ==(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator ==(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator >(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator >(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Comparer<RepositoryMetadata>.Default.Compare(left, right) > 0;
         }
 
-        public static bool operator >=(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator >=(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Comparer<RepositoryMetadata>.Default.Compare(left, right) >= 0;
         }
 
-        public static bool operator !=(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator !=(RepositoryMetadata left, RepositoryMetadata right)
         {
             return !Equals(left, right);
         }
 
-        public static bool operator <(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator <(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Comparer<RepositoryMetadata>.Default.Compare(left, right) < 0;
         }
 
-        public static bool operator <=(RepositoryMetadata left, RepositoryMetadata right)
+        [DebuggerStepThrough] public static bool operator <=(RepositoryMetadata left, RepositoryMetadata right)
         {
             return Comparer<RepositoryMetadata>.Default.Compare(left, right) <= 0;
         }
@@ -566,7 +567,7 @@ namespace Appalachia.CI.Integration.Repositories
             }
         }
 
-        public override int CompareTo(RepositoryMetadata other)
+        [DebuggerStepThrough] public override int CompareTo(RepositoryMetadata other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -591,7 +592,7 @@ namespace Appalachia.CI.Integration.Repositories
             return string.Compare(_packageVersion, other._packageVersion, StringComparison.Ordinal);
         }
 
-        public override int CompareTo(object obj)
+        [DebuggerStepThrough] public override int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -608,7 +609,7 @@ namespace Appalachia.CI.Integration.Repositories
                 : throw new ArgumentException($"Object must be of type {nameof(RepositoryMetadata)}");
         }
 
-        public override bool Equals(RepositoryMetadata other)
+        [DebuggerStepThrough] public override bool Equals(RepositoryMetadata other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -625,7 +626,7 @@ namespace Appalachia.CI.Integration.Repositories
                    Equals(SrcDirectory?.FullPath, other.SrcDirectory?.FullPath);
         }
 
-        public override bool Equals(object obj)
+        [DebuggerStepThrough] public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -645,7 +646,7 @@ namespace Appalachia.CI.Integration.Repositories
             return Equals((RepositoryMetadata) obj);
         }
 
-        public override int GetHashCode()
+        [DebuggerStepThrough] public override int GetHashCode()
         {
             unchecked
             {
@@ -671,7 +672,7 @@ namespace Appalachia.CI.Integration.Repositories
             _publishedVersion = null;
         }
 
-        public override string ToString()
+        [DebuggerStepThrough] public override string ToString()
         {
             if (!HasPackage)
             {

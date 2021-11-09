@@ -13,6 +13,5 @@ namespace Appalachia.CI.Integration.Development
         ExecutePackageClient = 1 << 4,
 
         SingleExecution = ExecutePackageClient | RefreshAssetsAtStart | RefreshAssetsAfterMove | RefreshAssetsAtEnd,
-        MultiExecution = ExecutePackageClient | RefreshAssetsAtStart | RefreshAssetsAtEnd,
     }
 }
