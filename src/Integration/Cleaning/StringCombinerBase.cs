@@ -12,7 +12,7 @@ namespace Appalachia.CI.Integration.Cleaning
         #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(StringCombinerBase<T>) + ".";
-        
+
         private static readonly ProfilerMarker _PRF_Clean = new(_PRF_PFX + nameof(Clean));
 
         private static readonly ProfilerMarker _PRF_StringCombinerBase =
@@ -32,8 +32,9 @@ namespace Appalachia.CI.Integration.Cleaning
             }
         }
 
-        private Dictionary<string, Dictionary<string, string>> _lookup;
         public StringBuilder builder;
+
+        private Dictionary<string, Dictionary<string, string>> _lookup;
         private ExecuteClean _action;
 
         public string Clean(string input1, string input2)
@@ -41,7 +42,7 @@ namespace Appalachia.CI.Integration.Cleaning
             using (_PRF_Clean.Auto())
             {
                 Dictionary<string, string> lookup1;
-                
+
                 if (_lookup.ContainsKey(input1))
                 {
                     lookup1 = _lookup[input1];
@@ -58,7 +59,7 @@ namespace Appalachia.CI.Integration.Cleaning
                 }
 
                 string result;
-                
+
                 using (_PRF_Clean_Action.Auto())
                 {
                     result = _action((T) this, input1, input2);

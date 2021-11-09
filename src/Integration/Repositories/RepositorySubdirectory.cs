@@ -12,12 +12,12 @@ namespace Appalachia.CI.Integration.Repositories
     [Serializable]
     public class RepositorySubdirectory
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(RepositorySubdirectory) + ".";
         private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
 
-#endregion
+        #endregion
 
         public RepositorySubdirectory(RepositoryMetadata repository, string relativePath)
         {

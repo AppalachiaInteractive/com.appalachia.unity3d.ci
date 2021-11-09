@@ -1,6 +1,5 @@
 namespace Appalachia.CI.Integration.Cleaning
 {
-    
     public class StringCleanerWithContext<T1> : StringCleanerBase<StringCleanerWithContext<T1>>
     {
         public StringCleanerWithContext(T1 context1, ExecuteClean action, int capacity = 100) : base(

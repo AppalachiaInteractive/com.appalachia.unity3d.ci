@@ -75,18 +75,6 @@ namespace Appalachia.CI.Integration.Core
             }
         }
 
-        private static void OnFinalize()
-        {
-            using (_PRF_Finalize.Auto())
-            {
-                if (!_finalized)
-                {
-                    _finalized = true;
-                    _finalizing();
-                }
-            }
-        }
-
         private static void Initialize()
         {
             using (_PRF_Initialize.Auto())
@@ -108,19 +96,19 @@ namespace Appalachia.CI.Integration.Core
                     foreach (var meta in all)
                     {
                         var message = meta.Name ?? meta.Id ?? meta.Path;
-                        
+
                         if (meta.Name == null)
                         {
                             continue;
                             throw new NotSupportedException($"{typeof(T).Name}: Missing Name | {message}");
                         }
-                        
+
                         if (meta.Id == null)
                         {
                             continue;
                             throw new NotSupportedException($"{typeof(T).Name}: Missing Id | {message}");
                         }
-                        
+
                         if (meta.Path == null)
                         {
                             continue;
@@ -135,6 +123,18 @@ namespace Appalachia.CI.Integration.Core
                 {
                     _processed = true;
                     _processing();
+                }
+            }
+        }
+
+        private static void OnFinalize()
+        {
+            using (_PRF_Finalize.Auto())
+            {
+                if (!_finalized)
+                {
+                    _finalized = true;
+                    _finalizing();
                 }
             }
         }

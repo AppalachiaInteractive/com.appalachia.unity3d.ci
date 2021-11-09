@@ -795,7 +795,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 return n;
             }
         }
-        
+
         /// <summary>Returns the date and time the specified file or directory was last accessed.</summary>
         /// <returns>A structure that is set to the date and time the specified file or directory was last accessed. This value is expressed in local time.</returns>
         /// <exception cref="T:System.UnauthorizedAccessException">The caller does not have the required permission. </exception>
@@ -941,6 +941,20 @@ namespace Appalachia.CI.Integration.FileSystem
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _directoryInfo;
+        }
+
+        public void DeleteRecursively()
+        {
+            foreach (var file in GetFiles("*", SearchOption.AllDirectories))
+            {
+                if (file.IsReadOnly)
+                {
+                    File.SetAttributes(file.FullPath, FileAttributes.Normal);
+                    file.Delete();                    
+                }
+            }
+
+            Delete(true);
         }
     }
 }

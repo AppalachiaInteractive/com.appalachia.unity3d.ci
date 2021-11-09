@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
-using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
 
@@ -29,9 +28,13 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_GetFullPath = new(_PRF_PFX + nameof(GetFullPath));
 
+        private static StringCombiner _pathCombiner;
+
+        private static readonly ProfilerMarker _PRF_MatchesExtension =
+            new ProfilerMarker(_PRF_PFX + nameof(MatchesExtension));
+
         #endregion
 
-        private static StringCombiner _pathCombiner;
         public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         public static string Combine(List<string> paths)
@@ -42,7 +45,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 return Path.Combine(internalArray);
             }
         }
-        
+
         public static string Combine(params string[] paths)
         {
             using (_PRF_Combine.Auto())
@@ -82,7 +85,36 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        private static readonly ProfilerMarker _PRF_MatchesExtension = new ProfilerMarker(_PRF_PFX + nameof(MatchesExtension));
+        public static string GetFileName(string path)
+        {
+            using (_PRF_GetFileName.Auto())
+            {
+                return Path.GetFileName(path);
+            }
+        }
+
+        public static string GetFileNameWithoutExtension(string path)
+        {
+            using (_PRF_GetFileNameWithoutExtension.Auto())
+            {
+                return Path.GetFileNameWithoutExtension(path);
+            }
+        }
+
+        public static string GetFullPath(string path, bool cleanPath = true)
+        {
+            using (_PRF_GetFullPath.Auto())
+            {
+                var result = Path.GetFullPath(path);
+
+                if (cleanPath)
+                {
+                    result = result.CleanFullPath();
+                }
+
+                return result;
+            }
+        }
 
         public static bool MatchesExtension(string path, StringComparison comparison, params string[] args)
         {
@@ -91,7 +123,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 var extension = GetExtension(path);
 
                 var extensionStartsWithPeriod = extension.StartsWith('.');
-            
+
                 foreach (var arg in args)
                 {
                     var matchStartsWithPeriod = arg.StartsWith('.');
@@ -122,43 +154,12 @@ namespace Appalachia.CI.Integration.FileSystem
                 return false;
             }
         }
-        
+
         public static bool MatchesExtension(string path, params string[] args)
         {
             using (_PRF_MatchesExtension.Auto())
             {
                 return MatchesExtension(path, StringComparison.Ordinal, args);
-            }
-        }
-
-        public static string GetFileName(string path)
-        {
-            using (_PRF_GetFileName.Auto())
-            {
-                return Path.GetFileName(path);
-            }
-        }
-
-        public static string GetFileNameWithoutExtension(string path)
-        {
-            using (_PRF_GetFileNameWithoutExtension.Auto())
-            {
-                return Path.GetFileNameWithoutExtension(path);
-            }
-        }
-
-        public static string GetFullPath(string path, bool cleanPath = true)
-        {
-            using (_PRF_GetFullPath.Auto())
-            {
-                var result = Path.GetFullPath(path);
-
-                if (cleanPath)
-                {
-                    result = result.CleanFullPath();
-                }
-
-                return result;
             }
         }
     }

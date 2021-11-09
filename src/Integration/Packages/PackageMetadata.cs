@@ -1,18 +1,13 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Core;
-using Appalachia.CI.Integration.Core.Shell;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
 using Unity.Profiling;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
-using UnityEngine;
 
 namespace Appalachia.CI.Integration.Packages
 {
@@ -250,24 +245,6 @@ namespace Appalachia.CI.Integration.Packages
             return NameAndVersion;
         }
 
-        
-
-        protected override IEnumerable<string> GetIds()
-        {
-            yield return packageInfo.name;
-            yield return NameAndVersion;
-        }
-
-        private void InitializeInternal(PackageInfo pkg)
-        {
-            using (_PRF_InitializeInternal.Auto())
-            {
-                directory = new AppaDirectoryInfo(pkg.assetPath);
-                packageInfo = pkg;
-                repository = RepositoryMetadata.FindByName(pkg.name);
-            }
-        }
-
         internal void PopulateDependents()
         {
             if (dependents != null)
@@ -297,6 +274,22 @@ namespace Appalachia.CI.Integration.Packages
                         dependents.Add(package);
                     }
                 }
+            }
+        }
+
+        protected override IEnumerable<string> GetIds()
+        {
+            yield return packageInfo.name;
+            yield return NameAndVersion;
+        }
+
+        private void InitializeInternal(PackageInfo pkg)
+        {
+            using (_PRF_InitializeInternal.Auto())
+            {
+                directory = new AppaDirectoryInfo(pkg.assetPath);
+                packageInfo = pkg;
+                repository = RepositoryMetadata.FindByName(pkg.name);
             }
         }
     }

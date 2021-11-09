@@ -1,4 +1,5 @@
 using System;
+using Appalachia.Utility.Logging;
 using UnityEngine;
 
 namespace Appalachia.CI.Compilation
@@ -19,7 +20,7 @@ namespace Appalachia.CI.Compilation
         public static void OnCompilationStarted(object context)
         {
             _buildCalls += 1;
-            Console.WriteLine($"[APPALACHIA] Build Calls: {_buildCalls}");
+            AppaLog.Trace($"Build Calls: {_buildCalls}");
 
             if (_buildCalls > 1)
             {
@@ -35,7 +36,7 @@ namespace Appalachia.CI.Compilation
         {
             _buildCalls -= 1;
             var elapsed = Time.realtimeSinceStartupAsDouble - _startTime;
-            Console.WriteLine($"[APPALACHIA] Build Time: {elapsed:F3}s");
+            AppaLog.Trace($"Build Time: {elapsed:F3}s");
         }
     }
     #endif

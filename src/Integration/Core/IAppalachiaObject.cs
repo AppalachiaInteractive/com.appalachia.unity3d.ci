@@ -1,9 +1,9 @@
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Appalachia.CI.Integration.Core
 {
-    public interface IAppalachiaObject<T> where T : ScriptableObject
+    public interface IAppalachiaObject<T>
+        where T : ScriptableObject
     {
         public void SetDirtyAndSave();
 

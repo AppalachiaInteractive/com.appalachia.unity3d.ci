@@ -6,7 +6,7 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaFileInfo : AppaFileSystemInfo
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AppaFileInfo) + ".";
         private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
@@ -35,7 +35,7 @@ namespace Appalachia.CI.Integration.FileSystem
         private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
         private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
 
-#endregion
+        #endregion
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> class, which acts as a wrapper for a
@@ -93,13 +93,13 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private string _lastDirectoryName;
 
+        public override AppaDirectoryInfo Parent => _fileInfo.Directory;
+
         /// <summary>Gets a value indicating whether a file exists.</summary>
         /// <returns>
         ///     <see langword="true" /> if the file exists; <see langword="false" /> if the file does not exist or if the file is a directory.
         /// </returns>
         public override bool Exists => _fileInfo.Exists;
-
-        public override AppaDirectoryInfo Parent => _fileInfo.Directory;
 
         /// <summary>Gets the full path of the file.</summary>
         /// <returns>A string containing the full path.</returns>
@@ -129,17 +129,6 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <exception cref="T:System.IO.FileNotFoundException">The file does not exist.-or- The <see langword="Length" /> property is called for a directory. </exception>
         public long Length => _fileInfo.Length;
 
-        /// <summary>Gets a string representing the directory's full path.</summary>
-        /// <returns>A string representing the directory's full path.</returns>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     <see langword="null" /> was passed in for the directory name.
-        /// </exception>
-        /// <exception cref="T:System.IO.PathTooLongException">The fully qualified path is 260 or more characters.</exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        public string DirectoryPath => _fileInfo.DirectoryName.CleanFullPath();
-
-        public string WindowsDirectoryPath => _fileInfo.DirectoryName;
-
         /// <summary>Gets a string representing the directory's last folder name.</summary>
         /// <returns>A string representing the directory's full path.</returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -151,7 +140,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 if (_lastDirectoryName == null)
                 {
-                    var splits = DirectoryPath.Split('/');
+                    var splits = ParentDirectoryFullPath.Split('/');
                     _lastDirectoryName = splits[splits.Length - 1];
                 }
 
@@ -177,6 +166,42 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             get => _fileInfo.IsReadOnly;
             set => _fileInfo.IsReadOnly = value;
+        }
+
+        public static implicit operator AppaFileInfo(FileInfo o)
+        {
+            return new(o);
+        }
+
+        public static implicit operator FileInfo(AppaFileInfo o)
+        {
+            return o._fileInfo;
+        }
+
+        /// <summary>Permanently deletes a file.</summary>
+        /// <exception cref="T:System.IO.IOException">
+        ///     The target file is open or memory-mapped on a computer running Microsoft Windows NT.-or-There is an open
+        ///     handle on the file, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories and files. For
+        ///     more information, see How to: Enumerate Directories and Files.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">The path is a directory. </exception>
+        public override void Delete()
+        {
+            using (_PRF_Delete.Auto())
+            {
+                _fileInfo.Delete();
+            }
+        }
+
+        /// <summary>Returns the path as a string.</summary>
+        /// <returns>A string representing the path.</returns>
+        public override string ToString()
+        {
+            using (_PRF_ToString.Auto())
+            {
+                return _fileInfo.ToString().CleanFullPath();
+            }
         }
 
         /// <summary>
@@ -584,45 +609,9 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        /// <summary>Permanently deletes a file.</summary>
-        /// <exception cref="T:System.IO.IOException">
-        ///     The target file is open or memory-mapped on a computer running Microsoft Windows NT.-or-There is an open
-        ///     handle on the file, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories and files. For
-        ///     more information, see How to: Enumerate Directories and Files.
-        /// </exception>
-        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
-        /// <exception cref="T:System.UnauthorizedAccessException">The path is a directory. </exception>
-        public override void Delete()
-        {
-            using (_PRF_Delete.Auto())
-            {
-                _fileInfo.Delete();
-            }
-        }
-
-        /// <summary>Returns the path as a string.</summary>
-        /// <returns>A string representing the path.</returns>
-        public override string ToString()
-        {
-            using (_PRF_ToString.Auto())
-            {
-                return _fileInfo.ToString().CleanFullPath();
-            }
-        }
-
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _fileInfo;
-        }
-
-        public static implicit operator AppaFileInfo(FileInfo o)
-        {
-            return new(o);
-        }
-
-        public static implicit operator FileInfo(AppaFileInfo o)
-        {
-            return o._fileInfo;
         }
     }
 }

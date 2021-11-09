@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Utility.Logging;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEditor.AssetImporters;
@@ -2231,11 +2233,23 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static void Refresh([CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
+        [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
+        public static void Refresh(
+            [CallerMemberName] string memberName = null,
+            [CallerFilePath] string filePath = null,
+            [CallerLineNumber] int lineNumber = 0)
         {
             using (_PRF_Refresh.Auto())
             {
-                Console.WriteLine($"[ASSETDB REFRESH INVOKED]: {filePath}:{lineNumber}:{memberName}");
+                AppaLog.Trace(
+                    "Asset Database Refresh Invoked!",
+                    null,
+                    true,
+                    memberName,
+                    filePath,
+                    lineNumber
+                );
+                
                 AssetDatabase.Refresh();
             }
         }

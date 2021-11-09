@@ -6,7 +6,7 @@ namespace Appalachia.CI.Integration.Core
 {
     public static class IntegrationMetadataRegisterExecutor
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(IntegrationMetadataRegisterExecutor) + ".";
         private static List<(int priority, Action action)> _finalizations;
@@ -17,7 +17,7 @@ namespace Appalachia.CI.Integration.Core
 
         private static readonly ProfilerMarker _PRF_Reset = new(_PRF_PFX + nameof(Reset));
 
-#endregion
+        #endregion
 
         public static bool HasExecuted { get; private set; }
 

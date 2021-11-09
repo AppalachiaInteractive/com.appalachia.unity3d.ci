@@ -8,6 +8,7 @@ using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Repositories;
 using Appalachia.CI.Integration.Rider;
+using Appalachia.Utility.Logging;
 using Newtonsoft.Json;
 using Unity.Profiling;
 using UnityEditorInternal;
@@ -144,7 +145,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 {
                     continue;
                 }
-                
+
                 yield return CreateNew(asmdef);
             }
         }
@@ -315,21 +316,39 @@ namespace Appalachia.CI.Integration.Assemblies
 
             if (name.StartsWith("appalachia."))
             {
+                if (name.StartsWith("appalachia.utility.colors"))
+                {
+                    result += 4;
+                    return result;
+                }
+                
+                if (name.StartsWith("appalachia.utility.constants"))
+                {
+                    result += 5;
+                    return result;
+                }
+                
+                if (name.StartsWith("appalachia.utility.logging"))
+                {
+                    result += 6;
+                    return result;
+                }
+                
                 if (name.StartsWith("appalachia.utility"))
                 {
-                    result += 3;
+                    result += 7;
                     return result;
                 }
 
                 if (name.StartsWith("appalachia.ci.constants"))
                 {
-                    result += 4;
+                    result += 8;
                     return result;
                 }
 
                 if (name.StartsWith("appalachia.ci.integration"))
                 {
-                    result += 5;
+                    result += 9;
                     return result;
                 }
 
@@ -532,7 +551,7 @@ namespace Appalachia.CI.Integration.Assemblies
                 var referenceString = referenceStrings[index];
                 if (referenceString == null)
                 {
-                    Debug.LogWarning($"Reference string [{index}] is null for [{Name}].");
+                   AppaLog.Warning($"Reference string [{index}] is null for [{Name}].");
                     continue;
                 }
 

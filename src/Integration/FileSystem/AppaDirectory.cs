@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Appalachia.CI.Integration.Core;
-using Appalachia.CI.Integration.Core.Shell;
 using Appalachia.CI.Integration.Extensions;
-using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Logging;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -1203,11 +1202,12 @@ namespace Appalachia.CI.Integration.FileSystem
                         var lockers = FileLock.FindLockerProcesses(sourceDirName);
                         var message = string.Join(", ", lockers.Select(p => p.strAppName));
 
-                        Debug.LogError($"[{sourceDirName}] is locked by [{message}]");
+                        AppaLog.Error($"[{sourceDirName}] is locked by [{message}]");
                     }
                     catch
                     {
-                        Debug.LogError($"[{sourceDirName}] is locked!");
+                        AppaLog.Error($"[{sourceDirName}] is locked!");
+
                         // ignored
                     }
 

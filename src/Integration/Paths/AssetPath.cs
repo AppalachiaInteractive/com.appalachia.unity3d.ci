@@ -88,6 +88,19 @@ namespace Appalachia.CI.Integration.Paths
         public string parentDirectoryRelative;
         public string relativePath;
 
+        public static AssetPath ForScript(MonoScript script)
+        {
+            if (script == null)
+            {
+                return null;
+            }
+
+            var path = AssetDatabaseManager.GetAssetPath(script);
+
+            var result = new AssetPath(path, false, AssetPathType.Script);
+            return result;
+        }
+
         public void CreateDirectoryStructure()
         {
             var directory = AppaDirectory.GetParent(relativePath);
@@ -103,19 +116,6 @@ namespace Appalachia.CI.Integration.Paths
         public void WriteFileLines(string[] lines)
         {
             AppaFile.WriteAllLines(absolutePath, lines);
-        }
-
-        public static AssetPath ForScript(MonoScript script)
-        {
-            if (script == null)
-            {
-                return null;
-            }
-
-            var path = AssetDatabaseManager.GetAssetPath(script);
-
-            var result = new AssetPath(path, false, AssetPathType.Script);
-            return result;
         }
     }
 }

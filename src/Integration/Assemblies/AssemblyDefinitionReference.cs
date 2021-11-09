@@ -38,10 +38,10 @@ namespace Appalachia.CI.Integration.Assemblies
         public AssemblyDefinitionMetadata assembly;
 
         public string guid;
+        public Color IssueColor { get; set; }
         private bool _hasReferenceLevelIssue;
         private bool _hasSortingIssue;
         private bool _isDuplicated;
-        public Color IssueColor { get; set; }
 
         public bool HasIssue => IsDuplicated || HasReferenceLevelIssue || HasSortingIssue;
 

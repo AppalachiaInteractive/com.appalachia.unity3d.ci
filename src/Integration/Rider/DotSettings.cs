@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Appalachia.CI.Integration.Assemblies;
-using Appalachia.CI.Integration.Extensions;
 using Appalachia.Utility.Extensions;
 
 namespace Appalachia.CI.Integration.Rider
 {
     public class DotSettings
     {
+        #region Constants and Static Readonly
+
+        private const string ENTRYINDEXVALUE = "EntryIndexedValue";
         private const string FALSE = "False";
         private const string FOLDER_SKIP_BOOLEND = @"</s:Boolean>";
         private const string FOLDER_SKIP_END_FALSE = FOLDER_SKIP_ENTRYINDEX + FALSE + FOLDER_SKIP_BOOLEND;
 
         private const string FOLDER_SKIP_END_TRUE = FOLDER_SKIP_ENTRYINDEX + TRUE + FOLDER_SKIP_BOOLEND;
-        private const string ENTRYINDEXVALUE = "EntryIndexedValue";
         private const string FOLDER_SKIP_ENTRYINDEX = @"/@EntryIndexedValue"">";
 
         private const string FOLDER_SKIP_START =
@@ -33,6 +34,8 @@ namespace Appalachia.CI.Integration.Rider
         private const string TRUE = "True";
 
         private static readonly string[] MALFORMATIONS = {MALFORMED1, MALFORMED2, MALFORMED3, MALFORMED4};
+
+        #endregion
 
         public DotSettings(string[] lines)
         {
@@ -68,6 +71,40 @@ namespace Appalachia.CI.Integration.Rider
 
         public IEnumerable<DotSettingsNamespaceFolder> ExcludedFolders => AllFolders.Where(f => f.excluded);
         public IEnumerable<DotSettingsNamespaceFolder> MissingFolders => AllFolders.Where(f => !f.excluded);
+
+        private static HashSet<string> GetDirectoryNameExclusions()
+        {
+            if (_nameExclusions == null)
+            {
+                _nameExclusions = new HashSet<string>
+                {
+                    "runtime",
+                    "editor",
+                    "test",
+                    "tests",
+                    "src"
+                };
+            }
+
+            return _nameExclusions;
+        }
+
+        private static string[] GetDirectoryPathExclusions()
+        {
+            if (_pathExclusions == null)
+            {
+                _pathExclusions = new[]
+                {
+                    "assets/",
+                    "assets/thirdparty/",
+                    "assets/thirdparty/assemblies/",
+                    "assets/third-party/",
+                    "assets/third-party/assemblies/"
+                };
+            }
+
+            return _pathExclusions;
+        }
 
         public void AddMissingFolders()
         {
@@ -194,7 +231,7 @@ namespace Appalachia.CI.Integration.Rider
                     }
 
                     encodingIssue = encodingIssue || (entryValuesfirst != entryValuesLast);
-                                    
+
                     var folder = Create(null, encoded);
 
                     folder.excluded = excluded;
@@ -324,40 +361,6 @@ namespace Appalachia.CI.Integration.Rider
             var folder = _foldersLookup[encoded];
 
             return folder.excluded;
-        }
-
-        private static HashSet<string> GetDirectoryNameExclusions()
-        {
-            if (_nameExclusions == null)
-            {
-                _nameExclusions = new HashSet<string>
-                {
-                    "runtime",
-                    "editor",
-                    "test",
-                    "tests",
-                    "src"
-                };
-            }
-
-            return _nameExclusions;
-        }
-
-        private static string[] GetDirectoryPathExclusions()
-        {
-            if (_pathExclusions == null)
-            {
-                _pathExclusions = new[]
-                {
-                    "assets/",
-                    "assets/thirdparty/",
-                    "assets/thirdparty/assemblies/",
-                    "assets/third-party/",
-                    "assets/third-party/assemblies/"
-                };
-            }
-
-            return _pathExclusions;
         }
     }
 }

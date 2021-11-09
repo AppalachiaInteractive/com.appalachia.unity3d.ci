@@ -194,6 +194,30 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static void OpenFolderInExplorer(AppaDirectoryInfo directoryInfo)
+        {
+            if (directoryInfo.Exists)
+            {
+                var startInfo =
+                    new ProcessStartInfo {Arguments = directoryInfo.FullPath, FileName = "explorer.exe"};
+
+                Process.Start(startInfo);
+            }
+        }
+
+        public static void OpenFolderInExplorer(AppaFileInfo fileInfo)
+        {
+            if (AppaDirectory.Exists(fileInfo.ParentDirectoryFullPath))
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    Arguments = fileInfo.ParentDirectoryFullPath, FileName = "explorer.exe"
+                };
+
+                Process.Start(startInfo);
+            }
+        }
+
         public static void OpenFolderInExplorer(string folderPath)
         {
             if (AppaDirectory.Exists(folderPath))

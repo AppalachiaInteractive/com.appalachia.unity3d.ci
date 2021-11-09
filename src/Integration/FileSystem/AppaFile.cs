@@ -8,7 +8,7 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaFile
     {
-#region Profiling And Tracing Markers
+        #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AppaFile) + ".";
         private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
@@ -69,7 +69,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_Replace = new(_PRF_PFX + nameof(Replace));
 
-#endregion
+        #endregion
 
         /// <summary>
         ///     Appends lines to a file, and then closes the file. If the specified file does not exist, this method creates a file, writes the specified
@@ -287,14 +287,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_Copy.Auto())
             {
-                try
-                {
-                    File.Copy(sourceFileName, destFileName);
-                }
-                catch
-                {
-                    throw;
-                }
+                File.Copy(sourceFileName, destFileName);
             }
         }
 

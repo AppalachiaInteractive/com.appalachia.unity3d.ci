@@ -7,7 +7,11 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
     [DoNotReorderFields]
     internal class PrivateEnumConverter : JsonConverter
     {
+        #region Constants and Static Readonly
+
         public static readonly PrivateEnumConverter Singleton = new();
+
+        #endregion
 
         public override bool CanConvert(Type t)
         {

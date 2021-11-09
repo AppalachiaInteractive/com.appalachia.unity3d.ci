@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Appalachia.CI.Integration.Assemblies;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.CI.Integration.Packages;
@@ -72,6 +71,8 @@ namespace Appalachia.CI.Integration.Core
                                                    IEquatable<T>
         where T : IntegrationMetadata<T>
     {
+        public delegate void ReanalyzeHandler();
+
         #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(IntegrationMetadata<T>) + ".";
@@ -106,18 +107,18 @@ namespace Appalachia.CI.Integration.Core
         public static IReadOnlyDictionary<string, T> InstancesByPath => _instancesByPath;
 
         public static IReadOnlyList<T> Instances => _instances;
+        public bool IsAppalachia => flags.Has(IntegrationTypeFlags.IsAppalachia);
+        public bool IsAppalachiaManaged => flags.HasAny(IntegrationTypeFlags.IsAppalachiaManaged);
 
         public bool IsAsset => flags.Has(IntegrationTypeFlags.IsAsset);
-        public bool IsLibrary => flags.Has(IntegrationTypeFlags.IsLibrary);
-        public bool IsPackage => flags.Has(IntegrationTypeFlags.IsPackage);
-        public bool IsAppalachia => flags.Has(IntegrationTypeFlags.IsAppalachia);
         public bool IsBuiltinUnity => flags.Has(IntegrationTypeFlags.IsBuiltinUnity);
         public bool IsCustomUnity => flags.Has(IntegrationTypeFlags.IsCustomUnity);
-        public bool IsAppalachiaManaged => flags.HasAny(IntegrationTypeFlags.IsAppalachiaManaged);
-        public bool IsThirdParty => flags.Has(IntegrationTypeFlags.IsThirdParty);
-        public bool IsUnity => flags.HasAny(IntegrationTypeFlags.IsUnity);
 
         public bool IsHidden => Path.EndsWith("~");
+        public bool IsLibrary => flags.Has(IntegrationTypeFlags.IsLibrary);
+        public bool IsPackage => flags.Has(IntegrationTypeFlags.IsPackage);
+        public bool IsThirdParty => flags.Has(IntegrationTypeFlags.IsThirdParty);
+        public bool IsUnity => flags.HasAny(IntegrationTypeFlags.IsUnity);
 
         /*
         private string _unifiedName;
@@ -175,13 +176,6 @@ namespace Appalachia.CI.Integration.Core
             return _instances;
         }
 
-        public static T FindByFile(AppaFileInfo file)
-        {
-            CheckIntegrationRegistration();
-
-            return InstancesByPath[file.RelativePath];
-        }
-
         public static T FindByChildFilePath(string path)
         {
             CheckIntegrationRegistration();
@@ -199,6 +193,13 @@ namespace Appalachia.CI.Integration.Core
             }
 
             return null;
+        }
+
+        public static T FindByFile(AppaFileInfo file)
+        {
+            CheckIntegrationRegistration();
+
+            return InstancesByPath[file.RelativePath];
         }
 
         public static T FindByFilePath(string path)
@@ -297,7 +298,7 @@ namespace Appalachia.CI.Integration.Core
             foreach (var item in all)
             {
                 item.SetFlags();
-                
+
                 var ids = item.GetIds().ToArray();
 
                 foreach (var id in ids)
@@ -384,11 +385,14 @@ namespace Appalachia.CI.Integration.Core
                 flags = flags.SetFlag(IntegrationTypeFlags.IsAppalachia);
             }
 
-            if (n.StartsWith("unity.") || n.StartsWith("com.unity") || n.Contains("textmeshpro") || n.StartsWith("com.autodesk"))
+            if (n.StartsWith("unity.") ||
+                n.StartsWith("com.unity") ||
+                n.Contains("textmeshpro") ||
+                n.StartsWith("com.autodesk"))
             {
                 flags = flags.SetFlag(IntegrationTypeFlags.IsBuiltinUnity);
             }
-        
+
             if ((n == "com.appalachia.unity3d.third-party.unity") ||
                 n.StartsWith("unity.visualeffectgraph") ||
                 n.StartsWith("cinemachine") ||
@@ -403,11 +407,5 @@ namespace Appalachia.CI.Integration.Core
                 flags = flags.SetFlag(IntegrationTypeFlags.IsThirdParty);
             }
         }
-
-        #region Nested Types
-
-        public delegate void ReanalyzeHandler();
-
-        #endregion
     }
 }

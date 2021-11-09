@@ -8,6 +8,8 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
     [DoNotReorderFields]
     internal static class Converter
     {
+        #region Constants and Static Readonly
+
         public static readonly JsonSerializerSettings Settings = new()
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
@@ -36,5 +38,7 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
                 new IsoDateTimeConverter {DateTimeStyles = DateTimeStyles.AssumeUniversal}
             }
         };
+
+        #endregion
     }
 }

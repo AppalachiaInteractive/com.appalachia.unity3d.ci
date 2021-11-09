@@ -44,17 +44,17 @@ namespace Appalachia.CI.Integration.Repositories
         public string Name => repository?.PackageName ?? name;
         public string Version => version;
 
-        public void SetMissing()
-        {
-            _isMissing = true;
-        }
-
         public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
                 return $"{Name} : {Version}";
             }
+        }
+
+        public void SetMissing()
+        {
+            _isMissing = true;
         }
     }
 }

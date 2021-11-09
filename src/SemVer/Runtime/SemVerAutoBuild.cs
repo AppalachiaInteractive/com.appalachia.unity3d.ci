@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Appalachia.Utility.Logging;
 using UnityEngine;
 
 namespace Appalachia.CI.SemVer
@@ -42,7 +43,7 @@ namespace Appalachia.CI.SemVer
         {
             internal sealed override string Set(string build)
             {
-                Debug.LogWarning("The build metadata is read-only");
+               AppaLog.Warning("The build metadata is read-only");
                 return build;
             }
         }

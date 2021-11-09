@@ -7,7 +7,11 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
     [DoNotReorderFields]
     internal class PackageExportsEntryOrFallbackConverter : JsonConverter
     {
+        #region Constants and Static Readonly
+
         public static readonly PackageExportsEntryOrFallbackConverter Singleton = new();
+
+        #endregion
 
         public override bool CanConvert(Type t)
         {

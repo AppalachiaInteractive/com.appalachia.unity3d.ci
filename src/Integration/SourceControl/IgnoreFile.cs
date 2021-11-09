@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Logging;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.SourceControl
@@ -77,13 +78,18 @@ namespace Appalachia.CI.Integration.SourceControl
             public IgnorePattern(string original)
             {
                 this.original = original;
-                this.pattern = original;
+                pattern = original;
             }
 
             public Regex regex;
 
             public string original;
             public string pattern;
+
+            public override string ToString()
+            {
+                return pattern;
+            }
 
             public void Compile()
             {
@@ -94,7 +100,7 @@ namespace Appalachia.CI.Integration.SourceControl
                 }
                 catch (ArgumentException)
                 {
-                    Debug.LogError($"Failed to compile regex [{pattern}]");
+                    AppaLog.Error($"Failed to compile regex [{pattern}]");
                     throw;
                 }
             }
@@ -102,11 +108,6 @@ namespace Appalachia.CI.Integration.SourceControl
             public void Replace(string find, string replace)
             {
                 pattern = pattern.Replace(find, replace);
-            }
-
-            public override string ToString()
-            {
-                return pattern;
             }
         }
 

@@ -7,6 +7,7 @@ using System.Text;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Logging;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEngine;
@@ -88,7 +89,7 @@ namespace Appalachia.CI.Integration.Core.Shell
             {
                 var failedToStart = DidProcessFail(processKey);
 
-                ShellLogger.Log<SystemShellManager>(processKey, $"[{nameof(EndProcess)}] saving results.");
+                AppaLog.Trace($"[{processKey}] [{nameof(EndProcess)}] saving results.");
 
                 if (shellResult != null)
                 {
@@ -110,12 +111,11 @@ namespace Appalachia.CI.Integration.Core.Shell
                     }
                     catch (InvalidOperationException iox)
                     {
-                        ShellLogger.Log<SystemShellManager>(
-                            processKey,
-                            $"[{nameof(EndProcess)}] -------------INVALID OPERATION: {iox.Message}."
+                        AppaLog.Trace(
+                            $"[{processKey}] [{nameof(EndProcess)}] -------------INVALID OPERATION: {iox.Message}."
                         );
 
-                        Debug.LogError(
+                        AppaLog.Error(
                             $"[{processKey}] [{nameof(EndProcess)}] Error while finalizing.\r\n----------\r\n{iox}"
                         );
                         throw;
@@ -180,13 +180,13 @@ namespace Appalachia.CI.Integration.Core.Shell
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogException(ex);
+                        AppaLog.Exception(ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                AppaLog.Exception(ex);
             }
         }
 
@@ -207,7 +207,7 @@ namespace Appalachia.CI.Integration.Core.Shell
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                AppaLog.Exception(ex);
             }
         }
 
@@ -274,7 +274,7 @@ namespace Appalachia.CI.Integration.Core.Shell
         {
             using (_PRF_EndProcess.Auto())
             {
-                ShellLogger.Log<SystemShellManager>(processKey, $"[{nameof(EndProcess)}] saving results.");
+                AppaLog.Trace($"[{processKey}] [{nameof(EndProcess)}] saving results.");
 
                 if (shellResult != null)
                 {
@@ -296,12 +296,11 @@ namespace Appalachia.CI.Integration.Core.Shell
                     }
                     catch (InvalidOperationException iox)
                     {
-                        ShellLogger.Log<SystemShellManager>(
-                            processKey,
-                            $"[{nameof(EndProcess)}] -------------INVALID OPERATION: {iox.Message}."
+                        AppaLog.Trace(
+                            $"[{processKey}] [{nameof(EndProcess)}] -------------INVALID OPERATION: {iox.Message}."
                         );
 
-                        Debug.LogError(
+                        AppaLog.Error(
                             $"[{processKey}] [{nameof(EndProcess)}] Error while finalizing.\r\n----------\r\n{iox}"
                         );
                         throw;
@@ -326,24 +325,22 @@ namespace Appalachia.CI.Integration.Core.Shell
                 var oldProcess = _commandProcessLookup[processKey];
                 var elapsed = (DateTime.Now - oldProcess.StartTime).TotalSeconds;
 
-                ShellLogger.Log<SystemShellManager>($"[{nameof(ExecuteProcessingLoop)}] checking exit.");
+                AppaLog.Trace(
+                    $"[{processKey}] [{nameof(ExecuteProcessingLoop)}] [{elapsed}s] checking exit."
+                );
 
                 if (!oldProcess.HasExited)
                 {
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        elapsed,
-                        $"[{nameof(ExecuteProcessingLoop)}] requeueing."
+                    AppaLog.Trace(
+                        $"[{processKey}] [{nameof(ExecuteProcessingLoop)}] [{elapsed}s] requeueing."
                     );
 
                     _pendingProcessesTemp.Enqueue(processKey);
                 }
                 else
                 {
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        elapsed,
-                        $"[{nameof(ExecuteProcessingLoop)}] finishing."
+                    AppaLog.Trace(
+                        $"[{processKey}] [{nameof(ExecuteProcessingLoop)}] [{elapsed}s] finishing."
                     );
 
                     _finishedProcesses.Add(processKey);
@@ -365,17 +362,11 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                 var newProcess = _commandProcessLookup[processKey];
 
-                ShellLogger.Log<SystemShellManager>(
-                    processKey,
-                    $"[{nameof(ExecuteProcessingLoop)}] checking start."
-                );
+                AppaLog.Trace($"[{processKey}] [{nameof(ExecuteProcessingLoop)}] checking start.");
 
                 try
                 {
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        $"[{nameof(ExecuteProcessingLoop)}] starting."
-                    );
+                    AppaLog.Trace($"[{processKey}] [{nameof(ExecuteProcessingLoop)}] starting.");
 
                     var startResult = newProcess.Start();
 
@@ -385,27 +376,23 @@ namespace Appalachia.CI.Integration.Core.Shell
                         continue;
                     }
 
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        $"[{processKey}] [{nameof(ExecuteProcessingLoop)}] reading."
-                    );
+                    AppaLog.Trace($"[{processKey}] [{nameof(ExecuteProcessingLoop)}] reading.");
 
                     newProcess.BeginOutputReadLine();
                     newProcess.BeginErrorReadLine();
                 }
                 catch (InvalidOperationException iox)
                 {
-                    ShellLogger.Log<SystemShellManager>(
-                        processKey,
-                        $"[{nameof(ExecuteProcessingLoop)}] -------------INVALID OPERATION: {iox.Message}."
+                    AppaLog.Trace(
+                        $"[{processKey}] [{nameof(ExecuteProcessingLoop)}]  -------------INVALID OPERATION: {iox.Message}."
                     );
 
-                    Debug.LogError(
+                    AppaLog.Error(
                         $"[{processKey}] [{nameof(ExecuteProcessingLoop)}] Error while starting.\r\n----------\r\n{iox}"
                     );
                 }
 
-                ShellLogger.Log<SystemShellManager>(processKey, "queued.");
+                AppaLog.Trace($"[{processKey}] [{nameof(ExecuteProcessingLoop)}] queued.");
                 _inProcessProcesses.Enqueue(processKey);
             }
         }
@@ -414,10 +401,7 @@ namespace Appalachia.CI.Integration.Core.Shell
         {
             while (_inProcessProcesses.TryDequeue(out var processKey))
             {
-                ShellLogger.Log<SystemShellManager>(
-                    processKey,
-                    $"[{nameof(FinalizeProcessingLoop)}] clearing."
-                );
+                AppaLog.Trace($"[{processKey}] [{nameof(FinalizeProcessingLoop)}] clearing.");
 
                 if (!_commandProcessLookup.ContainsKey(processKey))
                 {
@@ -429,10 +413,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
             while (_waitingProcesses.TryDequeue(out var processKey))
             {
-                ShellLogger.Log<SystemShellManager>(
-                    processKey,
-                    $"[{nameof(FinalizeProcessingLoop)}] clearing."
-                );
+                AppaLog.Trace($"[{processKey}] [{nameof(FinalizeProcessingLoop)}] clearing.");
 
                 if (!_commandProcessLookup.ContainsKey(processKey))
                 {
@@ -517,11 +498,11 @@ namespace Appalachia.CI.Integration.Core.Shell
             {
                 errorBuilder.AppendLine(data);
                 standardErrorHandler?.Invoke(sender, args);
-                ShellLogger.Log<SystemShellManager>(processKey, $"[ErrorDataReceived]: {data}");
+                AppaLog.Trace($"[{processKey}] [ErrorDataReceived]: {data}");
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                AppaLog.Exception(ex);
             }
         }
 
@@ -543,11 +524,11 @@ namespace Appalachia.CI.Integration.Core.Shell
             {
                 outBuilder.AppendLine();
                 standardOutHandler?.Invoke(sender, args);
-                ShellLogger.Log<SystemShellManager>(processKey, $"[OutputDataReceived]: {data}");
+                AppaLog.Trace($"[{processKey}] [OutputDataReceived]: {data}");
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                AppaLog.Exception(ex);
             }
         }
 

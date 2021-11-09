@@ -48,7 +48,7 @@ namespace Appalachia.CI.Integration.Extensions
                     if (path.Contains(key))
                     {
                         var value = _values[i];
-                        path = path.Replace(key, value);    
+                        path = path.Replace(key, value);
                     }
                 }
 
@@ -168,6 +168,16 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
+        internal static bool IsPathIgnored(this string path, IgnoreFile ignoreFile)
+        {
+            if (ignoreFile == null)
+            {
+                return false;
+            }
+
+            return ignoreFile.IsIgnored(path);
+        }
+
         private static string CleanPackagePath(string path)
         {
             using (_PRF_CleanPackagePath.Auto())
@@ -213,16 +223,6 @@ namespace Appalachia.CI.Integration.Extensions
                     _absoluteToRelativePathLookup = new Dictionary<string, string>();
                 }
             }
-        }
-
-        internal static bool IsPathIgnored(this string path, IgnoreFile ignoreFile)
-        {
-            if (ignoreFile == null)
-            {
-                return false;
-            }
-            
-            return ignoreFile.IsIgnored(path);
         }
     }
 }

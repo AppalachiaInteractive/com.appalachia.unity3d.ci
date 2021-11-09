@@ -10,8 +10,12 @@ namespace Appalachia.CI.Integration.Serialization
 // any data types and with arbitrarily deeply-pathed properties.
     public static class SerializedPropertyExtensions
     {
+        #region Constants and Static Readonly
+
         private static readonly Regex arrayElementRegex =
             new(@"\GArray\.data\[(\d+)\]", RegexOptions.Compiled);
+
+        #endregion
 
         /// (Extension) Get the value of the serialized property.
         public static object GetValue(this SerializedProperty property)
@@ -189,6 +193,8 @@ namespace Appalachia.CI.Integration.Serialization
             }
         }
 
+        #region Nested Types
+
         // Union type representing either a property name or array element index.  The element
         // index is valid only if propertyName is null.
         private struct PropertyPathComponent
@@ -196,5 +202,7 @@ namespace Appalachia.CI.Integration.Serialization
             public int elementIndex;
             public string propertyName;
         }
+
+        #endregion
     }
 }

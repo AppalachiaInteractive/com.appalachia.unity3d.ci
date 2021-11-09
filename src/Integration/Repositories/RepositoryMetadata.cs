@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +14,7 @@ using Appalachia.CI.Integration.Repositories.Publishing;
 using Appalachia.CI.Integration.SourceControl;
 using Appalachia.Utility.Execution;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Logging;
 using Unity.Profiling;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -553,7 +553,7 @@ namespace Appalachia.CI.Integration.Repositories
                     {
                         continue;
                     }
-                    
+
                     var directoryPath = AppaPath.GetDirectoryName(packageJson);
                     var directory = new AppaDirectoryInfo(directoryPath);
 
@@ -680,8 +680,6 @@ namespace Appalachia.CI.Integration.Repositories
 
             return $"{directory.RelativePath}: {PackageVersion}";
         }
-
-       
 
         public IEnumerable<AppaFileInfo> GetLargestFiles(int count)
         {
@@ -858,7 +856,7 @@ namespace Appalachia.CI.Integration.Repositories
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError($"Failed to parse package.json at [{npmPackagePath}]: {ex.Message}");
+                        AppaLog.Error($"Failed to parse package.json at [{npmPackagePath}]: {ex.Message}");
                         throw;
                     }
                 }

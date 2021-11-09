@@ -63,8 +63,12 @@ namespace Appalachia.CI.Integration
 
         #endregion
 
+        #region Constants and Static Readonly
+
         public const string ThirdPartyDataFolder = ThirdPartyFolder + " Data";
         public const string ThirdPartyFolder = "Third-Party";
+
+        #endregion
 
         public static RepositoryMetadata GetAssetRepository(string assetPath, bool invalidateCache = true)
         {

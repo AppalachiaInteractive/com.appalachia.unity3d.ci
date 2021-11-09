@@ -48,7 +48,7 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         public static string[] GetAllAssetPaths<T>()
-        where T: UnityEngine.Object
+            where T : Object
         {
             using (_PRF_GetAllAssetPaths.Auto())
             {

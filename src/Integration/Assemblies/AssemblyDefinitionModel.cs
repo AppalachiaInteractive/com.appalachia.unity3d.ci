@@ -15,7 +15,12 @@ namespace Appalachia.CI.Integration.Assemblies
 
         #endregion
 
+        #region Constants and Static Readonly
+
         public const string GUID_PREFIX = "GUID:";
+
+        #endregion
+
         public AssemblyVersionDefineModel[] versionDefines;
         public bool allowUnsafeCode;
         public bool autoReferenced;

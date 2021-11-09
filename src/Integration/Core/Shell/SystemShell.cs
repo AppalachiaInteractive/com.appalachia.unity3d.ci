@@ -3,6 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Logging;
 using Unity.EditorCoroutines.Editor;
 using Unity.Profiling;
 using UnityEngine;
@@ -80,7 +81,7 @@ namespace Appalachia.CI.Integration.Core.Shell
             {
                 var processKey = workingDir + ": " + command;
 
-                ShellLogger.Log<SystemShell>(processKey, $"[{nameof(Execute)}] requested.");
+                AppaLog.Trace($"[{processKey}] [{nameof(Execute)}] requested.");
 
                 manager.EnsureInitialized();
 
@@ -107,7 +108,7 @@ namespace Appalachia.CI.Integration.Core.Shell
 
                     using (_PRF_Execute.Suspend())
                     {
-                        ShellLogger.Log<SystemShell>(processKey, $"[{nameof(Execute)}] entering wait loop.");
+                        AppaLog.Trace($"[{processKey}] [{nameof(Execute)}] entering wait loop.");
 
                         while (manager.ShouldWaitForProcess(processKey))
                         {
@@ -119,7 +120,7 @@ namespace Appalachia.CI.Integration.Core.Shell
                             }
                         }
 
-                        ShellLogger.Log<SystemShell>(processKey, $"[{nameof(Execute)}] exiting wait loop.");
+                        AppaLog.Trace($"[{processKey}] [{nameof(Execute)}] exiting wait loop.");
                     }
 
                     manager.EndProcess(processKey, shellResult, process, errorBuilder, outBuilder);

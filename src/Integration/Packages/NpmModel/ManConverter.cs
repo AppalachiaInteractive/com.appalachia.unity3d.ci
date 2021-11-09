@@ -7,7 +7,11 @@ namespace Appalachia.CI.Integration.Packages.NpmModel
     [DoNotReorderFields]
     internal class ManConverter : JsonConverter
     {
+        #region Constants and Static Readonly
+
         public static readonly ManConverter Singleton = new();
+
+        #endregion
 
         public override bool CanConvert(Type t)
         {

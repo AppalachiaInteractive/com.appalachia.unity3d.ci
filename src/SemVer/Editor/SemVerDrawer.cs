@@ -1,4 +1,5 @@
 using System;
+using Appalachia.Utility.Logging;
 using UnityEditor;
 using UnityEngine;
 
@@ -112,7 +113,7 @@ namespace Appalachia.CI.SemVer
             }
             catch (OverflowException)
             {
-                Debug.LogWarning("A version must not be negative");
+               AppaLog.Warning("A version must not be negative");
                 newVersionUint = version;
             }
 

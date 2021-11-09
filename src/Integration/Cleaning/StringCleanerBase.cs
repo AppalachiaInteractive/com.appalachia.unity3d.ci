@@ -12,7 +12,7 @@ namespace Appalachia.CI.Integration.Cleaning
         #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(StringCleanerBase<T>) + ".";
-        
+
         private static readonly ProfilerMarker _PRF_Clean = new(_PRF_PFX + nameof(Clean));
 
         private static readonly ProfilerMarker _PRF_StringCleanerBase =

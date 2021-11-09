@@ -1,6 +1,7 @@
 using System;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Utility.Logging;
 using UnityEditor;
 using UnityEngine;
 
@@ -55,7 +56,7 @@ namespace Appalachia.CI.Integration.Assets
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex);
+                AppaLog.Error(ex);
             }
 
             return texture;

@@ -1,4 +1,5 @@
 using System;
+using Appalachia.Utility.Logging;
 using UnityEngine;
 
 namespace Appalachia.CI.SemVer
@@ -203,7 +204,7 @@ namespace Appalachia.CI.SemVer
             if (value >= max)
             {
                 clamped = max - 1;
-                Debug.LogWarning(name + " should be less than " + max);
+               AppaLog.Warning(name + " should be less than " + max);
             }
             else
             {

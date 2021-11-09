@@ -12,10 +12,65 @@ namespace Appalachia.CI.Integration.Rider
         public bool shouldExclude;
         public string encoded;
         public string path;
-        
-        public bool HasIssue => HasExclusionIssue || HasExclusionIssue;
-        public bool HasExclusionIssue => shouldExclude && !excluded;
         public bool HasEncodingIssue => encodingIssue;
+        public bool HasExclusionIssue => shouldExclude && !excluded;
+
+        public bool HasIssue => HasExclusionIssue || HasExclusionIssue;
+
+        public static bool operator ==(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator >(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) >= 0;
+        }
+
+        public static bool operator !=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return !Equals(left, right);
+        }
+
+        public static bool operator <(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
+        {
+            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) <= 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((DotSettingsNamespaceFolder) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return encoded != null ? encoded.GetHashCode() : 0;
+        }
 
         public int CompareTo(object obj)
         {
@@ -62,61 +117,6 @@ namespace Appalachia.CI.Integration.Rider
             }
 
             return encoded == other.encoded;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((DotSettingsNamespaceFolder) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return encoded != null ? encoded.GetHashCode() : 0;
-        }
-
-        public static bool operator ==(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator >(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) > 0;
-        }
-
-        public static bool operator >=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) >= 0;
-        }
-
-        public static bool operator !=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return !Equals(left, right);
-        }
-
-        public static bool operator <(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) < 0;
-        }
-
-        public static bool operator <=(DotSettingsNamespaceFolder left, DotSettingsNamespaceFolder right)
-        {
-            return Comparer<DotSettingsNamespaceFolder>.Default.Compare(left, right) <= 0;
         }
     }
 }
