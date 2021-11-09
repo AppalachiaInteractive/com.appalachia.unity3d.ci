@@ -13,7 +13,6 @@ using Unity.Profiling;
 using UnityEditor.Compilation;
 using UnityEditor.PackageManager;
 using UnityEditor.SceneManagement;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Appalachia.CI.Integration.Development
@@ -188,10 +187,12 @@ namespace Appalachia.CI.Integration.Development
             }
         }
 
-        private static void EndConversionToPackage(RepositoryMetadata repo, PackageSwapOptions options)
+        private static void EndConversionToPackage(RepositoryMetadata target, PackageSwapOptions options)
         {
             using (_PRF_ConvertToPackage_END.Auto())
             {
+                AppaLog.Info($"Finishing repository [{target.Name}] conversion to package.");
+
                 var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
                 var executePackageClient = options.HasFlag(PackageSwapOptions.ExecutePackageClient);
 
@@ -199,11 +200,11 @@ namespace Appalachia.CI.Integration.Development
                 {
                     if (dryRun)
                     {
-                        AppaLog.Info($"Adding [{repo.NameAndVersion}]");
+                        AppaLog.Info($"Adding [{target.NameAndVersion}]");
                     }
                     else
                     {
-                        var addition = Client.Add(repo.NameAndVersion);
+                        var addition = Client.Add(target.NameAndVersion);
 
                         while (!addition.IsCompleted)
                         {
@@ -213,164 +214,26 @@ namespace Appalachia.CI.Integration.Development
             }
         }
 
-        private static void EndConversionToRepository(PackageMetadata package, PackageSwapOptions options)
+        private static void EndConversionToRepository(PackageMetadata target, PackageSwapOptions options)
         {
             using (_PRF_ConvertToRepository_END.Auto())
             {
-                AppaLog.Trace($"Finishing package [{package.Name}]");
-                
-                var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
-                var executePackageClient = options.HasFlag(PackageSwapOptions.ExecutePackageClient);
-
-                if (executePackageClient)
-                {
-                    if (dryRun)
-                    {
-                        AppaLog.Info($"Removing [{package.Name}]");
-                    }
-                    else
-                    {
-                        var removal = Client.Remove(package.Name);
-
-                        while (!removal.IsCompleted)
-                        {
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void FinalizeExecutionOnCompilationFinished(object obj)
-        {
-            AssetDatabaseManager.SaveAssets();
-            AssetDatabaseManager.Refresh();
-
-            IntegrationMetadata.ClearAll<PackageMetadata>();
-            IntegrationMetadata.ClearAll<RepositoryMetadata>();
-        }
-
-        private static PackageSwapOptions GetSuboptions(PackageSwapOptions options)
-        {
-            var subOptions = options.UnsetFlag(
-                PackageSwapOptions.RefreshAssetsAfterDirectoryMove |
-                PackageSwapOptions.RefreshAssetsAtEnd |
-                PackageSwapOptions.RefreshAssetsAtStart
-            );
-
-            return subOptions;
-        }
-
-        private static void InitializeExecution(PackageSwapOptions options)
-        {
-            var refreshAssetsAtStart = options.HasFlag(PackageSwapOptions.RefreshAssetsAtStart);
-
-            AssetDatabaseManager.SetSelection("Assets");
-
-            var activeScene = SceneManager.GetActiveScene();
-            
-            if (!string.IsNullOrWhiteSpace(activeScene.name) && (activeScene.name != "Untitled"))
-            {
-                EditorSceneManager.SaveOpenScenes();
-                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            }
-
-            if (refreshAssetsAtStart)
-            {
-                AssetDatabaseManager.SaveAssets();
-                AssetDatabaseManager.Refresh();
-            }
-        }
-
-        private static void StartConversionToPackage(RepositoryMetadata repo, PackageSwapOptions options)
-        {
-            using (_PRF_ConvertToPackage_START.Auto())
-            {
-                var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
-                var refreshAssetsAfterDirectoryMove =
-                    options.HasFlag(PackageSwapOptions.RefreshAssetsAfterDirectoryMove);
-
-                if (repo.IsPackage || repo.Path.EndsWith("~") || repo.Path.StartsWith("Package"))
-                {
-                    return;
-                }
-
-                if (!AppaDirectory.Exists(repo.Path))
-                {
-                    return;
-                }
-
-                AppaLog.Info(
-                    $"Refreshing assets before converting [{repo.Name}] from a repository to a package."
-                );
-
-                AppaLog.Info($"Converting [{repo.Name}] from a repository to a package.");
-
-                foreach (var dependency in repo.dependencies)
-                {
-                    if (dependency.repository.IsAppalachiaManaged)
-                    {
-                        var subOptions = GetSuboptions(options);
-
-                        ConvertToPackage(dependency.repository, subOptions);
-                    }
-                }
-
-                var root = repo.Path;
-                var meta = root + ".meta";
-
-                var newRoot = root + "~";
-
-                if (dryRun)
-                {
-                    AppaLog.Info($"MOVEDIR: [{root}] to [{newRoot}]");
-                    AppaLog.Info($"DELETE: [{meta}]");
-                }
-                else
-                {
-                    AppaDirectory.Move(root, newRoot);
-                    AppaFile.Delete(meta);
-                }
-
-                if (refreshAssetsAfterDirectoryMove)
-                {
-                    AssetDatabaseManager.Refresh();
-                }
-            }
-        }
-
-        private static void StartConversionToRepository(PackageMetadata package, PackageSwapOptions options)
-        {
-            using (_PRF_ConvertToRepository_START.Auto())
-            {
-                AppaLog.Info($"Converting [{package.Name}] from a package to a repository.");
+                AppaLog.Info($"Finishing package [{target.Name}] conversion to repository.");
 
                 var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
-                var refreshAssetsAfterDirectoryMove =
-                    options.HasFlag(PackageSwapOptions.RefreshAssetsAfterDirectoryMove);
-
-                package.PopulateDependents();
-
-                foreach (var dependent in package.dependents)
-                {
-                    if (dependent.IsAppalachiaManaged)
-                    {
-                        var subOptions = GetSuboptions(options);
-
-                        ConvertToRepository(dependent, subOptions);
-                    }
-                }
+                var refreshAssetsAfterMove = options.HasFlag(PackageSwapOptions.RefreshAssetsAfterMove);
 
                 string directoryRoot;
                 string directoryName;
 
-                if (package.IsThirdParty || package.IsUnity)
+                if (target.IsThirdParty || target.IsUnity)
                 {
-                    directoryName = package.packageInfo.name.Split(".").Last();
+                    directoryName = target.packageInfo.name.Split(".").Last();
                     directoryRoot = "Assets/Third-Party/";
                 }
                 else
                 {
-                    directoryName = package.Name;
+                    directoryName = target.Name;
                     directoryRoot = "Assets/";
                 }
 
@@ -396,15 +259,13 @@ namespace Appalachia.CI.Integration.Development
 
                         if (dryRun)
                         {
-                            AppaLog.Info(
-                                $"MOVEDIR: [{hideDirectory.RelativePath}] to [{dir.RelativePath}]"
-                            );
+                            AppaLog.Info($"MOVEDIR: [{hideDirectory.RelativePath}] to [{dir.RelativePath}]");
                         }
                         else
                         {
                             AppaDirectory.Move(hideDirectory.RelativePath, dir.RelativePath);
 
-                            if (refreshAssetsAfterDirectoryMove)
+                            if (refreshAssetsAfterMove)
                             {
                                 AssetDatabaseManager.Refresh();
                             }
@@ -436,6 +297,144 @@ namespace Appalachia.CI.Integration.Development
                         {
                         }
                     }*/
+                }
+            }
+        }
+
+        private static void FinalizeExecutionOnCompilationFinished(object obj)
+        {
+            AssetDatabaseManager.SaveAssets();
+            AssetDatabaseManager.Refresh();
+
+            IntegrationMetadata.ClearAll<PackageMetadata>();
+            IntegrationMetadata.ClearAll<RepositoryMetadata>();
+        }
+
+        private static PackageSwapOptions GetSuboptions(PackageSwapOptions options)
+        {
+            var subOptions = options.UnsetFlag(
+                PackageSwapOptions.RefreshAssetsAfterMove |
+                PackageSwapOptions.RefreshAssetsAtEnd |
+                PackageSwapOptions.RefreshAssetsAtStart
+            );
+
+            return subOptions;
+        }
+
+        private static void InitializeExecution(PackageSwapOptions options)
+        {
+            var refreshAssetsAtStart = options.HasFlag(PackageSwapOptions.RefreshAssetsAtStart);
+
+            AssetDatabaseManager.SetSelection("Assets");
+
+            var activeScene = SceneManager.GetActiveScene();
+
+            if (!string.IsNullOrWhiteSpace(activeScene.name) && (activeScene.name != "Untitled"))
+            {
+                EditorSceneManager.SaveOpenScenes();
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            }
+
+            if (refreshAssetsAtStart)
+            {
+                AssetDatabaseManager.SaveAssets();
+                AssetDatabaseManager.Refresh();
+            }
+        }
+
+        private static void StartConversionToPackage(RepositoryMetadata target, PackageSwapOptions options)
+        {
+            using (_PRF_ConvertToPackage_START.Auto())
+            {
+                var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
+                var refreshAssetsAfterDirectoryMove =
+                    options.HasFlag(PackageSwapOptions.RefreshAssetsAfterMove);
+
+                if (target.IsPackage || target.Path.EndsWith("~") || target.Path.StartsWith("Package"))
+                {
+                    return;
+                }
+
+                if (!AppaDirectory.Exists(target.Path))
+                {
+                    return;
+                }
+
+                AppaLog.Info(
+                    $"Refreshing assets before converting [{target.Name}] from a repository to a package."
+                );
+
+                AppaLog.Info($"Converting [{target.Name}] from a repository to a package.");
+
+                foreach (var dependency in target.dependencies)
+                {
+                    if (dependency.repository.IsAppalachiaManaged)
+                    {
+                        var subOptions = GetSuboptions(options);
+
+                        ConvertToPackage(dependency.repository, subOptions);
+                    }
+                }
+
+                var root = target.Path;
+                var meta = root + ".meta";
+
+                var newRoot = root + "~";
+
+                if (dryRun)
+                {
+                    AppaLog.Info($"MOVEDIR: [{root}] to [{newRoot}]");
+                    AppaLog.Info($"DELETE: [{meta}]");
+                }
+                else
+                {
+                    AppaDirectory.Move(root, newRoot);
+                    AppaFile.Delete(meta);
+                }
+
+                if (refreshAssetsAfterDirectoryMove)
+                {
+                    AssetDatabaseManager.Refresh();
+                }
+            }
+        }
+
+        private static void StartConversionToRepository(PackageMetadata target, PackageSwapOptions options)
+        {
+            using (_PRF_ConvertToRepository_START.Auto())
+            {
+                AppaLog.Info($"Converting [{target.Name}] from a package to a repository.");
+
+                var dryRun = options.HasFlag(PackageSwapOptions.DryRun);
+
+                target.PopulateDependents();
+
+                foreach (var dependent in target.dependents)
+                {
+                    if (dependent.IsAppalachiaManaged)
+                    {
+                        var subOptions = GetSuboptions(options);
+
+                        ConvertToRepository(dependent, subOptions);
+                    }
+                }
+
+                var executePackageClient = options.HasFlag(PackageSwapOptions.ExecutePackageClient);
+
+                if (executePackageClient)
+                {
+                    if (dryRun)
+                    {
+                        AppaLog.Info($"Removing [{target.Name}]");
+                    }
+                    else
+                    {
+                        var removal = Client.Remove(target.Name);
+
+                        while (!removal.IsCompleted)
+                        {
+                        }
+                    }
                 }
             }
         }

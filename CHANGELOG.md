@@ -14,6 +14,14 @@ C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| a0b4b960b8a87c9c68de112ba4bb48d737f9b2b6 | 2021-11-08 | Chris Schubert | Refactoring package/repo swap, integrating new logging library, code cleanup |
+| 7b6440529c56930d37a74c4a113aced52719f2d8 | 2021-11-07 | Chris Schubert | Fixing shader includes and automatic references for resources |
+
+
+ ## Tag: `v0.2.0`
+| Hash | Date | Author | Changes |
+|------|------|--------|---------|
+| 176a0f908d7528c820efc2480113d9d0d6f5d9f6 | 2021-11-06 | Chris Schubert | Updating changelog and releaselog |
 | 93a1bb72fa6805fd7ab656c4d3202b79e906d8fd | 2021-11-06 | Chris Schubert | Updating changelog and releaselog |
 | c85968354e97b9e0f2ded4f68d9ac25f5fbcee1c | 2021-11-06 | Chris Schubert | Updating changelog and releaselog |
 | 551893ec6b2266ec31b4300a8d3dc4d074eabc79 | 2021-11-05 | Chris Schubert | Updating changelog and releaselog |
