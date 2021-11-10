@@ -955,7 +955,7 @@ namespace Appalachia.CI.Integration.Assets
             {
                 var paths = AssetDatabase.GetAllAssetPaths();
                 
-                paths.Sort();
+                //paths.Sort();
 
                 return paths;
             }
@@ -979,7 +979,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 Array.Copy(files, 0, assets, assetsLength, cleanFiles);
 
-                Array.Sort(assets);
+                //Array.Sort(assets);
                 return assets;
             }
         }
