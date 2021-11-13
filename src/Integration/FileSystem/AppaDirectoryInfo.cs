@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;

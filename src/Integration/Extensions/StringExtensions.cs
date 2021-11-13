@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.CI.Integration.SourceControl;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.Extensions
@@ -168,15 +168,6 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        internal static bool IsPathIgnored(this string path, IgnoreFile ignoreFile)
-        {
-            if (ignoreFile == null)
-            {
-                return false;
-            }
-
-            return ignoreFile.IsIgnored(path);
-        }
 
         private static string CleanPackagePath(string path)
         {

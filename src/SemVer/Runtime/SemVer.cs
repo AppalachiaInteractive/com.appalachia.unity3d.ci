@@ -205,7 +205,7 @@ namespace Appalachia.CI.SemVer
             if (value >= max)
             {
                 clamped = max - 1;
-               AppaLog.Warning(name + " should be less than " + max);
+               AppaLog.Warn(name + " should be less than " + max);
             }
             else
             {

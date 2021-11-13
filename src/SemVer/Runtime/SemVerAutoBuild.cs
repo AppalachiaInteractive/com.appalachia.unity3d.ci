@@ -43,7 +43,7 @@ namespace Appalachia.CI.SemVer
         {
             internal sealed override string Set(string build)
             {
-               AppaLog.Warning("The build metadata is read-only");
+               AppaLog.Warn("The build metadata is read-only");
                 return build;
             }
         }

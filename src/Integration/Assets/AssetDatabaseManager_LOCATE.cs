@@ -1,15 +1,12 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.CI.Integration.Paths;
+using Appalachia.Utility.Logging;
 using Appalachia.Utility.Reflection.Extensions;
 using Unity.Profiling;
-using UnityEditor;
-using UnityEditor.Animations;
-using UnityEditor.Presets;
-using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Playables;
@@ -58,13 +55,17 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetScriptFromType =
             new(_PRF_PFX + nameof(GetScriptFromType));
 
-        #endregion
-
-        private static Dictionary<MonoScript, Type> _scriptTypeLookup;
+        private static Dictionary<UnityEditor.MonoScript, Type> _scriptTypeLookup;
+        private static Dictionary<string, string> _assetRepoLookup;
         private static Dictionary<Type, Func<Type, string, string>> _assetTypeFolderLookup;
-        private static Dictionary<Type, MonoScript> _typeScriptLookup;
-        private static List<MonoScript> _allMonoScripts;
-        private static List<MonoScript> _runtimeMonoScripts;
+        private static Dictionary<Type, UnityEditor.MonoScript> _typeScriptLookup;
+        private static List<UnityEditor.MonoScript> _allMonoScripts;
+        private static List<UnityEditor.MonoScript> _runtimeMonoScripts;
+
+        private static readonly ProfilerMarker _PRF_GetAssetRepositoryPath =
+            new ProfilerMarker(_PRF_PFX + nameof(GetAssetRepositoryPath));
+
+        #endregion
 
         public static bool DoesFileExist(string path)
         {
@@ -76,21 +77,21 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<MonoScript> GetAllMonoScripts()
+        public static List<UnityEditor.MonoScript> GetAllMonoScripts()
         {
             using (_PRF_GetAllMonoScripts.Auto())
             {
                 if ((_allMonoScripts == null) || (_allMonoScripts.Count == 0))
                 {
-                    _allMonoScripts = new List<MonoScript>();
+                    _allMonoScripts = new List<UnityEditor.MonoScript>();
 
                     var monoScriptPaths = FindAssetPathsByExtension(".cs");
 
                     foreach (var monoscriptPath in monoScriptPaths)
                     {
-                        var importer = AssetImporter.GetAtPath(monoscriptPath);
+                        var importer = UnityEditor.AssetImporter.GetAtPath(monoscriptPath);
 
-                        if (importer is MonoImporter mi)
+                        if (importer is UnityEditor.MonoImporter mi)
                         {
                             var script = mi.GetScript();
 
@@ -103,20 +104,66 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<MonoScript> GetAllRuntimeMonoScripts()
+        public static List<UnityEditor.MonoScript> GetAllRuntimeMonoScripts()
         {
             using (_PRF_GetAllRuntimeMonoScripts.Auto())
             {
                 if ((_runtimeMonoScripts == null) || (_runtimeMonoScripts.Count == 0))
                 {
-                    _runtimeMonoScripts = MonoImporter.GetAllRuntimeMonoScripts().ToList();
+                    _runtimeMonoScripts = UnityEditor.MonoImporter.GetAllRuntimeMonoScripts().ToList();
                 }
 
                 return _runtimeMonoScripts;
             }
         }
 
-        public static AssetPath GetSaveLocationForAsset(Type assetType, string assetPath)
+        public static string GetAssetRepositoryPath(string assetPath, bool invalidateCache = true)
+        {
+            using (_PRF_GetAssetRepositoryPath.Auto())
+            {
+                if (string.IsNullOrWhiteSpace(assetPath))
+                {
+                    return null;
+                }
+
+                if (invalidateCache || (_assetRepoLookup == null))
+                {
+                    _assetRepoLookup = new Dictionary<string, string>();
+                }
+
+                if (_assetRepoLookup.ContainsKey(assetPath))
+                {
+                    return _assetRepoLookup[assetPath];
+                }
+
+                var directoryInfo = new AppaDirectoryInfo(assetPath);
+
+                try
+                {
+                    while (!directoryInfo.IsInRepositoryRoot())
+                    {
+                        directoryInfo = directoryInfo.Parent;
+
+                        if (directoryInfo == null)
+                        {
+                            return null;
+                        }
+                    }
+                }
+                catch
+                {
+                    AppaLog.Error(assetPath);
+                }
+
+                var rootDirectory = directoryInfo.Parent;
+
+                _assetRepoLookup.Add(assetPath, rootDirectory.FullPath);
+
+                return rootDirectory.FullPath;
+            }
+        }
+
+        public static string GetSaveLocationForAsset(Type assetType, string assetPath)
         {
             using (_PRF_GetSaveLocationForAsset.Auto())
             {
@@ -126,7 +173,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static AssetPath GetSaveLocationForOwnedAsset<TOwner, TAsset>(string fileName)
+        public static string GetSaveLocationForOwnedAsset<TOwner, TAsset>(string fileName)
             where TOwner : MonoBehaviour
             where TAsset : Object
         {
@@ -142,7 +189,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static AssetPath GetSaveLocationForScriptableObject<T>()
+        public static string GetSaveLocationForScriptableObject<T>()
             where T : ScriptableObject
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
@@ -153,7 +200,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static AssetPath GetSaveLocationForScriptableObject(Type scriptType)
+        public static string GetSaveLocationForScriptableObject(Type scriptType)
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
@@ -164,7 +211,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static MonoScript GetScriptFromType(Type t)
+        public static UnityEditor.MonoScript GetScriptFromType(Type t)
         {
             using (_PRF_GetScriptFromType.Auto())
             {
@@ -179,7 +226,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static Type GetTypeFromScript(MonoScript t)
+        public static Type GetTypeFromScript(UnityEditor.MonoScript t)
         {
             using (_PRF_GetTypeFromScript.Auto())
             {
@@ -273,7 +320,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        private static AssetPath GetSaveLocationMetadataInternal(
+        private static string GetSaveLocationMetadataInternal(
             string relativePathToRepositoryMember,
             string saveFileName,
             Type saveFiletype)
@@ -284,31 +331,15 @@ namespace Appalachia.CI.Integration.Assets
 
                 string baseDataFolder;
 
-                var repository = ProjectLocations.GetAssetRepository(relativePathToRepositoryMember);
+                var repositoryPath = GetAssetRepositoryPath(relativePathToRepositoryMember);
 
-                AssetPathType pathType;
-
-                if (repository == null)
+                if (repositoryPath == null)
                 {
-                    baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "Data");
-                    pathType = AssetPathType.ProjectDataFolder;
+                    baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
                 }
                 else
                 {
-                    baseDataFolder = repository.DataDirectory.FullPath;
-                    pathType = AssetPathType.RepositoryDataFolder;
-                }
-
-                var isLibrary = baseDataFolder.StartsWith("Library");
-                var isPackage = baseDataFolder.StartsWith("Packages");
-
-                if (isLibrary)
-                {
-                    pathType = AssetPathType.LibraryResource;
-                }
-                else if (isPackage)
-                {
-                    pathType = AssetPathType.PackageResource;
+                    baseDataFolder = AppaPath.Combine(repositoryPath, "asset");
                 }
 
                 string finalFolderName;
@@ -327,10 +358,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 var finalFolder = AppaPath.Combine(baseDataFolder, finalFolderName);
 
-                var output = new AssetPath(finalFolder, true);
-
-                output.pathType = pathType;
-                return output;
+                return finalFolder;
             }
         }
 
@@ -341,13 +369,13 @@ namespace Appalachia.CI.Integration.Assets
                 var initialize = false;
                 if (_typeScriptLookup == null)
                 {
-                    _typeScriptLookup = new Dictionary<Type, MonoScript>();
+                    _typeScriptLookup = new Dictionary<Type, UnityEditor.MonoScript>();
                     initialize = true;
                 }
 
                 if (_scriptTypeLookup == null)
                 {
-                    _scriptTypeLookup = new Dictionary<MonoScript, Type>();
+                    _scriptTypeLookup = new Dictionary<UnityEditor.MonoScript, Type>();
                     initialize = true;
                 }
 
@@ -391,7 +419,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 atfl.Add(typeof(AnimationClip),              (_, _) => "Animations");
                 atfl.Add(typeof(AnimatorOverrideController), (_, _) => "Animations");
-                atfl.Add(typeof(BlendTree),                  (_, _) => "Animations");
+                atfl.Add(typeof(UnityEditor.Animations.BlendTree),      (_, _) => "Animations");
 
                 atfl.Add(typeof(AudioClip),  (_, _) => "Audio");
                 atfl.Add(typeof(AudioMixer), (_, _) => "Audio");
@@ -414,25 +442,27 @@ namespace Appalachia.CI.Integration.Assets
 
                 atfl.Add(typeof(PlayableAsset), (_, _) => "Playables");
 
-                atfl.Add(typeof(Preset), (_, _) => "Presets");
+                atfl.Add(typeof(UnityEditor.Presets.Preset), (_, _) => "Presets");
 
-                atfl.Add(typeof(SceneAsset), (_, _) => "Scenes");
+                atfl.Add(typeof(UnityEditor.SceneAsset), (_, _) => "Scenes");
 
                 atfl.Add(typeof(Shader),                  (_, _) => "Shaders");
                 atfl.Add(typeof(ShaderVariantCollection), (_, _) => "ShaderVariantCollections");
 
-                atfl.Add(typeof(ShaderInclude), (_, _) => "CGIncludes");
+                atfl.Add(typeof(UnityEditor.ShaderInclude), (_, _) => "CGIncludes");
 
                 atfl.Add(typeof(TerrainData),  (_, _) => "Terrains");
                 atfl.Add(typeof(TerrainLayer), (_, _) => "Terrains");
 
                 atfl.Add(typeof(Texture), (_, _) => "Textures");
 
-                atfl.Add(typeof(Sprite),           (_, _) => "Sprites");
-                atfl.Add(typeof(SpriteAsset),      (_, _) => "Sprites");
-                atfl.Add(typeof(SpriteAtlas),      (_, _) => "Sprites");
-                atfl.Add(typeof(SpriteAtlasAsset), (_, _) => "Sprites");
+                atfl.Add(typeof(Sprite),                       (_, _) => "Sprites");
+                atfl.Add(typeof(SpriteAsset),                  (_, _) => "Sprites");
+                atfl.Add(typeof(SpriteAtlas),                  (_, _) => "Sprites");
+                atfl.Add(typeof(UnityEditor.U2D.SpriteAtlasAsset), (_, _) => "Sprites");
             }
         }
     }
 }
+
+#endif

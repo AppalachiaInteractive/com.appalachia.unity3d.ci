@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 #region
 
 using System;
@@ -29,3 +31,5 @@ namespace Appalachia.CI.Integration.Assets
         }
     }
 }
+
+#endif

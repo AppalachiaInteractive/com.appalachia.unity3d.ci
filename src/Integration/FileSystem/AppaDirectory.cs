@@ -1197,19 +1197,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 }
                 catch (IOException)
                 {
-                    try
-                    {
-                        var lockers = FileLock.FindLockerProcesses(sourceDirName);
-                        var message = string.Join(", ", lockers.Select(p => p.strAppName));
-
-                        AppaLog.Error($"[{sourceDirName}] is locked by [{message}]");
-                    }
-                    catch
-                    {
-                        AppaLog.Error($"[{sourceDirName}] is locked!");
-
-                        // ignored
-                    }
+                    AppaLog.Error($"[{sourceDirName}] is locked!");
 
                     throw;
                 }

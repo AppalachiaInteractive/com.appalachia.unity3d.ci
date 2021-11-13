@@ -1,4 +1,4 @@
-using UnityEditor;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assets
@@ -6,9 +6,11 @@ namespace Appalachia.CI.Integration.Assets
     public static partial class AssetDatabaseManager
     {
         public static void TestAssetType<T>()
-            where T : UnityEngine.Object
+            where T : Object
         {
             
         }
     }
 }
+
+#endif

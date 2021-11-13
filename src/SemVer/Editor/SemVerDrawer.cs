@@ -113,7 +113,7 @@ namespace Appalachia.CI.SemVer
             }
             catch (OverflowException)
             {
-               AppaLog.Warning("A version must not be negative");
+               AppaLog.Warn("A version must not be negative");
                 newVersionUint = version;
             }
 

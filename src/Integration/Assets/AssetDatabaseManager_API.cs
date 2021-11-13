@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -6,11 +7,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
-using UnityEditor;
-using UnityEditor.AssetImporters;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -265,20 +263,20 @@ namespace Appalachia.CI.Integration.Assets
         /// <summary>
         ///     <para>Changes during Refresh if anything has changed that can invalidate any artifact.</para>
         /// </summary>
-        public static uint GlobalArtifactDependencyVersion => AssetDatabase.GlobalArtifactDependencyVersion;
+        public static uint GlobalArtifactDependencyVersion => UnityEditor.AssetDatabase.GlobalArtifactDependencyVersion;
 
         /// <summary>
         ///     <para>Changes whenever a new artifact is added to the artifact database.</para>
         /// </summary>
-        public static uint GlobalArtifactProcessedVersion => AssetDatabase.GlobalArtifactProcessedVersion;
+        public static uint GlobalArtifactProcessedVersion => UnityEditor.AssetDatabase.GlobalArtifactProcessedVersion;
 
         /// <summary>
         ///     <para>Callback raised whenever a package import successfully completes that lists the items selected to be imported.</para>
         /// </summary>
         public static Action<string[]> onImportPackageItemsCompleted
         {
-            get => AssetDatabase.onImportPackageItemsCompleted;
-            set => AssetDatabase.onImportPackageItemsCompleted = value;
+            get => UnityEditor.AssetDatabase.onImportPackageItemsCompleted;
+            set => UnityEditor.AssetDatabase.onImportPackageItemsCompleted = value;
         }
 
         /// <summary>
@@ -286,41 +284,41 @@ namespace Appalachia.CI.Integration.Assets
         /// </summary>
         public static int DesiredWorkerCount
         {
-            get => AssetDatabase.DesiredWorkerCount;
-            set => AssetDatabase.DesiredWorkerCount = value;
+            get => UnityEditor.AssetDatabase.DesiredWorkerCount;
+            set => UnityEditor.AssetDatabase.DesiredWorkerCount = value;
         }
 
         /// <summary>
         ///     <para>Gets the refresh import mode currently in use by the asset database.</para>
         /// </summary>
-        public static AssetDatabase.RefreshImportMode ActiveRefreshImportMode
+        public static UnityEditor.AssetDatabase.RefreshImportMode ActiveRefreshImportMode
         {
-            get => AssetDatabase.ActiveRefreshImportMode;
-            set => AssetDatabase.ActiveRefreshImportMode = value;
+            get => UnityEditor.AssetDatabase.ActiveRefreshImportMode;
+            set => UnityEditor.AssetDatabase.ActiveRefreshImportMode = value;
         }
 
-        public static event AssetDatabase.ImportPackageCallback importPackageCancelled
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCancelled
         {
-            add => AssetDatabase.importPackageCancelled += value;
-            remove => AssetDatabase.importPackageCancelled -= value;
+            add => UnityEditor.AssetDatabase.importPackageCancelled += value;
+            remove => UnityEditor.AssetDatabase.importPackageCancelled -= value;
         }
 
-        public static event AssetDatabase.ImportPackageCallback importPackageCompleted
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCompleted
         {
-            add => AssetDatabase.importPackageCompleted += value;
-            remove => AssetDatabase.importPackageCompleted -= value;
+            add => UnityEditor.AssetDatabase.importPackageCompleted += value;
+            remove => UnityEditor.AssetDatabase.importPackageCompleted -= value;
         }
 
-        public static event AssetDatabase.ImportPackageCallback importPackageStarted
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageStarted
         {
-            add => AssetDatabase.importPackageStarted += value;
-            remove => AssetDatabase.importPackageStarted -= value;
+            add => UnityEditor.AssetDatabase.importPackageStarted += value;
+            remove => UnityEditor.AssetDatabase.importPackageStarted -= value;
         }
 
-        public static event AssetDatabase.ImportPackageFailedCallback importPackageFailed
+        public static event UnityEditor.AssetDatabase.ImportPackageFailedCallback importPackageFailed
         {
-            add => AssetDatabase.importPackageFailed += value;
-            remove => AssetDatabase.importPackageFailed -= value;
+            add => UnityEditor.AssetDatabase.importPackageFailed += value;
+            remove => UnityEditor.AssetDatabase.importPackageFailed -= value;
         }
 
         /// <summary>
@@ -333,7 +331,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_AddObjectToAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.AddObjectToAsset(objectToAdd, relativePath);
+                UnityEditor.AssetDatabase.AddObjectToAsset(objectToAdd, relativePath);
             }
         }
 
@@ -346,7 +344,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_AddObjectToAsset.Auto())
             {
-                AssetDatabase.AddObjectToAsset(objectToAdd, assetObject);
+                UnityEditor.AssetDatabase.AddObjectToAsset(objectToAdd, assetObject);
             }
         }
 
@@ -357,7 +355,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_AllowAutoRefresh.Auto())
             {
-                AssetDatabase.AllowAutoRefresh();
+                UnityEditor.AssetDatabase.AllowAutoRefresh();
             }
         }
 
@@ -377,7 +375,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_AssetPathToGUID.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.AssetPathToGUID(relativePath);
+                return UnityEditor.AssetDatabase.AssetPathToGUID(relativePath);
             }
         }
 
@@ -392,12 +390,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>GUID.</para>
         /// </returns>
-        public static string AssetPathToGUID(string path, AssetPathToGUIDOptions options)
+        public static string AssetPathToGUID(string path, UnityEditor.AssetPathToGUIDOptions options)
         {
             using (_PRF_AssetPathToGUID.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.AssetPathToGUID(relativePath, options);
+                return UnityEditor.AssetDatabase.AssetPathToGUID(relativePath, options);
             }
         }
 
@@ -413,7 +411,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_CanConnectToCacheServer.Auto())
             {
-                return AssetDatabase.CanConnectToCacheServer(ip, port);
+                return UnityEditor.AssetDatabase.CanConnectToCacheServer(ip, port);
             }
         }
 
@@ -428,7 +426,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_CanOpenAssetInEditor.Auto())
             {
-                return AssetDatabase.CanOpenAssetInEditor(instanceID);
+                return UnityEditor.AssetDatabase.CanOpenAssetInEditor(instanceID);
             }
         }
 
@@ -452,7 +450,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
-                return AssetDatabase.CanOpenForEdit(assetObject);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject);
             }
         }
 
@@ -472,11 +470,11 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>True if the asset is considered available for edit by the selected version control system.</para>
         /// </returns>
-        public static bool CanOpenForEdit(Object assetObject, StatusQueryOptions statusOptions)
+        public static bool CanOpenForEdit(Object assetObject, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
-                return AssetDatabase.CanOpenForEdit(assetObject, statusOptions);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, statusOptions);
             }
         }
 
@@ -501,7 +499,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.CanOpenForEdit(relativePath);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(relativePath);
             }
         }
 
@@ -521,12 +519,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>True if the asset is considered available for edit by the selected version control system.</para>
         /// </returns>
-        public static bool CanOpenForEdit(string path, StatusQueryOptions statusOptions)
+        public static bool CanOpenForEdit(string path, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.CanOpenForEdit(relativePath, statusOptions);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(relativePath, statusOptions);
             }
         }
 
@@ -534,18 +532,18 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
-                return AssetDatabase.CanOpenForEdit(assetObject, out message);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, out message);
             }
         }
 
         public static bool CanOpenForEdit(
             Object assetObject,
             out string message,
-            StatusQueryOptions statusOptions)
+            UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
-                return AssetDatabase.CanOpenForEdit(assetObject, out message, statusOptions);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, out message, statusOptions);
             }
         }
 
@@ -554,27 +552,27 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.CanOpenForEdit(relativePath, out message);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(relativePath, out message);
             }
         }
 
-        public static bool CanOpenForEdit(string path, out string message, StatusQueryOptions statusOptions)
+        public static bool CanOpenForEdit(string path, out string message, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.CanOpenForEdit(relativePath, out message, statusOptions);
+                return UnityEditor.AssetDatabase.CanOpenForEdit(relativePath, out message, statusOptions);
             }
         }
 
         public static void CanOpenForEdit(
             string[] assetOrMetaFilePaths,
             List<string> outNotEditablePaths,
-            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
+            UnityEditor.StatusQueryOptions statusQueryOptions = UnityEditor.StatusQueryOptions.UseCachedIfPossible)
         {
             using (_PRF_CanOpenForEdit.Auto())
             {
-                AssetDatabase.CanOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
+                UnityEditor.AssetDatabase.CanOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
             }
         }
 
@@ -587,7 +585,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ClearImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ClearImporterOverride(relativePath);
+                UnityEditor.AssetDatabase.ClearImporterOverride(relativePath);
             }
         }
 
@@ -599,7 +597,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ClearLabels.Auto())
             {
-                AssetDatabase.ClearLabels(obj);
+                UnityEditor.AssetDatabase.ClearLabels(obj);
             }
         }
 
@@ -610,7 +608,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_CloseCacheServerConnection.Auto())
             {
-                AssetDatabase.CloseCacheServerConnection();
+                UnityEditor.AssetDatabase.CloseCacheServerConnection();
             }
         }
 
@@ -623,7 +621,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_Contains.Auto())
             {
-                return AssetDatabase.Contains(obj);
+                return UnityEditor.AssetDatabase.Contains(obj);
             }
         }
 
@@ -636,7 +634,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_Contains.Auto())
             {
-                return AssetDatabase.Contains(instanceID);
+                return UnityEditor.AssetDatabase.Contains(instanceID);
             }
         }
 
@@ -654,7 +652,7 @@ namespace Appalachia.CI.Integration.Assets
             {
                 var relativePath = path.ToRelativePath();
                 var relativeNewPath = newPath.ToRelativePath();
-                return AssetDatabase.CopyAsset(relativePath, relativeNewPath);
+                return UnityEditor.AssetDatabase.CopyAsset(relativePath, relativeNewPath);
             }
         }
 
@@ -672,7 +670,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 CreateFolder(directory, true);
 
-                AssetDatabase.CreateAsset(asset, relativePath);
+                UnityEditor.AssetDatabase.CreateAsset(asset, relativePath);
             }
         }
 
@@ -716,13 +714,13 @@ namespace Appalachia.CI.Integration.Assets
                     return;
                 }
 
-                if (AssetDatabase.IsValidFolder(completeFolder))
+                if (UnityEditor.AssetDatabase.IsValidFolder(completeFolder))
                 {
                     return;
                 }
 
                 AppaDirectory.CreateDirectory(completeFolder);
-                AssetDatabase.ImportAsset(completeFolder);
+                UnityEditor.AssetDatabase.ImportAsset(completeFolder);
             }
         }
 
@@ -750,7 +748,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_DeleteAsset.Auto())
             {
-                return AssetDatabase.DeleteAsset(path);
+                return UnityEditor.AssetDatabase.DeleteAsset(path);
             }
         }
 
@@ -758,7 +756,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_DeleteAssets.Auto())
             {
-                return AssetDatabase.DeleteAssets(paths, outFailedPaths);
+                return UnityEditor.AssetDatabase.DeleteAssets(paths, outFailedPaths);
             }
         }
 
@@ -769,7 +767,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_DisallowAutoRefresh.Auto())
             {
-                AssetDatabase.DisallowAutoRefresh();
+                UnityEditor.AssetDatabase.DisallowAutoRefresh();
             }
         }
 
@@ -785,7 +783,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ExportPackage(relativePath, fileName);
+                UnityEditor.AssetDatabase.ExportPackage(relativePath, fileName);
             }
         }
 
@@ -796,12 +794,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <param name="fileName"></param>
         /// <param name="flags"></param>
         /// <param name="path"></param>
-        public static void ExportPackage(string path, string fileName, ExportPackageOptions flags)
+        public static void ExportPackage(string path, string fileName, UnityEditor.ExportPackageOptions flags)
         {
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ExportPackage(relativePath, fileName, flags);
+                UnityEditor.AssetDatabase.ExportPackage(relativePath, fileName, flags);
             }
         }
 
@@ -817,7 +815,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
-                AssetDatabase.ExportPackage(relativePaths, fileName);
+                UnityEditor.AssetDatabase.ExportPackage(relativePaths, fileName);
             }
         }
 
@@ -828,12 +826,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <param name="fileName"></param>
         /// <param name="flags"></param>
         /// <param name="path"></param>
-        public static void ExportPackage(string[] paths, string fileName, ExportPackageOptions flags)
+        public static void ExportPackage(string[] paths, string fileName, UnityEditor.ExportPackageOptions flags)
         {
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
-                AssetDatabase.ExportPackage(relativePaths, fileName, flags);
+                UnityEditor.AssetDatabase.ExportPackage(relativePaths, fileName, flags);
             }
         }
 
@@ -849,7 +847,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ExtractAsset.Auto())
             {
-                return AssetDatabase.ExtractAsset(asset, newPath);
+                return UnityEditor.AssetDatabase.ExtractAsset(asset, newPath);
             }
         }
 
@@ -865,7 +863,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_FindAssets.Auto())
             {
-                return AssetDatabase.FindAssets(filter);
+                return UnityEditor.AssetDatabase.FindAssets(filter);
             }
         }
 
@@ -881,18 +879,18 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_FindAssets.Auto())
             {
-                return AssetDatabase.FindAssets(filter, searchInFolders);
+                return UnityEditor.AssetDatabase.FindAssets(filter, searchInFolders);
             }
         }
 
         public static void ForceReserializeAssets(
             IEnumerable<string> assetPaths,
-            ForceReserializeAssetsOptions options =
-                ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
+            UnityEditor.ForceReserializeAssetsOptions options =
+                UnityEditor.ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
         {
             using (_PRF_ForceReserializeAssets.Auto())
             {
-                AssetDatabase.ForceReserializeAssets(assetPaths, options);
+                UnityEditor.AssetDatabase.ForceReserializeAssets(assetPaths, options);
             }
         }
 
@@ -905,7 +903,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ForceReserializeAssets.Auto())
             {
-                AssetDatabase.ForceReserializeAssets();
+                UnityEditor.AssetDatabase.ForceReserializeAssets();
             }
         }
 
@@ -919,7 +917,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ForceToDesiredWorkerCount.Auto())
             {
-                AssetDatabase.ForceToDesiredWorkerCount();
+                UnityEditor.AssetDatabase.ForceToDesiredWorkerCount();
             }
         }
 
@@ -931,7 +929,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GenerateUniqueAssetPath.Auto())
             {
-                return AssetDatabase.GenerateUniqueAssetPath(path);
+                return UnityEditor.AssetDatabase.GenerateUniqueAssetPath(path);
             }
         }
 
@@ -945,7 +943,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAllAssetBundleNames.Auto())
             {
-                return AssetDatabase.GetAllAssetBundleNames();
+                return UnityEditor.AssetDatabase.GetAllAssetBundleNames();
             }
         }
 
@@ -953,7 +951,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAllAssetPaths.Auto())
             {
-                var paths = AssetDatabase.GetAllAssetPaths();
+                var paths = UnityEditor.AssetDatabase.GetAllAssetPaths();
                 
                 //paths.Sort();
 
@@ -999,7 +997,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetBundleDependencies.Auto())
             {
-                return AssetDatabase.GetAssetBundleDependencies(assetBundleName, recursive);
+                return UnityEditor.AssetDatabase.GetAssetBundleDependencies(assetBundleName, recursive);
             }
         }
 
@@ -1011,11 +1009,11 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>Aggregate hash.</para>
         /// </returns>
-        public static Hash128 GetAssetDependencyHash(GUID guid)
+        public static Hash128 GetAssetDependencyHash(UnityEditor.GUID guid)
         {
             using (_PRF_GetAssetDependencyHash.Auto())
             {
-                return AssetDatabase.GetAssetDependencyHash(guid);
+                return UnityEditor.AssetDatabase.GetAssetDependencyHash(guid);
             }
         }
 
@@ -1032,7 +1030,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetAssetDependencyHash.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAssetDependencyHash(relativePath);
+                return UnityEditor.AssetDatabase.GetAssetDependencyHash(relativePath);
             }
         }
 
@@ -1044,7 +1042,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetOrScenePath.Auto())
             {
-                return AssetDatabase.GetAssetOrScenePath(assetObject);
+                return UnityEditor.AssetDatabase.GetAssetOrScenePath(assetObject);
             }
         }
 
@@ -1060,7 +1058,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetPath.Auto())
             {
-                return AssetDatabase.GetAssetPath(assetObject);
+                return UnityEditor.AssetDatabase.GetAssetPath(assetObject);
             }
         }
 
@@ -1076,7 +1074,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetPath.Auto())
             {
-                return AssetDatabase.GetAssetPath(instanceID);
+                return UnityEditor.AssetDatabase.GetAssetPath(instanceID);
             }
         }
 
@@ -1089,7 +1087,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetAssetPathFromTextMetaFilePath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAssetPathFromTextMetaFilePath(relativePath);
+                return UnityEditor.AssetDatabase.GetAssetPathFromTextMetaFilePath(relativePath);
             }
         }
 
@@ -1101,7 +1099,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetPathsFromAssetBundle.Auto())
             {
-                return AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
+                return UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
             }
         }
 
@@ -1119,7 +1117,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetAssetPathsFromAssetBundleAndAssetName.Auto())
             {
-                return AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(assetBundleName, assetName);
+                return UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(assetBundleName, assetName);
             }
         }
 
@@ -1135,7 +1133,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetAvailableImporterTypes.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetAvailableImporterTypes(relativePath);
+                return UnityEditor.AssetDatabase.GetAvailableImporterTypes(relativePath);
             }
         }
 
@@ -1144,7 +1142,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetBuiltinExtraResource.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetBuiltinExtraResource(type, relativePath);
+                return UnityEditor.AssetDatabase.GetBuiltinExtraResource(type, relativePath);
             }
         }
 
@@ -1154,7 +1152,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetBuiltinExtraResource.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetBuiltinExtraResource<T>(relativePath);
+                return UnityEditor.AssetDatabase.GetBuiltinExtraResource<T>(relativePath);
             }
         }
 
@@ -1167,7 +1165,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetCachedIcon.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetCachedIcon(relativePath);
+                return UnityEditor.AssetDatabase.GetCachedIcon(relativePath);
             }
         }
 
@@ -1181,7 +1179,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCacheServerAddress.Auto())
             {
-                return AssetDatabase.GetCacheServerAddress();
+                return UnityEditor.AssetDatabase.GetCacheServerAddress();
             }
         }
 
@@ -1195,7 +1193,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCacheServerEnableDownload.Auto())
             {
-                return AssetDatabase.GetCacheServerEnableDownload();
+                return UnityEditor.AssetDatabase.GetCacheServerEnableDownload();
             }
         }
 
@@ -1209,7 +1207,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCacheServerEnableUpload.Auto())
             {
-                return AssetDatabase.GetCacheServerEnableUpload();
+                return UnityEditor.AssetDatabase.GetCacheServerEnableUpload();
             }
         }
 
@@ -1223,7 +1221,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCacheServerNamespacePrefix.Auto())
             {
-                return AssetDatabase.GetCacheServerNamespacePrefix();
+                return UnityEditor.AssetDatabase.GetCacheServerNamespacePrefix();
             }
         }
 
@@ -1237,7 +1235,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCacheServerPort.Auto())
             {
-                return AssetDatabase.GetCacheServerPort();
+                return UnityEditor.AssetDatabase.GetCacheServerPort();
             }
         }
 
@@ -1251,7 +1249,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetCurrentCacheServerIp.Auto())
             {
-                return AssetDatabase.GetCurrentCacheServerIp();
+                return UnityEditor.AssetDatabase.GetCurrentCacheServerIp();
             }
         }
 
@@ -1276,7 +1274,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetDependencies(relativePath);
+                return UnityEditor.AssetDatabase.GetDependencies(relativePath);
             }
         }
 
@@ -1301,7 +1299,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetDependencies(relativePath, recursive);
+                return UnityEditor.AssetDatabase.GetDependencies(relativePath, recursive);
             }
         }
 
@@ -1326,7 +1324,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
-                return AssetDatabase.GetDependencies(relativePaths);
+                return UnityEditor.AssetDatabase.GetDependencies(relativePaths);
             }
         }
 
@@ -1351,7 +1349,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
-                return AssetDatabase.GetDependencies(relativePaths, recursive);
+                return UnityEditor.AssetDatabase.GetDependencies(relativePaths, recursive);
             }
         }
 
@@ -1367,7 +1365,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetImplicitAssetBundleName.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImplicitAssetBundleName(relativePath);
+                return UnityEditor.AssetDatabase.GetImplicitAssetBundleName(relativePath);
             }
         }
 
@@ -1383,7 +1381,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetImplicitAssetBundleVariantName.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImplicitAssetBundleVariantName(relativePath);
+                return UnityEditor.AssetDatabase.GetImplicitAssetBundleVariantName(relativePath);
             }
         }
 
@@ -1399,15 +1397,15 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetImporterOverride(relativePath);
+                return UnityEditor.AssetDatabase.GetImporterOverride(relativePath);
             }
         }
 
-        public static string[] GetLabels(GUID guid)
+        public static string[] GetLabels(UnityEditor.GUID guid)
         {
             using (_PRF_GetLabels.Auto())
             {
-                return AssetDatabase.GetLabels(guid);
+                return UnityEditor.AssetDatabase.GetLabels(guid);
             }
         }
 
@@ -1419,7 +1417,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetLabels.Auto())
             {
-                return AssetDatabase.GetLabels(obj);
+                return UnityEditor.AssetDatabase.GetLabels(obj);
             }
         }
 
@@ -1432,7 +1430,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetMainAssetTypeAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetMainAssetTypeAtPath(relativePath);
+                return UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(relativePath);
             }
         }
 
@@ -1448,7 +1446,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetSubFolders.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetSubFolders(relativePath);
+                return UnityEditor.AssetDatabase.GetSubFolders(relativePath);
             }
         }
 
@@ -1463,7 +1461,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetTextMetaDataPathFromAssetPath.Auto())
             {
-                return AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
+                return UnityEditor.AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
             }
         }
 
@@ -1479,7 +1477,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetTextMetaFilePathFromAssetPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetTextMetaFilePathFromAssetPath(relativePath);
+                return UnityEditor.AssetDatabase.GetTextMetaFilePathFromAssetPath(relativePath);
             }
         }
 
@@ -1496,7 +1494,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_GetTypeFromPathAndFileID.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GetTypeFromPathAndFileID(relativePath, localIdentifierInFile);
+                return UnityEditor.AssetDatabase.GetTypeFromPathAndFileID(relativePath, localIdentifierInFile);
             }
         }
 
@@ -1507,7 +1505,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GetUnusedAssetBundleNames.Auto())
             {
-                return AssetDatabase.GetUnusedAssetBundleNames();
+                return UnityEditor.AssetDatabase.GetUnusedAssetBundleNames();
             }
         }
 
@@ -1518,12 +1516,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>The GUID of the asset. An all-zero GUID denotes an invalid asset path.</para>
         /// </returns>
-        public static GUID GUIDFromAssetPath(string path)
+        public static UnityEditor.GUID GUIDFromAssetPath(string path)
         {
             using (_PRF_GUIDFromAssetPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.GUIDFromAssetPath(relativePath);
+                return UnityEditor.AssetDatabase.GUIDFromAssetPath(relativePath);
             }
         }
 
@@ -1538,7 +1536,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_GUIDToAssetPath.Auto())
             {
-                return AssetDatabase.GUIDToAssetPath(guid);
+                return UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
             }
         }
 
@@ -1549,11 +1547,11 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>Path of the asset relative to the project folder.</para>
         /// </returns>
-        public static string GUIDToAssetPath(GUID guid)
+        public static string GUIDToAssetPath(UnityEditor.GUID guid)
         {
             using (_PRF_GUIDToAssetPath.Auto())
             {
-                return AssetDatabase.GUIDToAssetPath(guid);
+                return UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
             }
         }
 
@@ -1563,8 +1561,8 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ImportAndLoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportAsset(relativePath);
-                return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                UnityEditor.AssetDatabase.ImportAsset(relativePath);
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(relativePath);
             }
         }
 
@@ -1578,7 +1576,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ImportAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportAsset(relativePath);
+                UnityEditor.AssetDatabase.ImportAsset(relativePath);
             }
         }
 
@@ -1587,12 +1585,12 @@ namespace Appalachia.CI.Integration.Assets
         /// </summary>
         /// <param name="path"></param>
         /// <param name="options"></param>
-        public static void ImportAsset(string path, ImportAssetOptions options)
+        public static void ImportAsset(string path, UnityEditor.ImportAssetOptions options)
         {
             using (_PRF_ImportAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportAsset(relativePath, options);
+                UnityEditor.AssetDatabase.ImportAsset(relativePath, options);
             }
         }
 
@@ -1606,7 +1604,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_ImportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.ImportPackage(relativePath, interactive);
+                UnityEditor.AssetDatabase.ImportPackage(relativePath, interactive);
             }
         }
 
@@ -1614,7 +1612,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsAssetImportWorkerProcess.Auto())
             {
-                return AssetDatabase.IsAssetImportWorkerProcess();
+                return UnityEditor.AssetDatabase.IsAssetImportWorkerProcess();
             }
         }
 
@@ -1628,7 +1626,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsCacheServerEnabled.Auto())
             {
-                return AssetDatabase.IsCacheServerEnabled();
+                return UnityEditor.AssetDatabase.IsCacheServerEnabled();
             }
         }
 
@@ -1642,7 +1640,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsConnectedToCacheServer.Auto())
             {
-                return AssetDatabase.IsConnectedToCacheServer();
+                return UnityEditor.AssetDatabase.IsConnectedToCacheServer();
             }
         }
 
@@ -1656,7 +1654,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsDirectoryMonitoringEnabled.Auto())
             {
-                return AssetDatabase.IsDirectoryMonitoringEnabled();
+                return UnityEditor.AssetDatabase.IsDirectoryMonitoringEnabled();
             }
         }
 
@@ -1669,7 +1667,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsForeignAsset.Auto())
             {
-                return AssetDatabase.IsForeignAsset(obj);
+                return UnityEditor.AssetDatabase.IsForeignAsset(obj);
             }
         }
 
@@ -1682,7 +1680,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsForeignAsset.Auto())
             {
-                return AssetDatabase.IsForeignAsset(instanceID);
+                return UnityEditor.AssetDatabase.IsForeignAsset(instanceID);
             }
         }
 
@@ -1695,7 +1693,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsMainAsset.Auto())
             {
-                return AssetDatabase.IsMainAsset(obj);
+                return UnityEditor.AssetDatabase.IsMainAsset(obj);
             }
         }
 
@@ -1708,7 +1706,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsMainAsset.Auto())
             {
-                return AssetDatabase.IsMainAsset(instanceID);
+                return UnityEditor.AssetDatabase.IsMainAsset(instanceID);
             }
         }
 
@@ -1721,7 +1719,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_IsMainAssetAtPathLoaded.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsMainAssetAtPathLoaded(relativePath);
+                return UnityEditor.AssetDatabase.IsMainAssetAtPathLoaded(relativePath);
             }
         }
 
@@ -1741,7 +1739,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
-                return AssetDatabase.IsMetaFileOpenForEdit(assetObject);
+                return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject);
             }
         }
 
@@ -1757,11 +1755,11 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>True if the asset's metadata is considered open for edit by the selected version control system.</para>
         /// </returns>
-        public static bool IsMetaFileOpenForEdit(Object assetObject, StatusQueryOptions statusOptions)
+        public static bool IsMetaFileOpenForEdit(Object assetObject, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
-                return AssetDatabase.IsMetaFileOpenForEdit(assetObject, statusOptions);
+                return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject, statusOptions);
             }
         }
 
@@ -1769,18 +1767,18 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
-                return AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message);
+                return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message);
             }
         }
 
         public static bool IsMetaFileOpenForEdit(
             Object assetObject,
             out string message,
-            StatusQueryOptions statusOptions)
+            UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
-                return AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, statusOptions);
+                return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, statusOptions);
             }
         }
 
@@ -1793,7 +1791,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsNativeAsset.Auto())
             {
-                return AssetDatabase.IsNativeAsset(obj);
+                return UnityEditor.AssetDatabase.IsNativeAsset(obj);
             }
         }
 
@@ -1806,7 +1804,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsNativeAsset.Auto())
             {
-                return AssetDatabase.IsNativeAsset(instanceID);
+                return UnityEditor.AssetDatabase.IsNativeAsset(instanceID);
             }
         }
 
@@ -1827,7 +1825,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
-                return AssetDatabase.IsOpenForEdit(assetObject);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject);
             }
         }
 
@@ -1844,11 +1842,11 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>True if the asset is considered open for edit by the selected version control system.</para>
         /// </returns>
-        public static bool IsOpenForEdit(Object assetObject, StatusQueryOptions statusOptions)
+        public static bool IsOpenForEdit(Object assetObject, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
-                return AssetDatabase.IsOpenForEdit(assetObject, statusOptions);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, statusOptions);
             }
         }
 
@@ -1870,7 +1868,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsOpenForEdit(relativePath);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(relativePath);
             }
         }
 
@@ -1887,12 +1885,12 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>True if the asset is considered open for edit by the selected version control system.</para>
         /// </returns>
-        public static bool IsOpenForEdit(string path, StatusQueryOptions statusOptions)
+        public static bool IsOpenForEdit(string path, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsOpenForEdit(relativePath, statusOptions);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(relativePath, statusOptions);
             }
         }
 
@@ -1900,18 +1898,18 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
-                return AssetDatabase.IsOpenForEdit(assetObject, out message);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, out message);
             }
         }
 
         public static bool IsOpenForEdit(
             Object assetObject,
             out string message,
-            StatusQueryOptions statusOptions)
+            UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
-                return AssetDatabase.IsOpenForEdit(assetObject, out message, statusOptions);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, out message, statusOptions);
             }
         }
 
@@ -1920,27 +1918,27 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsOpenForEdit(relativePath, out message);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(relativePath, out message);
             }
         }
 
-        public static bool IsOpenForEdit(string path, out string message, StatusQueryOptions statusOptions)
+        public static bool IsOpenForEdit(string path, out string message, UnityEditor.StatusQueryOptions statusOptions)
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsOpenForEdit(relativePath, out message, statusOptions);
+                return UnityEditor.AssetDatabase.IsOpenForEdit(relativePath, out message, statusOptions);
             }
         }
 
         public static void IsOpenForEdit(
             string[] assetOrMetaFilePaths,
             List<string> outNotEditablePaths,
-            StatusQueryOptions statusQueryOptions = StatusQueryOptions.UseCachedIfPossible)
+            UnityEditor.StatusQueryOptions statusQueryOptions = UnityEditor.StatusQueryOptions.UseCachedIfPossible)
         {
             using (_PRF_IsOpenForEdit.Auto())
             {
-                AssetDatabase.IsOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
+                UnityEditor.AssetDatabase.IsOpenForEdit(assetOrMetaFilePaths, outNotEditablePaths, statusQueryOptions);
             }
         }
 
@@ -1953,7 +1951,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsSubAsset.Auto())
             {
-                return AssetDatabase.IsSubAsset(obj);
+                return UnityEditor.AssetDatabase.IsSubAsset(obj);
             }
         }
 
@@ -1966,7 +1964,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_IsSubAsset.Auto())
             {
-                return AssetDatabase.IsSubAsset(instanceID);
+                return UnityEditor.AssetDatabase.IsSubAsset(instanceID);
             }
         }
 
@@ -1982,7 +1980,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_IsValidFolder.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.IsValidFolder(relativePath);
+                return UnityEditor.AssetDatabase.IsValidFolder(relativePath);
             }
         }
 
@@ -1995,7 +1993,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
+                return UnityEditor.AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
             }
         }
 
@@ -2008,7 +2006,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_LoadAllAssetsAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAllAssetsAtPath(relativePath);
+                return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
             }
         }
 
@@ -2025,7 +2023,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadAssetAtPath(relativePath, type);
+                return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, type);
             }
         }
 
@@ -2037,7 +2035,7 @@ namespace Appalachia.CI.Integration.Assets
                 var relativePath = path.ToRelativePath();
                 try
                 {
-                    return AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(relativePath);
                 }
                 catch (Exception ex)
                 {
@@ -2060,7 +2058,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_LoadMainAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.LoadMainAssetAtPath(relativePath);
+                return UnityEditor.AssetDatabase.LoadMainAssetAtPath(relativePath);
             }
         }
 
@@ -2075,7 +2073,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_MakeEditable.Auto())
             {
-                return AssetDatabase.MakeEditable(path);
+                return UnityEditor.AssetDatabase.MakeEditable(path);
             }
         }
 
@@ -2086,7 +2084,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_MakeEditable.Auto())
             {
-                return AssetDatabase.MakeEditable(paths, prompt, outNotEditablePaths);
+                return UnityEditor.AssetDatabase.MakeEditable(paths, prompt, outNotEditablePaths);
             }
         }
 
@@ -2102,7 +2100,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_MoveAsset.Auto())
             {
-                return AssetDatabase.MoveAsset(oldPath, newPath);
+                return UnityEditor.AssetDatabase.MoveAsset(oldPath, newPath);
             }
         }
 
@@ -2110,7 +2108,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_MoveAssetsToTrash.Auto())
             {
-                return AssetDatabase.MoveAssetsToTrash(paths, outFailedPaths);
+                return UnityEditor.AssetDatabase.MoveAssetsToTrash(paths, outFailedPaths);
             }
         }
 
@@ -2125,7 +2123,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_MoveAssetToTrash.Auto())
             {
-                return AssetDatabase.MoveAssetToTrash(path);
+                return UnityEditor.AssetDatabase.MoveAssetToTrash(path);
             }
         }
 
@@ -2140,7 +2138,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(instanceID);
+                return UnityEditor.AssetDatabase.OpenAsset(instanceID);
             }
         }
 
@@ -2155,7 +2153,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(instanceID, lineNumber);
+                return UnityEditor.AssetDatabase.OpenAsset(instanceID, lineNumber);
             }
         }
 
@@ -2170,7 +2168,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(instanceID, lineNumber, columnNumber);
+                return UnityEditor.AssetDatabase.OpenAsset(instanceID, lineNumber, columnNumber);
             }
         }
 
@@ -2185,7 +2183,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(target);
+                return UnityEditor.AssetDatabase.OpenAsset(target);
             }
         }
 
@@ -2200,7 +2198,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(target, lineNumber);
+                return UnityEditor.AssetDatabase.OpenAsset(target, lineNumber);
             }
         }
 
@@ -2215,7 +2213,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(target, lineNumber, columnNumber);
+                return UnityEditor.AssetDatabase.OpenAsset(target, lineNumber, columnNumber);
             }
         }
 
@@ -2227,7 +2225,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAsset.Auto())
             {
-                return AssetDatabase.OpenAsset(objects);
+                return UnityEditor.AssetDatabase.OpenAsset(objects);
             }
         }
 
@@ -2242,9 +2240,9 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_OpenAssetAtPath.Auto())
             {
-                var type = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
-                var asset = AssetDatabase.LoadAssetAtPath(assetPath, type);
-                return AssetDatabase.OpenAsset(asset);
+                var type = UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+                var asset = UnityEditor.AssetDatabase.LoadAssetAtPath(assetPath, type);
+                return UnityEditor.AssetDatabase.OpenAsset(asset);
             }
         }
 
@@ -2265,7 +2263,7 @@ namespace Appalachia.CI.Integration.Assets
                     lineNumber
                 );
                 
-                AssetDatabase.Refresh();
+                UnityEditor.AssetDatabase.Refresh();
             }
         }
 
@@ -2273,11 +2271,11 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>Import any changed assets.</para>
         /// </summary>
         /// <param name="options"></param>
-        public static void Refresh(ImportAssetOptions options)
+        public static void Refresh(UnityEditor.ImportAssetOptions options)
         {
             using (_PRF_Refresh.Auto())
             {
-                AssetDatabase.Refresh(options);
+                UnityEditor.AssetDatabase.Refresh(options);
             }
         }
 
@@ -2288,7 +2286,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_RefreshSettings.Auto())
             {
-                AssetDatabase.RefreshSettings();
+                UnityEditor.AssetDatabase.RefreshSettings();
             }
         }
 
@@ -2307,7 +2305,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_RegisterCustomDependency.Auto())
             {
-                AssetDatabase.RegisterCustomDependency(dependency, hashOfValue);
+                UnityEditor.AssetDatabase.RegisterCustomDependency(dependency, hashOfValue);
             }
         }
 
@@ -2321,7 +2319,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ReleaseCachedFileHandles.Auto())
             {
-                AssetDatabase.ReleaseCachedFileHandles();
+                UnityEditor.AssetDatabase.ReleaseCachedFileHandles();
             }
         }
 
@@ -2334,19 +2332,19 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_RemoveAssetBundleName.Auto())
             {
-                return AssetDatabase.RemoveAssetBundleName(assetBundleName, forceRemove);
+                return UnityEditor.AssetDatabase.RemoveAssetBundleName(assetBundleName, forceRemove);
             }
         }
 
         /// <summary>
-        ///     <para>Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).</para>
+        ///     <para>Removes object from its asset (See Also: UnityEditor.AssetDatabase.AddObjectToAsset).</para>
         /// </summary>
         /// <param name="objectToRemove"></param>
         public static void RemoveObjectFromAsset(Object objectToRemove)
         {
             using (_PRF_RemoveObjectFromAsset.Auto())
             {
-                AssetDatabase.RemoveObjectFromAsset(objectToRemove);
+                UnityEditor.AssetDatabase.RemoveObjectFromAsset(objectToRemove);
             }
         }
 
@@ -2357,7 +2355,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_RemoveUnusedAssetBundleNames.Auto())
             {
-                AssetDatabase.RemoveUnusedAssetBundleNames();
+                UnityEditor.AssetDatabase.RemoveUnusedAssetBundleNames();
             }
         }
 
@@ -2374,7 +2372,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_RenameAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.RenameAsset(relativePath, newName);
+                return UnityEditor.AssetDatabase.RenameAsset(relativePath, newName);
             }
         }
 
@@ -2388,7 +2386,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ResetCacheServerReconnectTimer.Auto())
             {
-                AssetDatabase.ResetCacheServerReconnectTimer();
+                UnityEditor.AssetDatabase.ResetCacheServerReconnectTimer();
             }
         }
 
@@ -2397,11 +2395,11 @@ namespace Appalachia.CI.Integration.Assets
         /// </summary>
         /// <param name="obj">The asset object to be saved, if dirty.</param>
         /// <param name="guid">The guid of the asset to be saved, if dirty.</param>
-        public static void SaveAssetIfDirty(GUID guid)
+        public static void SaveAssetIfDirty(UnityEditor.GUID guid)
         {
             using (_PRF_SaveAssetIfDirty.Auto())
             {
-                AssetDatabase.SaveAssetIfDirty(guid);
+                UnityEditor.AssetDatabase.SaveAssetIfDirty(guid);
             }
         }
 
@@ -2414,7 +2412,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_SaveAssetIfDirty.Auto())
             {
-                AssetDatabase.SaveAssetIfDirty(obj);
+                UnityEditor.AssetDatabase.SaveAssetIfDirty(obj);
             }
         }
 
@@ -2425,17 +2423,17 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_SaveAssets.Auto())
             {
-                AssetDatabase.SaveAssets();
+                UnityEditor.AssetDatabase.SaveAssets();
             }
         }
 
         public static void SetImporterOverride<T>(string path)
-            where T : ScriptedImporter
+            where T : UnityEditor.AssetImporters.ScriptedImporter
         {
             using (_PRF_SetImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.SetImporterOverride<T>(relativePath);
+                UnityEditor.AssetDatabase.SetImporterOverride<T>(relativePath);
             }
         }
 
@@ -2448,7 +2446,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_SetLabels.Auto())
             {
-                AssetDatabase.SetLabels(obj, labels);
+                UnityEditor.AssetDatabase.SetLabels(obj, labels);
             }
         }
 
@@ -2462,7 +2460,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_SetMainObject.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                AssetDatabase.SetMainObject(mainObject, relativePath);
+                UnityEditor.AssetDatabase.SetMainObject(mainObject, relativePath);
             }
         }
 
@@ -2470,10 +2468,10 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>
         ///         Starts importing Assets into the Asset Database. This lets you group several Asset imports together into one larger import.
         ///         Note:
-        ///         Calling AssetDatabase.StartAssetEditing() places the Asset Database in a state that will prevent imports until
-        ///         AssetDatabase.StopAssetEditing() is called.
+        ///         Calling UnityEditor.AssetDatabase.StartAssetEditing() places the Asset Database in a state that will prevent imports until
+        ///         UnityEditor.AssetDatabase.StopAssetEditing() is called.
         ///         This means that if an exception occurs between the two function calls, the AssetDatabase will be unresponsive.
-        ///         Therefore, it is highly recommended that you place calls to AssetDatabase.StartAssetEditing() and AssetDatabase.StopAssetEditing() inside
+        ///         Therefore, it is highly recommended that you place calls to UnityEditor.AssetDatabase.StartAssetEditing() and UnityEditor.AssetDatabase.StopAssetEditing() inside
         ///         either a try..catch block, or a try..finally block as needed.
         ///     </para>
         /// </summary>
@@ -2481,7 +2479,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StartAssetEditing.Auto())
             {
-                AssetDatabase.StartAssetEditing();
+                UnityEditor.AssetDatabase.StartAssetEditing();
             }
         }
 
@@ -2489,10 +2487,10 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>
         ///         Stops importing Assets into the Asset Database. This lets you group several Asset imports together into one larger import.
         ///         Note:
-        ///         Calling AssetDatabase.StartAssetEditing() places the Asset Database in a state that will prevent imports until
-        ///         AssetDatabase.StopAssetEditing() is called.
+        ///         Calling UnityEditor.AssetDatabase.StartAssetEditing() places the Asset Database in a state that will prevent imports until
+        ///         UnityEditor.AssetDatabase.StopAssetEditing() is called.
         ///         This means that if an exception occurs between the two function calls, the AssetDatabase will be unresponsive.
-        ///         Therefore, it is highly recommended that you place calls to AssetDatabase.StartAssetEditing() and AssetDatabase.StopAssetEditing() inside
+        ///         Therefore, it is highly recommended that you place calls to UnityEditor.AssetDatabase.StartAssetEditing() and UnityEditor.AssetDatabase.StopAssetEditing() inside
         ///         either a try..catch block, or a try..finally block as needed.
         ///     </para>
         /// </summary>
@@ -2500,7 +2498,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StopAssetEditing.Auto())
             {
-                AssetDatabase.StopAssetEditing();
+                UnityEditor.AssetDatabase.StopAssetEditing();
             }
         }
 
@@ -2508,7 +2506,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out guid, out localId);
+                return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out guid, out localId);
             }
         }
 
@@ -2516,7 +2514,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(instanceID, out guid, out localId);
+                return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(instanceID, out guid, out localId);
             }
         }
 
@@ -2528,7 +2526,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
-                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetRef, out guid, out localId);
+                return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetRef, out guid, out localId);
             }
         }
 
@@ -2543,7 +2541,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_UnregisterCustomDependencyPrefixFilter.Auto())
             {
-                return AssetDatabase.UnregisterCustomDependencyPrefixFilter(prefixFilter);
+                return UnityEditor.AssetDatabase.UnregisterCustomDependencyPrefixFilter(prefixFilter);
             }
         }
 
@@ -2559,7 +2557,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_ValidateMoveAsset.Auto())
             {
-                return AssetDatabase.ValidateMoveAsset(oldPath, newPath);
+                return UnityEditor.AssetDatabase.ValidateMoveAsset(oldPath, newPath);
             }
         }
 
@@ -2572,7 +2570,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_WriteImportSettingsIfDirty.Auto())
             {
                 var relativePath = path.ToRelativePath();
-                return AssetDatabase.WriteImportSettingsIfDirty(relativePath);
+                return UnityEditor.AssetDatabase.WriteImportSettingsIfDirty(relativePath);
             }
         }
 
@@ -2602,3 +2600,5 @@ namespace Appalachia.CI.Integration.Assets
         }
     }
 }
+
+#endif

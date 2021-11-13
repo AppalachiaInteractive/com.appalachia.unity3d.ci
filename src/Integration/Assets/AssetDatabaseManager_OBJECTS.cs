@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        #region Profiling And Tracing Markers
+        #region Profiling
 
         private const string _PRF_PFX = nameof(AssetDatabaseManager) + ".";
 
@@ -30,11 +31,18 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetAllAssetTypes =
             new(_PRF_PFX + nameof(GetAllAssetTypes));
 
+        private static readonly ProfilerMarker _PRF_GetAssetGuid =
+            new ProfilerMarker(_PRF_PFX + nameof(GetAssetGuid));
+
         #endregion
+
+        #region Fields
 
         private static Dictionary<string, string[]> _guidsByTypeName;
         private static Dictionary<string, string[]> _pathsByTypeName;
         private static Dictionary<string, Type[]> _typesByTypeName;
+
+        #endregion
 
         public static string[] GetAllAssetGuids(Type type = null)
         {
@@ -75,6 +83,19 @@ namespace Appalachia.CI.Integration.Assets
                 InitializeTypeData(typeName);
 
                 return _typesByTypeName[typeName];
+            }
+        }
+
+        public static string GetAssetGuid(Object asset)
+        {
+            using (_PRF_GetAssetGuid.Auto())
+            {
+                if (TryGetGUIDAndLocalFileIdentifier(asset, out var guid, out long _))
+                {
+                    return guid;
+                }
+
+                return null;
             }
         }
 
@@ -129,3 +150,5 @@ namespace Appalachia.CI.Integration.Assets
         }
     }
 }
+
+#endif

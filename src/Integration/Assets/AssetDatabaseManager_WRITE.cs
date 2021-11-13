@@ -1,8 +1,8 @@
+#if UNITY_EDITOR
 using System;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Logging;
-using UnityEditor;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assets
@@ -24,7 +24,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 var savePathMetadata = GetSaveLocationForOwnedAsset<T, Texture2D>("x.png");
 
-                var targetSavePath = AppaPath.Combine(savePathMetadata.relativePath, $"{fileName}.png");
+                var targetSavePath = AppaPath.Combine(savePathMetadata.ToRelativePath(), $"{fileName}.png");
 
                 var absolutePath = targetSavePath;
 
@@ -43,14 +43,14 @@ namespace Appalachia.CI.Integration.Assets
 
                 texture = LoadAssetAtPath<Texture2D>(targetSavePath);
 
-                var tImporter = AssetImporter.GetAtPath(targetSavePath) as TextureImporter;
+                var tImporter = UnityEditor.AssetImporter.GetAtPath(targetSavePath) as UnityEditor.TextureImporter;
                 if (tImporter != null)
                 {
-                    tImporter.textureType = TextureImporterType.Default;
+                    tImporter.textureType = UnityEditor.TextureImporterType.Default;
 
                     tImporter.wrapMode = TextureWrapMode.Clamp;
                     tImporter.sRGBTexture = false;
-                    tImporter.alphaSource = TextureImporterAlphaSource.None;
+                    tImporter.alphaSource = UnityEditor.TextureImporterAlphaSource.None;
                     tImporter.SaveAndReimport();
                 }
             }
@@ -63,3 +63,5 @@ namespace Appalachia.CI.Integration.Assets
         }
     }
 }
+
+#endif

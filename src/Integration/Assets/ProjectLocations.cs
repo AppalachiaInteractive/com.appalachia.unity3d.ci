@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.CI.Integration.Repositories;
-using Appalachia.Utility.Logging;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace Appalachia.CI.Integration
+namespace Appalachia.CI.Integration.Assets
 {
     public static class ProjectLocations
     {
@@ -14,14 +12,9 @@ namespace Appalachia.CI.Integration
 
         private const string _PRF_PFX = nameof(ProjectLocations) + ".";
 
-        private static readonly ProfilerMarker _PRF_GetAssetRepository =
-            new(_PRF_PFX + nameof(GetAssetRepository));
-
         private static AppaDirectoryInfo _assetAppaDirectory;
         private static AppaDirectoryInfo _projectAppaDirectory;
-        private static Dictionary<AppaDirectoryInfo, RepositoryMetadata> _repoDirectoryLookup;
         private static Dictionary<string, AppaDirectoryInfo> _thirdPartyAssetAppaDirectory;
-        private static Dictionary<string, RepositoryMetadata> _assetRepoLookup;
         private static Dictionary<string, string> _thirdPartyAssetDirectoryPath;
         private static Dictionary<string, string> _thirdPartyAssetDirectoryPathRelative;
         private static string _assetDirectoryPath;
@@ -69,65 +62,6 @@ namespace Appalachia.CI.Integration
         public const string ThirdPartyFolder = "Third-Party";
 
         #endregion
-
-        public static RepositoryMetadata GetAssetRepository(string assetPath, bool invalidateCache = true)
-        {
-            using (_PRF_GetAssetRepository.Auto())
-            {
-                if (string.IsNullOrWhiteSpace(assetPath))
-                {
-                    return null;
-                }
-
-                if (invalidateCache || (_assetRepoLookup == null))
-                {
-                    _assetRepoLookup = new Dictionary<string, RepositoryMetadata>();
-                }
-
-                if (_assetRepoLookup.ContainsKey(assetPath))
-                {
-                    return _assetRepoLookup[assetPath];
-                }
-
-                var directoryInfo = new AppaDirectoryInfo(assetPath);
-
-                try
-                {
-                    while (!directoryInfo.IsInRepositoryRoot())
-                    {
-                        directoryInfo = directoryInfo.Parent;
-
-                        if (directoryInfo == null)
-                        {
-                            return null;
-                        }
-                    }
-                }
-                catch
-                {
-                    AppaLog.Error(assetPath);
-                }
-
-                if (_repoDirectoryLookup == null)
-                {
-                    _repoDirectoryLookup = new Dictionary<AppaDirectoryInfo, RepositoryMetadata>();
-                }
-
-                var rootDirectory = directoryInfo.Parent;
-
-                if (_repoDirectoryLookup.ContainsKey(rootDirectory))
-                {
-                    return _repoDirectoryLookup[rootDirectory];
-                }
-
-                var repo = RepositoryMetadata.FindInDirectory(rootDirectory);
-
-                _assetRepoLookup.Add(assetPath, repo);
-                _repoDirectoryLookup.Add(rootDirectory, repo);
-
-                return repo;
-            }
-        }
 
         public static AppaDirectoryInfo GetAssetsAppaDirectory()
         {

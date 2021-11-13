@@ -14,6 +14,7 @@
   "optionalUnityReferences": [],
   "precompiledReferences": [],
   "references": [
+    "GUID:114502ff6121cf844bb1809be2620851",
     "GUID:01789cac4a2597b458bedef85a39c3f2",
     "GUID:56ca8901b63fd204692a4a27f67b605e",
     "GUID:28ae00157ecf0354981e730179f52cc3",
@@ -25,6 +26,7 @@
     "GUID:aab7d97d30d7abe41b8a38190b985fb5",
     "GUID:5d54864b7d134154aa79d89803ee2e27",
     "GUID:bab61a001c58d3c468cdd73bdb97a91a",
+    "GUID:121f7106dcc94abeacf31940f2281ed5",
     "GUID:68140b0200bbcad4f9c15f9f4447f256",
     "GUID:1a50594ad9450024c8d77b37e1961be3",
     "GUID:a03736e1d95a0ed4c8a44e1ee02df53f",

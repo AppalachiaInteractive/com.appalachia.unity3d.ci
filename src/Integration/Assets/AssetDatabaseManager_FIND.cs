@@ -1,8 +1,9 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Utility.Extensions;
 using Unity.Profiling;
 using Object = UnityEngine.Object;
 
@@ -27,8 +28,6 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_FindProjectPathsByExtension =
             new(_PRF_PFX + nameof(FindProjectPathsByExtension));
 
-        private static readonly ProfilerMarker _PRF_CleanExtension = new(_PRF_PFX + nameof(CleanExtension));
-
         private static readonly ProfilerMarker _PRF_FormatSearchString =
             new(_PRF_PFX + nameof(FormatSearchString));
 
@@ -43,7 +42,6 @@ namespace Appalachia.CI.Integration.Assets
         private static Dictionary<string, List<string>> _projectPathsByExtension;
         private static string[] _allAssetPaths;
         private static string[] _allProjectPaths;
-        private static StringCleanerWithContext<char[]> _extensionCleaner;
 
         public static string[] FindAssetGuids<T>(string searchString = null)
             where T : Object
@@ -241,26 +239,6 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        private static string CleanExtension(this string extension)
-        {
-            using (_PRF_CleanExtension.Auto())
-            {
-                if (_extensionCleaner == null)
-                {
-                    _extensionCleaner = new StringCleanerWithContext<char[]>(
-                        new[] {'.', ' ', '\t', ','},
-                        (cleaner, value) =>
-                        {
-                            var result = value.ToLowerInvariant().Trim(cleaner.context1);
-                            return result;
-                        }
-                    );
-                }
-
-                return _extensionCleaner.Clean(extension);
-            }
-        }
-
         private static string FormatSearchString(Type t, string searchString)
         {
             using (_PRF_FormatSearchString.Auto())
@@ -340,3 +318,5 @@ namespace Appalachia.CI.Integration.Assets
         }
     }
 }
+
+#endif

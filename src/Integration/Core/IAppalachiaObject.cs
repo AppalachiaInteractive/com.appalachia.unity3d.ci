@@ -5,9 +5,10 @@ namespace Appalachia.CI.Integration.Core
     public interface IAppalachiaObject<T>
         where T : ScriptableObject
     {
-        public void SetDirtyAndSave();
-
+    
 #if UNITY_EDITOR
+        public void SetDirtyAndSave();
+        
         public string NiceName { get; set; }
         public string AssetPath { get; }
         public string DirectoryPath { get; }

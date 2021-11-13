@@ -1,6 +1,6 @@
+#if UNITY_EDITOR
 using System.Reflection.Emit;
 using Appalachia.CI.Integration.Extensions;
-using UnityEditor;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assets
@@ -21,8 +21,8 @@ namespace Appalachia.CI.Integration.Assets
 
         public static void PingAsset(Object o)
         {
-            EditorGUIUtility.PingObject(o);
-            EditorUtility.FocusProjectWindow();
+            UnityEditor.EditorGUIUtility.PingObject(o);
+            UnityEditor.EditorUtility.FocusProjectWindow();
         }
         
         public static void PingAsset(string assetPath)
@@ -45,8 +45,10 @@ namespace Appalachia.CI.Integration.Assets
 
         public static void SetSelection(Object o)
         {
-            Selection.activeObject = o;
+            UnityEditor.Selection.activeObject = o;
             PingAsset(o);
         }
     }
 }
+
+#endif

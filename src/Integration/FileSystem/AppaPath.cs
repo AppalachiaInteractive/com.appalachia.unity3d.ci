@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Appalachia.CI.Integration.Cleaning;
 using Appalachia.CI.Integration.Extensions;
+using Appalachia.Utility.Extensions.Cleaning;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
 

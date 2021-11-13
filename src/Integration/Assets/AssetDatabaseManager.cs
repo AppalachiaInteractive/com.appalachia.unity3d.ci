@@ -1,4 +1,4 @@
-using UnityEditor.Compilation;
+#if UNITY_EDITOR
 
 namespace Appalachia.CI.Integration.Assets
 {
@@ -6,11 +6,6 @@ namespace Appalachia.CI.Integration.Assets
     {
         #region Menu Items
 
-        [UnityEditor.MenuItem(PKG.Menu.Appalachia.RootTools.Base + "Force Recompile C# Project")]
-        public static void ForceRecompile()
-        {
-            CompilationPipeline.RequestScriptCompilation(RequestScriptCompilationOptions.None);
-        }
 
         [UnityEditor.MenuItem(
             PKG.Menu.Appalachia.RootTools.Base + "Clear Cached Asset Data",
@@ -36,3 +31,5 @@ namespace Appalachia.CI.Integration.Assets
         #endregion
     }
 }
+
+#endif
