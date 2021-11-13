@@ -14,14 +14,10 @@ C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| 84efba8262ec230c73f74e250ee359d511f7dec6 | 2021-11-13 | Chris Schubert | Updating changelog and releaselog |
 | a8f55a06c82beeee6203cb259d6eb3aa468ff499 | 2021-11-13 | Chris Schubert | EXR to gitlfs |
 | 07a21e667ce57a912bd0ea2392f6328aa046f8c5 | 2021-11-13 | Chris Schubert | Editor exlusions fro runtime build |
 | 8f24af88a9c9eb7a935c6a6fdfd5fa1ffd7fe32e | 2021-11-13 | Chris Schubert | Editor exclusions for runtime build. |
-
-
- ## Tag: `v0.2.0`
-| Hash | Date | Author | Changes |
-|------|------|--------|---------|
 | 8318f8bbe020096667e90d8521873adbfec06ab7 | 2021-11-09 | Chris Schubert | Updating changelog and releaselog |
 | fc244566a2c7591aab5954dba7b76aa4b5e81277 | 2021-11-09 | Chris Schubert | Updating changelog and releaselog |
 | 9e59f689d52b470d98702e15ac3a7fb63706a8c7 | 2021-11-09 | Chris Schubert | Debugger stepthroughs and some bugfixes |
