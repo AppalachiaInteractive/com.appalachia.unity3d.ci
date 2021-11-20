@@ -164,13 +164,13 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveDirectoryForAsset(Type assetType, string assetPath)
+        public static string GetSaveDirectoryForAsset(Type assetType, string assetPath, Type ownerType)
         {
             using (_PRF_GetSaveLocationForAsset.Auto())
             {
                 var assetName = AppaPath.GetFileName(assetPath);
 
-                return GetSaveLocationMetadataInternal(assetPath, assetName, assetType);
+                return GetSaveLocationMetadataInternal(assetPath, assetName, assetType, ownerType);
             }
         }
 
@@ -186,29 +186,41 @@ namespace Appalachia.CI.Integration.Assets
                 var ownerScript = GetScriptFromType(ownerType);
                 var ownerPath = GetAssetPath(ownerScript);
 
-                return GetSaveLocationMetadataInternal(ownerPath, fileName, assetType);
+                return GetSaveLocationMetadataInternal(ownerPath, fileName, assetType, ownerType);
             }
         }
 
-        public static string GetSaveDirectoryForScriptableObject<T>()
+        public static string GetSaveDirectoryForScriptableObject<T, TOwner>()
+            where T : ScriptableObject
+        {
+            using (_PRF_GetSaveLocationForScriptableObject.Auto())
+            {
+                var scriptType = typeof(T);
+                var ownerType = typeof(TOwner);
+
+                return GetSaveDirectoryForScriptableObject(scriptType, ownerType);
+            }
+        }
+
+        public static string GetSaveDirectoryForScriptableObject<T>(Type ownerType)
             where T : ScriptableObject
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var scriptType = typeof(T);
 
-                return GetSaveDirectoryForScriptableObject(scriptType);
+                return GetSaveDirectoryForScriptableObject(scriptType, ownerType);
             }
         }
 
-        public static string GetSaveDirectoryForScriptableObject(Type scriptType)
+        public static string GetSaveDirectoryForScriptableObject(Type scriptType, Type ownerType)
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var script = GetScriptFromType(scriptType);
                 var scriptPath = GetAssetPath(script);
 
-                return GetSaveLocationMetadataInternal(scriptPath, null, scriptType);
+                return GetSaveLocationMetadataInternal(scriptPath, null, scriptType, ownerType);
             }
         }
 
@@ -337,7 +349,8 @@ namespace Appalachia.CI.Integration.Assets
         private static string GetSaveLocationMetadataInternal(
             string relativePathToRepositoryMember,
             string saveFileName,
-            Type saveFiletype)
+            Type saveFiletype,
+            Type ownerType)
         {
             using (_PRF_GetSaveLocationMetadataInternal.Auto())
             {
@@ -349,7 +362,26 @@ namespace Appalachia.CI.Integration.Assets
 
                 if (repositoryPath == null)
                 {
-                    baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
+                    var script = GetScriptFromType(ownerType);
+
+                    if (script == null)
+                    {
+                        baseDataFolder = GetDefaultAssetPath(relativePathToRepositoryMember, assetBasePath);
+                    }
+                    else
+                    {
+                        var scriptPath = GetAssetPath(script);
+                        repositoryPath = GetAssetRepositoryPath(scriptPath);
+
+                        if (repositoryPath == null)
+                        {
+                            baseDataFolder = GetDefaultAssetPath(relativePathToRepositoryMember, assetBasePath);
+                        }
+                        else
+                        {
+                            baseDataFolder = AppaPath.Combine(repositoryPath, "asset");
+                        }
+                    }
                 }
                 else
                 {
@@ -374,6 +406,15 @@ namespace Appalachia.CI.Integration.Assets
 
                 return finalFolder.ToRelativePath();
             }
+        }
+
+        private static string GetDefaultAssetPath(string relativePathToRepositoryMember, string assetBasePath)
+        {
+            string baseDataFolder;
+            AppaLog.Error($"Could not find better location to save asset {relativePathToRepositoryMember}");
+
+            baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
+            return baseDataFolder;
         }
 
         private static void InitializeTypeScriptLookups()

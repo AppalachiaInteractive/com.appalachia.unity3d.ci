@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
@@ -9,16 +10,18 @@ namespace Appalachia.CI.Integration.Core
 {
     public static class AppalachiaObjectFactory
     {
-        public static T CreateNew<T>(string dataFolder = null)
+        public static T CreateNew<T>(string dataFolder = null,
+                                     Type ownerType = null)
             where T : ScriptableObject
         {
             using (_PRF_CreateNew.Auto())
             {
-                return CreateNew(typeof(T), dataFolder) as T;
+                return CreateNew(typeof(T), dataFolder, ownerType) as T;
             }
         }
 
-        public static ScriptableObject CreateNew(Type t, string dataFolder = null)
+        public static ScriptableObject CreateNew(Type t, string dataFolder = null,
+                                                 Type ownerType = null)
         {
             using (_PRF_CreateNew.Auto())
             {
@@ -27,17 +30,9 @@ namespace Appalachia.CI.Integration.Core
                     $"{t.Name}_{DateTime.Now:yyyyMMdd-hhmmssfff}.asset",
                     false,
                     false,
-                    dataFolder
+                    dataFolder,
+                    ownerType
                 );
-            }
-        }
-
-        public static T CreateNew<T>(string name, T i, string dataFolder = null)
-            where T : ScriptableObject
-        {
-            using (_PRF_CreateNew.Auto())
-            {
-                return CreateNew(typeof(T), name, i, dataFolder) as T;
             }
         }
 
@@ -45,7 +40,8 @@ namespace Appalachia.CI.Integration.Core
             Type t,
             string name,
             ScriptableObject i,
-            string dataFolder = null)
+            string dataFolder = null,
+            Type ownerType = null)
         {
             using (_PRF_CreateNew.Auto())
             {
@@ -59,14 +55,14 @@ namespace Appalachia.CI.Integration.Core
 
                 if (dataFolder == null)
                 {
-                    dataFolder = AssetDatabaseManager.GetSaveDirectoryForScriptableObject(t).ToRelativePath();
+                    dataFolder = AssetDatabaseManager.GetSaveDirectoryForScriptableObject(t, ownerType).ToRelativePath();
                 }
 
                 var assetPath = AppaPath.Combine(dataFolder, name);
 
                 if (AppaFile.Exists(assetPath))
                 {
-                    throw new AccessViolationException(assetPath);
+                    throw new DuplicateNameException($"A scriptable object already exists at {assetPath}");
                 }
 
                 assetPath = assetPath.Replace(ProjectLocations.GetAssetsDirectoryPath(), "Assets");
@@ -84,20 +80,22 @@ namespace Appalachia.CI.Integration.Core
             }
         }
 
-        public static T LoadOrCreateNew<T>(string name, string dataFolder = null)
+        public static T LoadOrCreateNew<T>(string name, string dataFolder = null,
+                                           Type ownerType = null)
             where T : ScriptableObject
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
-                return LoadOrCreateNew(typeof(T), name, dataFolder) as T;
+                return LoadOrCreateNew(typeof(T), name, dataFolder, ownerType) as T;
             }
         }
 
-        public static ScriptableObject LoadOrCreateNew(Type t, string name, string dataFolder = null)
+        public static ScriptableObject LoadOrCreateNew(Type t, string name, string dataFolder = null,
+                                                       Type ownerType = null)
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
-                return LoadOrCreateNew(t, name, false, false, dataFolder);
+                return LoadOrCreateNew(t, name, false, false, dataFolder, ownerType);
             }
         }
 
@@ -105,12 +103,13 @@ namespace Appalachia.CI.Integration.Core
             string name,
             bool prependType,
             bool appendType,
-            string dataFolder = null)
+            string dataFolder = null,
+            Type ownerType = null)
             where T : ScriptableObject
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
-                return LoadOrCreateNew(typeof(T), name, prependType, appendType, dataFolder) as T;
+                return LoadOrCreateNew(typeof(T), name, prependType, appendType, dataFolder, ownerType) as T;
             }
         }
 
@@ -119,7 +118,8 @@ namespace Appalachia.CI.Integration.Core
             string name,
             bool prependType,
             bool appendType,
-            string dataFolder = null)
+            string dataFolder = null,
+            Type ownerType = null)
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
@@ -158,7 +158,7 @@ namespace Appalachia.CI.Integration.Core
                 name = $"{cleanFileName}{extension}";
 
 #if UNITY_EDITOR
-                var any = AssetDatabaseManager.FindAssets($"t: {tName} {cleanFileName}");
+                var any = AssetDatabaseManager.FindAssets($"t:{tName} {cleanFileName}");
 
                 for (var i = 0; i < any.Length; i++)
                 {
@@ -174,7 +174,7 @@ namespace Appalachia.CI.Integration.Core
 #endif
                 var instance = ScriptableObject.CreateInstance(t);
 
-                return CreateNew(name, instance, dataFolder);
+                return CreateNew(t, name, instance, dataFolder, ownerType);
             }
         }
 
