@@ -133,7 +133,7 @@ namespace Appalachia.CI.SemVer.Tests
                 get
                 {
                     yield return new TestCaseData(
-                        new SemVer {autoBuild = SemVerAutoBuild.Type.Manual, Build = "auto-build"}
+                        new SemVer {autoBuild = SemVerAutoBuild.BuildType.Manual, Build = "auto-build"}
                     ).Returns("auto-build");
                 }
             }

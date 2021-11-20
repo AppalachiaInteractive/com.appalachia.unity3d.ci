@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Appalachia.CI.Integration.Core
 {
-    public interface IAppalachiaObject<T>
-        where T : ScriptableObject
+    public interface IAppalachiaObject
     {
-    
 #if UNITY_EDITOR
         public void SetDirtyAndSave();
         
@@ -20,6 +18,7 @@ namespace Appalachia.CI.Integration.Core
         public bool HasSubAssets(out Object[] subAssets);
         public bool UpdateNameAndMove(string newName);
         public void OnCreate();
+        
         public void Rename(string newName);
 #endif
     }

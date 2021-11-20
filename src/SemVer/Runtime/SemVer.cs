@@ -19,7 +19,7 @@ namespace Appalachia.CI.SemVer
         {
             minor = 1;
             preRelease = string.Empty;
-            autoBuild = SemVerAutoBuild.Type.Manual;
+            autoBuild = SemVerAutoBuild.BuildType.Manual;
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Appalachia.CI.SemVer
         ///     Set the <see cref="Build">build</see> metadata automatically
         /// </summary>
         /// <seealso cref="Build" />
-        public SemVerAutoBuild.Type autoBuild;
+        public SemVerAutoBuild.BuildType autoBuild;
 
         /// <summary>
         ///     Major version X (X.y.z | X > 0) MUST be incremented if any backwards incompatible changes are introduced

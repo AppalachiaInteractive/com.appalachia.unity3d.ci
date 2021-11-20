@@ -104,12 +104,12 @@ namespace Appalachia.CI.Integration.Extensions
 
                 var cleanRelativePath = relativePath.CleanFullPath();
 
-                var firstSubfolder = cleanRelativePath.IndexOf('/');
-                var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
+                //var firstSubfolder = cleanRelativePath.IndexOf('/');
+                //var relativePathSubstring = cleanRelativePath.Substring(firstSubfolder + 1);
 
                 /*var basePath = ProjectLocations.GetProjectDirectoryPath();
                 var absolutePath = AppaPath.Combine(basePath, relativePathSubstring);*/
-                var absolutePath = AppaPath.GetFullPath(relativePathSubstring);
+                var absolutePath = AppaPath.GetFullPath(cleanRelativePath);
 
                 _relativeToAbsolutePathLookup.Add(relativePath, absolutePath);
 

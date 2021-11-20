@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Extensions;
@@ -11,30 +12,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        #region Profiling And Tracing Markers
-
-        private static readonly ProfilerMarker _PRF_FindAssetGuids = new(_PRF_PFX + nameof(FindAssetGuids));
-        private static readonly ProfilerMarker _PRF_FindAssetPaths = new(_PRF_PFX + nameof(FindAssetPaths));
-
-        private static readonly ProfilerMarker _PRF_FindAssetPathsByExtension =
-            new(_PRF_PFX + nameof(FindAssetPathsByExtension));
-
-        private static readonly ProfilerMarker _PRF_FindAssetPathsByFileName =
-            new(_PRF_PFX + nameof(FindAssetPathsByFileName));
-
-        private static readonly ProfilerMarker _PRF_FindAssetPathsBySubstring =
-            new(_PRF_PFX + nameof(FindAssetPathsBySubstring));
-
-        private static readonly ProfilerMarker _PRF_FindProjectPathsByExtension =
-            new(_PRF_PFX + nameof(FindProjectPathsByExtension));
-
-        private static readonly ProfilerMarker _PRF_FormatSearchString =
-            new(_PRF_PFX + nameof(FormatSearchString));
-
-        private static readonly ProfilerMarker _PRF_InitializeAssetPathData =
-            new(_PRF_PFX + nameof(InitializeAssetPathData));
-
-        #endregion
+        #region Static Fields and Autoproperties
 
         private static char[] _extensionTrims;
 
@@ -42,6 +20,35 @@ namespace Appalachia.CI.Integration.Assets
         private static Dictionary<string, List<string>> _projectPathsByExtension;
         private static string[] _allAssetPaths;
         private static string[] _allProjectPaths;
+
+        #endregion
+
+        private static Dictionary<Type, Dictionary<string, Object>> _firstLookupCache;
+        
+        public static T FindFirstAsset<T>(string searchString)
+            where T : Object
+        {
+            using (_PRF_FindFirstAsset.Auto())
+            {
+                _firstLookupCache ??= new Dictionary<Type, Dictionary<string, Object>>();
+                
+                if (!_firstLookupCache.ContainsKey(typeof(T)))
+                {
+                    _firstLookupCache.Add(typeof(T), new Dictionary<string, Object>());
+                }
+
+                if (_firstLookupCache[typeof(T)].ContainsKey(searchString))
+                {
+                    return _firstLookupCache[typeof(T)][searchString] as T;
+                }
+                
+                var result = FindAssets<T>(searchString).FirstOrDefault();
+
+                _firstLookupCache[typeof(T)].Add(searchString, result);
+
+                return result;
+            }
+        }
 
         public static string[] FindAssetGuids<T>(string searchString = null)
             where T : Object
@@ -316,6 +323,34 @@ namespace Appalachia.CI.Integration.Assets
                 }
             }
         }
+
+        #region Profiling
+
+        private static readonly ProfilerMarker _PRF_FindAssetGuids = new(_PRF_PFX + nameof(FindAssetGuids));
+        private static readonly ProfilerMarker _PRF_FindAssetPaths = new(_PRF_PFX + nameof(FindAssetPaths));
+
+        private static readonly ProfilerMarker _PRF_FindAssetPathsByExtension =
+            new(_PRF_PFX + nameof(FindAssetPathsByExtension));
+
+        private static readonly ProfilerMarker _PRF_FindAssetPathsByFileName =
+            new(_PRF_PFX + nameof(FindAssetPathsByFileName));
+
+        private static readonly ProfilerMarker _PRF_FindAssetPathsBySubstring =
+            new(_PRF_PFX + nameof(FindAssetPathsBySubstring));
+
+        private static readonly ProfilerMarker _PRF_FindProjectPathsByExtension =
+            new(_PRF_PFX + nameof(FindProjectPathsByExtension));
+
+        private static readonly ProfilerMarker _PRF_FormatSearchString =
+            new(_PRF_PFX + nameof(FormatSearchString));
+
+        private static readonly ProfilerMarker _PRF_InitializeAssetPathData =
+            new(_PRF_PFX + nameof(InitializeAssetPathData));
+
+        private static readonly ProfilerMarker _PRF_FindFirstAsset =
+            new ProfilerMarker(_PRF_PFX + nameof(FindFirstAsset));
+
+        #endregion
     }
 }
 

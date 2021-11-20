@@ -22,7 +22,7 @@ namespace Appalachia.CI.Integration.Assets
                     texture.name = fileName;
                 }
 
-                var savePathMetadata = GetSaveLocationForOwnedAsset<T, Texture2D>("x.png");
+                var savePathMetadata = GetSaveDirectoryForOwnedAsset<T, Texture2D>("x.png");
 
                 var targetSavePath = AppaPath.Combine(savePathMetadata.ToRelativePath(), $"{fileName}.png");
 

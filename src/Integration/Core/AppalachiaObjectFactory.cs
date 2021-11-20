@@ -9,24 +9,22 @@ namespace Appalachia.CI.Integration.Core
 {
     public static class AppalachiaObjectFactory
     {
-        #region Profiling And Tracing Markers
-
-        private const string _PRF_PFX = nameof(AppalachiaObjectFactory) + ".";
-        private static readonly ProfilerMarker _PRF_CreateNew = new(_PRF_PFX + nameof(CreateNew));
-
-        private static readonly ProfilerMarker _PRF_LoadOrCreateNew = new(_PRF_PFX + nameof(LoadOrCreateNew));
-#if UNITY_EDITOR
-        private static readonly ProfilerMarker _PRF_Rename = new(_PRF_PFX + nameof(Rename));
-#endif
-        #endregion
-
         public static T CreateNew<T>(string dataFolder = null)
             where T : ScriptableObject
         {
             using (_PRF_CreateNew.Auto())
             {
-                return LoadOrCreateNew<T>(
-                    $"{typeof(T).Name}_{DateTime.Now:yyyyMMdd-hhmmssfff}.asset",
+                return CreateNew(typeof(T), dataFolder) as T;
+            }
+        }
+
+        public static ScriptableObject CreateNew(Type t, string dataFolder = null)
+        {
+            using (_PRF_CreateNew.Auto())
+            {
+                return LoadOrCreateNew(
+                    t,
+                    $"{t.Name}_{DateTime.Now:yyyyMMdd-hhmmssfff}.asset",
                     false,
                     false,
                     dataFolder
@@ -36,6 +34,18 @@ namespace Appalachia.CI.Integration.Core
 
         public static T CreateNew<T>(string name, T i, string dataFolder = null)
             where T : ScriptableObject
+        {
+            using (_PRF_CreateNew.Auto())
+            {
+                return CreateNew(typeof(T), name, i, dataFolder) as T;
+            }
+        }
+
+        public static ScriptableObject CreateNew(
+            Type t,
+            string name,
+            ScriptableObject i,
+            string dataFolder = null)
         {
             using (_PRF_CreateNew.Auto())
             {
@@ -49,8 +59,7 @@ namespace Appalachia.CI.Integration.Core
 
                 if (dataFolder == null)
                 {
-                    dataFolder = AssetDatabaseManager.GetSaveLocationForScriptableObject<T>()
-                                                     .ToRelativePath();
+                    dataFolder = AssetDatabaseManager.GetSaveDirectoryForScriptableObject(t).ToRelativePath();
                 }
 
                 var assetPath = AppaPath.Combine(dataFolder, name);
@@ -63,11 +72,13 @@ namespace Appalachia.CI.Integration.Core
                 assetPath = assetPath.Replace(ProjectLocations.GetAssetsDirectoryPath(), "Assets");
 
                 AssetDatabaseManager.CreateAsset(i, assetPath);
-                
-                if (i is IAppalachiaObject<T> ao)
+
+                if (i is IAppalachiaObject ao)
                 {
                     ao.OnCreate();
                 }
+
+                i = AssetDatabaseManager.ImportAndLoadAssetAtPath(t, assetPath) as ScriptableObject;
 #endif
                 return i;
             }
@@ -78,7 +89,15 @@ namespace Appalachia.CI.Integration.Core
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
-                return LoadOrCreateNew<T>(name, false, false, dataFolder);
+                return LoadOrCreateNew(typeof(T), name, dataFolder) as T;
+            }
+        }
+
+        public static ScriptableObject LoadOrCreateNew(Type t, string name, string dataFolder = null)
+        {
+            using (_PRF_LoadOrCreateNew.Auto())
+            {
+                return LoadOrCreateNew(t, name, false, false, dataFolder);
             }
         }
 
@@ -88,6 +107,19 @@ namespace Appalachia.CI.Integration.Core
             bool appendType,
             string dataFolder = null)
             where T : ScriptableObject
+        {
+            using (_PRF_LoadOrCreateNew.Auto())
+            {
+                return LoadOrCreateNew(typeof(T), name, prependType, appendType, dataFolder) as T;
+            }
+        }
+
+        public static ScriptableObject LoadOrCreateNew(
+            Type t,
+            string name,
+            bool prependType,
+            bool appendType,
+            string dataFolder = null)
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
@@ -111,22 +143,22 @@ namespace Appalachia.CI.Integration.Core
 
                 var extension = AppaPath.GetExtension(name);
 
-                var t = typeof(T).Name;
+                var tName = t.Name;
 
                 if (prependType)
                 {
-                    cleanFileName = $"{t}_{cleanFileName}";
+                    cleanFileName = $"{tName}_{cleanFileName}";
                 }
 
                 if (appendType)
                 {
-                    cleanFileName = $"{cleanFileName}_{t}";
+                    cleanFileName = $"{cleanFileName}_{tName}";
                 }
 
                 name = $"{cleanFileName}{extension}";
-                
+
 #if UNITY_EDITOR
-                var any = AssetDatabaseManager.FindAssets($"t: {t} {cleanFileName}");
+                var any = AssetDatabaseManager.FindAssets($"t: {tName} {cleanFileName}");
 
                 for (var i = 0; i < any.Length; i++)
                 {
@@ -136,11 +168,11 @@ namespace Appalachia.CI.Integration.Core
                     if ((existingName != null) &&
                         string.Equals(cleanFileName.ToLower(), existingName.ToLower()))
                     {
-                        return AssetDatabaseManager.LoadAssetAtPath<T>(path);
+                        return AssetDatabaseManager.LoadAssetAtPath(path, t) as ScriptableObject;
                     }
                 }
 #endif
-                var instance = ScriptableObject.CreateInstance(typeof(T)) as T;
+                var instance = ScriptableObject.CreateInstance(t);
 
                 return CreateNew(name, instance, dataFolder);
             }
@@ -159,5 +191,17 @@ namespace Appalachia.CI.Integration.Core
             }
         }
 #endif
+
+        #region Profiling
+
+        private const string _PRF_PFX = nameof(AppalachiaObjectFactory) + ".";
+        private static readonly ProfilerMarker _PRF_CreateNew = new(_PRF_PFX + nameof(CreateNew));
+
+        private static readonly ProfilerMarker _PRF_LoadOrCreateNew = new(_PRF_PFX + nameof(LoadOrCreateNew));
+#if UNITY_EDITOR
+        private static readonly ProfilerMarker _PRF_Rename = new(_PRF_PFX + nameof(Rename));
+#endif
+
+        #endregion
     }
 }

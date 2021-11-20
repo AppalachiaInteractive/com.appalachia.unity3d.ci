@@ -13,7 +13,7 @@ namespace Appalachia.CI.SemVer
         /// <summary>
         ///     <see cref="SemVerAutoBuild" /> implementations
         /// </summary>
-        public enum Type
+        public enum BuildType
         {
             /// <summary>
             ///     Disables automatic <see cref="SemVer.Build">build</see> metadata
@@ -29,10 +29,10 @@ namespace Appalachia.CI.SemVer
             CloudBuildNumber
         }
 
-        public static readonly IReadOnlyDictionary<Type, SemVerAutoBuild> Instances =
-            new Dictionary<Type, SemVerAutoBuild>
+        public static readonly IReadOnlyDictionary<BuildType, SemVerAutoBuild> Instances =
+            new Dictionary<BuildType, SemVerAutoBuild>
             {
-                {Type.Manual, new ManualBuild()}, {Type.CloudBuildNumber, new CloudBuildNumberBuild()}
+                {BuildType.Manual, new ManualBuild()}, {BuildType.CloudBuildNumber, new CloudBuildNumberBuild()}
             };
 
         internal abstract string Get(string build);

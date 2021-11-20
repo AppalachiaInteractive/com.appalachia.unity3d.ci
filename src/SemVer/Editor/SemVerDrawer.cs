@@ -77,7 +77,7 @@ namespace Appalachia.CI.SemVer
                 var popupWidth = EditorGUIUtility.labelWidth + 120f;
                 popupPosition.width = popupWidth;
                 var selected = EditorGUI.EnumPopup(popupPosition, content, Target.autoBuild);
-                Target.autoBuild = (SemVerAutoBuild.Type) selected;
+                Target.autoBuild = (SemVerAutoBuild.BuildType) selected;
                 var textPosition = position;
                 textPosition.x = popupWidth + EditorGUIUtility.standardVerticalSpacing;
                 textPosition.width -= textPosition.x - 14f;
@@ -95,7 +95,7 @@ namespace Appalachia.CI.SemVer
             }
             else
             {
-                Target.autoBuild = SemVerAutoBuild.Type.Manual;
+                Target.autoBuild = SemVerAutoBuild.BuildType.Manual;
                 Target.Build = EditorGUI.TextField(position, content, Target.Build);
             }
         }

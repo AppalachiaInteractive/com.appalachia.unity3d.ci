@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Logging;
 using Appalachia.Utility.Reflection.Extensions;
@@ -26,13 +27,13 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_DoesFileExist = new(_PRF_PFX + nameof(DoesFileExist));
 
         private static readonly ProfilerMarker _PRF_GetSaveLocationForOwnedAsset =
-            new(_PRF_PFX + nameof(GetSaveLocationForOwnedAsset));
+            new(_PRF_PFX + nameof(GetSaveDirectoryForOwnedAsset));
 
         private static readonly ProfilerMarker _PRF_GetSaveLocationForAsset =
-            new(_PRF_PFX + nameof(GetSaveLocationForAsset));
+            new(_PRF_PFX + nameof(GetSaveDirectoryForAsset));
 
         private static readonly ProfilerMarker _PRF_GetSaveLocationForScriptableObject =
-            new(_PRF_PFX + nameof(GetSaveLocationForScriptableObject));
+            new(_PRF_PFX + nameof(GetSaveDirectoryForScriptableObject));
 
         private static readonly ProfilerMarker _PRF_GetSaveLocationMetadataInternal =
             new(_PRF_PFX + nameof(GetSaveLocationMetadataInternal));
@@ -163,7 +164,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveLocationForAsset(Type assetType, string assetPath)
+        public static string GetSaveDirectoryForAsset(Type assetType, string assetPath)
         {
             using (_PRF_GetSaveLocationForAsset.Auto())
             {
@@ -173,7 +174,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveLocationForOwnedAsset<TOwner, TAsset>(string fileName)
+        public static string GetSaveDirectoryForOwnedAsset<TOwner, TAsset>(string fileName)
             where TOwner : MonoBehaviour
             where TAsset : Object
         {
@@ -189,18 +190,18 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveLocationForScriptableObject<T>()
+        public static string GetSaveDirectoryForScriptableObject<T>()
             where T : ScriptableObject
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var scriptType = typeof(T);
 
-                return GetSaveLocationForScriptableObject(scriptType);
+                return GetSaveDirectoryForScriptableObject(scriptType);
             }
         }
 
-        public static string GetSaveLocationForScriptableObject(Type scriptType)
+        public static string GetSaveDirectoryForScriptableObject(Type scriptType)
         {
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
@@ -275,6 +276,12 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static void RegisterAdditionalAssetTypeFolders<T>(
+            Func<Type, string, string> folderFunction)
+        {
+            RegisterAdditionalAssetTypeFolders(typeof(T), folderFunction);
+        }
+
         public static void RegisterAdditionalAssetTypeFolders(
             Type type,
             Func<Type, string, string> folderFunction)
@@ -286,7 +293,14 @@ namespace Appalachia.CI.Integration.Assets
                     PopulateAssetTypeFolderLookup();
                 }
 
-                _assetTypeFolderLookup.Add(type, folderFunction);
+                if (_assetTypeFolderLookup.ContainsKey(type))
+                {
+                    _assetTypeFolderLookup[type] = folderFunction;
+                }
+                else
+                {
+                    _assetTypeFolderLookup.Add(type, folderFunction);
+                }
             }
         }
 
@@ -358,7 +372,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 var finalFolder = AppaPath.Combine(baseDataFolder, finalFolderName);
 
-                return finalFolder;
+                return finalFolder.ToRelativePath();
             }
         }
 

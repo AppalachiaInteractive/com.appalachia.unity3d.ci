@@ -1555,14 +1555,22 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static T ImportAndLoadAssetAtPath<T>(string path)
-            where T : Object
+        public static Object ImportAndLoadAssetAtPath(Type t, string path)
         {
             using (_PRF_ImportAndLoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
                 UnityEditor.AssetDatabase.ImportAsset(relativePath);
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, t);
+            }
+        }
+
+        public static T ImportAndLoadAssetAtPath<T>(string path)
+            where T : Object
+        {
+            using (_PRF_ImportAndLoadAssetAtPath.Auto())
+            {
+                return ImportAndLoadAssetAtPath(typeof(T), path) as T;
             }
         }
 
@@ -2479,6 +2487,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StartAssetEditing.Auto())
             {
+                AppaLog.Warn("Asset database editing has begun and importing is suspended.");
                 UnityEditor.AssetDatabase.StartAssetEditing();
             }
         }
@@ -2498,6 +2507,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StopAssetEditing.Auto())
             {
+                AppaLog.Warn("Asset database editing has finished and importing will resume.");
                 UnityEditor.AssetDatabase.StopAssetEditing();
             }
         }

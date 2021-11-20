@@ -36,13 +36,12 @@ namespace Appalachia.CI.Integration.Assets
 
         #endregion
 
-        #region Fields
+        
 
         private static Dictionary<string, string[]> _guidsByTypeName;
         private static Dictionary<string, string[]> _pathsByTypeName;
         private static Dictionary<string, Type[]> _typesByTypeName;
 
-        #endregion
 
         public static string[] GetAllAssetGuids(Type type = null)
         {
