@@ -14,19 +14,7 @@ namespace Appalachia.CI.Constants
         public const string Any = "Any";
         public const string Any_Issues = Any + _ + Issues;
         public const string Appalachia = "Appalachia";
-        public const string Interactive = "Interactive";
         public const string APPALACHIA = "APPALACHIA";
-        public const string INTERACTIVE = "INTERACTIVE";
-        public const string SCRIPTABLE = "SCRIPTABLE";
-        public const string SINGLETON = "SINGLETON";
-        public const string BEHAVIOUR = "BEHAVIOUR";
-        public const string Scriptable = "Scriptable";
-        public const string Singleton = "Singleton";
-        public const string Behaviour = "Behaviour";
-        public const string SINGLETON_SCRIPTABLE = SINGLETON + _ + SCRIPTABLE;
-        public const string SINGLETON_BEHAVIOUR = SINGLETON + _ + BEHAVIOUR;
-        public const string Singleton_Scriptable = Singleton + _ + Scriptable;
-        public const string Singleton_Behaviour = Singleton + _ + Behaviour;
         public const string Appalachia_Interactive = Appalachia + _ + Interactive;
         public const string APPALACHIA_INTERACTIVE = APPALACHIA + _ + INTERACTIVE;
         public const string Appalachia_Managed_Only = Appalachia + _ + Managed + _ + Only;
@@ -45,11 +33,15 @@ namespace Appalachia.CI.Constants
         public const string Asset_Review = Asset + _ + Review;
         public const string Assets = "Assets";
         public const string Assets_Only = Assets + _ + Only;
+        public const string Behaviour = "Behaviour";
+        public const string BEHAVIOUR = "BEHAVIOUR";
         public const string Buttons = "Buttons";
         public const string Canvas = "Canvas";
         public const string Canvas_Group = Canvas + _ + Group;
         public const string Canvas_Scaling = Canvas + _ + Scaling;
         public const string CI = "CI";
+
+        public const string Common = "Common";
         public const string Completed = "Completed";
         public const string config = "config";
         public const string Content = "Content";
@@ -100,6 +92,8 @@ namespace Appalachia.CI.Constants
         public const string Ideal = "Ideal";
         public const string Integration = "Integration";
         public const string Integration_Analysis = Integration + _ + Analysis;
+        public const string Interactive = "Interactive";
+        public const string INTERACTIVE = "INTERACTIVE";
         public const string Internal = "Internal";
         public const string Issue = "Issue";
         public const string Issue_Type = Issue + _ + Type;
@@ -157,13 +151,22 @@ namespace Appalachia.CI.Constants
         public const string Review = "Review";
         public const string Runtime = "Runtime";
         public const string Scaling = "Scaling";
+        public const string Scriptable = "Scriptable";
+        public const string SCRIPTABLE = "SCRIPTABLE";
         public const string Search = "Search";
         public const string Select = "Select";
         public const string Serialize = "Serialize";
+        public const string Singleton = "Singleton";
+        public const string SINGLETON = "SINGLETON";
+        public const string Singleton_Behaviour = Singleton + _ + Behaviour;
+        public const string SINGLETON_BEHAVIOUR = SINGLETON + _ + BEHAVIOUR;
+        public const string Singleton_Scriptable = Singleton + _ + Scriptable;
+        public const string SINGLETON_SCRIPTABLE = SINGLETON + _ + SCRIPTABLE;
         public const string Size = "Size";
         public const string src = "src";
         public const string Status = "Status";
         public const string Tasks = "Tasks";
+        public const string Templates = "Templates";
         public const string Test = "Test";
         public const string Test_Files = Test + _ + Files;
         public const string To = "To";
@@ -244,32 +247,42 @@ namespace Appalachia.CI.Constants
             #endregion
         }
 
+        #endregion
+
+        #region Nested type: Fonts
+
         public static class Fonts
         {
+            #region Constants and Static Readonly
+
             private const string _black = "Black";
-            private const string _bold = "Bold";
-            private const string _extra = "Extra";
-            private const string _italic = "Italic";
-            private const string _light = "Light";
-            private const string _medium = "Medium";
-            private const string _regular = "Regular";
-            private const string _semi = "Semi";
-            private const string _thin = "Thin";
             private const string _blackItalic = _black + _italic;
+            private const string _bold = "Bold";
             private const string _boldItalic = _bold + _italic;
+            private const string _extra = "Extra";
             private const string _extraBold = _extra + _bold;
             private const string _extraBoldItalic = _bold + _italic;
             private const string _extraLight = _extra + _light;
-            private const string _lightItalic = _light + _italic;
-            private const string _mediumItalic = _medium + _italic;
-            private const string _semiBold = _semi + _bold;
-            private const string _thinItalic = _thin + _italic;
             private const string _extraLightItalic = _extra + _light + _italic;
+            private const string _italic = "Italic";
+            private const string _light = "Light";
+            private const string _lightItalic = _light + _italic;
+            private const string _medium = "Medium";
+            private const string _mediumItalic = _medium + _italic;
+            private const string _regular = "Regular";
+            private const string _semi = "Semi";
+            private const string _semiBold = _semi + _bold;
             private const string _semiBoldItalic = _semi + _bold + _italic;
+            private const string _thin = "Thin";
+            private const string _thinItalic = _thin + _italic;
+
+            #endregion
+
+            #region Nested type: Montserrat
 
             public static class Montserrat
             {
-                private const string FAMILY = "Montserrat-";
+                #region Constants and Static Readonly
 
                 public const string Black = FAMILY + _black;
                 public const string BlackItalic = FAMILY + _blackItalic;
@@ -289,7 +302,12 @@ namespace Appalachia.CI.Constants
                 public const string SemiBoldItalic = FAMILY + _semiBoldItalic;
                 public const string Thin = FAMILY + _thin;
                 public const string ThinItalic = FAMILY + _thinItalic;
+                private const string FAMILY = "Montserrat-";
+
+                #endregion
             }
+
+            #endregion
         }
 
         #endregion
