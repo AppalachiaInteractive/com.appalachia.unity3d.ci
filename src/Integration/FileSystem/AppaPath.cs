@@ -162,5 +162,51 @@ namespace Appalachia.CI.Integration.FileSystem
                 return MatchesExtension(path, StringComparison.Ordinal, args);
             }
         }
+
+        public static class ExtensionSets
+        {
+            private static string[] _image;
+            private static string[] _shader;
+            private static string[] _shaderInclude;
+            
+            public static string[] Image
+            {
+                get
+                {
+                    if (_image == null)
+                    {
+                        _image = new[] { "png", "jpg", "jpeg", "tif", "tiff", "tga", "bmp", "psd" };
+                    }
+                    
+                    return _image;
+                }
+            }
+
+            public static string[] ShaderInclude
+            {
+                get
+                {
+                    if (_shaderInclude == null)
+                    {
+                        _shaderInclude = new[] { "cginc", "hlsl", "template" };
+                    }
+                    
+                    return _shaderInclude;
+                }
+            }
+
+            public static string[] Shader
+            {
+                get
+                {
+                    if (_shader == null)
+                    {
+                        _shader = new[] { "shader", "compute" };
+                    }
+                    
+                    return _shader;
+                }
+            }
+        }
     }
 }
