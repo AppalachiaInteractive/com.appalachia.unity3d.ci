@@ -15,6 +15,8 @@ Development environment loaded!
 `0.2.0`
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| 0a7be8326dec43aec7a126bc91953c1848c8e95b | 2021-11-21 | Chris Schubert | Updating asset manager usages |
+| aa97b449b45b1019224872f5c3eeb73ba427fedb | 2021-11-20 | Chris Schubert | Updating changelog and releaselog |
 | f8224e7724e6454581a0d8def8248192cb0c2393 | 2021-11-20 | Chris Schubert | Prference initialization and UI templates |
 | 839cbc6220d24cea992e7f47a73782af22286bd6 | 2021-11-20 | Chris Schubert | Updating changelog and releaselog |
 | 39be294718c18099ec883269132c3b0ac0b7a45b | 2021-11-20 | Chris Schubert | Expanding initialization setup class, and fixing some initialization in appa object bases |
