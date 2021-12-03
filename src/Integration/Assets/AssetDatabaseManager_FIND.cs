@@ -25,7 +25,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static Dictionary<Type, Dictionary<string, Object>> _firstLookupCache;
         
-        public static T FindFirstAsset<T>(string searchString)
+        public static T FindFirstAssetMatch<T>(string searchString)
             where T : Object
         {
             using (_PRF_FindFirstAsset.Auto())
@@ -42,7 +42,11 @@ namespace Appalachia.CI.Integration.Assets
                     return _firstLookupCache[typeof(T)][searchString] as T;
                 }
                 
-                var result = FindAssets<T>(searchString).FirstOrDefault();
+                var results = FindAssets<T>(searchString);
+                var sortedResults = results.OrderByDescending(
+                    v => v.name == searchString ? 1 : 0 
+                    );
+                   var result = sortedResults.FirstOrDefault();
 
                 _firstLookupCache[typeof(T)].Add(searchString, result);
 
@@ -201,7 +205,7 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         public static List<T> FindAssets<T>(string searchString = null)
-            where T : Object
+        where T : Object
         {
             using (_PRF_FindAssets.Auto())
             {
@@ -222,6 +226,19 @@ namespace Appalachia.CI.Integration.Assets
                     {
                         var cast = LoadAssetAtPath<T>(path);
                         results.Add(cast);
+                    }
+
+                    var subAssets = LoadAllAssetRepresentationsAtPath(path);
+
+                    foreach (var subAsset in subAssets)
+                    {
+                        var subAssetType = subAsset.GetType();
+                        
+                        if (t.IsAssignableFrom(subAssetType))
+                        {
+                            var cast = subAsset as T;
+                            results.Add(cast);
+                        }
                     }
                 }
 
@@ -348,7 +365,7 @@ namespace Appalachia.CI.Integration.Assets
             new(_PRF_PFX + nameof(InitializeAssetPathData));
 
         private static readonly ProfilerMarker _PRF_FindFirstAsset =
-            new ProfilerMarker(_PRF_PFX + nameof(FindFirstAsset));
+            new ProfilerMarker(_PRF_PFX + nameof(FindFirstAssetMatch));
 
         #endregion
     }

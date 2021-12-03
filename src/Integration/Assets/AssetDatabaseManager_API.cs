@@ -2487,7 +2487,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StartAssetEditing.Auto())
             {
-                AppaLog.Warn("Asset database editing has begun and importing is suspended.");
+                AppaLog.Trace("Asset database editing has begun and importing is suspended.");
                 UnityEditor.AssetDatabase.StartAssetEditing();
             }
         }
@@ -2507,7 +2507,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             using (_PRF_StopAssetEditing.Auto())
             {
-                AppaLog.Warn("Asset database editing has finished and importing will resume.");
+                AppaLog.Trace("Asset database editing has finished and importing will resume.");
                 UnityEditor.AssetDatabase.StopAssetEditing();
             }
         }

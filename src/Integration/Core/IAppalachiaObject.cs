@@ -5,7 +5,6 @@ namespace Appalachia.CI.Integration.Core
     public interface IAppalachiaObject
     {
 #if UNITY_EDITOR
-        public void SetDirtyAndSave();
         
         public string NiceName { get; set; }
         public string AssetPath { get; }

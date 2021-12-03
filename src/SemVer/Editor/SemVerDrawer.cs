@@ -1,4 +1,5 @@
 using System;
+using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Logging;
 using UnityEditor;
 using UnityEngine;
@@ -42,7 +43,7 @@ namespace Appalachia.CI.SemVer
                 return;
             }
 
-            EditorUtility.SetDirty(targetObject);
+            targetObject.MarkAsModified();
             fieldInfo.SetValue(targetObject, corrected);
         }
 

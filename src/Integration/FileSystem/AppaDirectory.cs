@@ -2,91 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Appalachia.CI.Integration.Core;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.Utility.Logging;
 using Unity.Profiling;
-using UnityEngine;
 
 namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaDirectory
     {
-        #region Profiling And Tracing Markers
-
-        private const string _PRF_PFX = nameof(AppaDirectory) + ".";
-        private static readonly ProfilerMarker _PRF_GetParent = new(_PRF_PFX + nameof(GetParent));
-        private static readonly ProfilerMarker _PRF_CreateDirectory = new(_PRF_PFX + nameof(CreateDirectory));
-
-        private static readonly ProfilerMarker _PRF_Exists = new(_PRF_PFX + nameof(Exists));
-        private static readonly ProfilerMarker _PRF_SetCreationTime = new(_PRF_PFX + nameof(SetCreationTime));
-
-        private static readonly ProfilerMarker _PRF_SetCreationTimeUtc =
-            new(_PRF_PFX + nameof(SetCreationTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetCreationTime = new(_PRF_PFX + nameof(GetCreationTime));
-
-        private static readonly ProfilerMarker _PRF_GetCreationTimeUtc =
-            new(_PRF_PFX + nameof(GetCreationTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_SetLastWriteTime =
-            new(_PRF_PFX + nameof(SetLastWriteTime));
-
-        private static readonly ProfilerMarker _PRF_SetLastWriteTimeUtc =
-            new(_PRF_PFX + nameof(SetLastWriteTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetLastWriteTime =
-            new(_PRF_PFX + nameof(GetLastWriteTime));
-
-        private static readonly ProfilerMarker _PRF_GetLastWriteTimeUtc =
-            new(_PRF_PFX + nameof(GetLastWriteTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_SetLastAccessTime =
-            new(_PRF_PFX + nameof(SetLastAccessTime));
-
-        private static readonly ProfilerMarker _PRF_SetLastAccessTimeUtc =
-            new(_PRF_PFX + nameof(SetLastAccessTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetLastAccessTime =
-            new(_PRF_PFX + nameof(GetLastAccessTime));
-
-        private static readonly ProfilerMarker _PRF_GetLastAccessTimeUtc =
-            new(_PRF_PFX + nameof(GetLastAccessTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetFiles = new(_PRF_PFX + nameof(GetFiles));
-        private static readonly ProfilerMarker _PRF_GetDirectories = new(_PRF_PFX + nameof(GetDirectories));
-
-        private static readonly ProfilerMarker _PRF_GetFileSystemEntries =
-            new(_PRF_PFX + nameof(GetFileSystemEntries));
-
-        private static readonly ProfilerMarker _PRF_EnumerateDirectories =
-            new(_PRF_PFX + nameof(EnumerateDirectories));
-
-        private static readonly ProfilerMarker _PRF_EnumerateFiles = new(_PRF_PFX + nameof(EnumerateFiles));
-
-        private static readonly ProfilerMarker _PRF_EnumerateFileSystemEntries =
-            new(_PRF_PFX + nameof(EnumerateFileSystemEntries));
-
-        private static readonly ProfilerMarker _PRF_GetLogicalDrives =
-            new(_PRF_PFX + nameof(GetLogicalDrives));
-
-        private static readonly ProfilerMarker _PRF_GetDirectoryRoot =
-            new(_PRF_PFX + nameof(GetDirectoryRoot));
-
-        private static readonly ProfilerMarker _PRF_GetCurrentDirectory =
-            new(_PRF_PFX + nameof(GetCurrentDirectory));
-
-        private static readonly ProfilerMarker _PRF_SetCurrentDirectory =
-            new(_PRF_PFX + nameof(SetCurrentDirectory));
-
-        private static readonly ProfilerMarker _PRF_Move = new(_PRF_PFX + nameof(Move));
-        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
-
-        private static readonly ProfilerMarker _PRF_CreateDirectoryStructureForFilePath =
-            new ProfilerMarker(_PRF_PFX + nameof(CreateDirectoryStructureForFilePath));
-
-        #endregion
-
         /// <summary>Creates all directories and subdirectories in the specified path unless they already exist.</summary>
         /// <param name="path">The directory to create. </param>
         /// <returns>
@@ -757,9 +680,20 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_GetDirectories.Auto())
             {
-                return Directory.GetDirectories(path, searchPattern, searchOption)
-                                .Select(p => p.CleanFullPath())
-                                .ToArray();
+                try
+                {
+                    return Directory.GetDirectories(path, searchPattern, searchOption)
+                                    .Select(p => p.CleanFullPath())
+                                    .ToArray();
+                }
+                catch (Exception ex)
+                {
+                    AppaLog.Exception(
+                        $"Failed to find directories at {path} with search pattern {searchPattern}.",
+                        ex
+                    );
+                    throw;
+                }
             }
         }
 
@@ -1402,5 +1336,80 @@ namespace Appalachia.CI.Integration.FileSystem
                 Directory.SetLastWriteTimeUtc(path, lastWriteTimeUtc);
             }
         }
+
+        #region Profiling
+
+        private const string _PRF_PFX = nameof(AppaDirectory) + ".";
+        private static readonly ProfilerMarker _PRF_GetParent = new(_PRF_PFX + nameof(GetParent));
+        private static readonly ProfilerMarker _PRF_CreateDirectory = new(_PRF_PFX + nameof(CreateDirectory));
+
+        private static readonly ProfilerMarker _PRF_Exists = new(_PRF_PFX + nameof(Exists));
+        private static readonly ProfilerMarker _PRF_SetCreationTime = new(_PRF_PFX + nameof(SetCreationTime));
+
+        private static readonly ProfilerMarker _PRF_SetCreationTimeUtc =
+            new(_PRF_PFX + nameof(SetCreationTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetCreationTime = new(_PRF_PFX + nameof(GetCreationTime));
+
+        private static readonly ProfilerMarker _PRF_GetCreationTimeUtc =
+            new(_PRF_PFX + nameof(GetCreationTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_SetLastWriteTime =
+            new(_PRF_PFX + nameof(SetLastWriteTime));
+
+        private static readonly ProfilerMarker _PRF_SetLastWriteTimeUtc =
+            new(_PRF_PFX + nameof(SetLastWriteTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetLastWriteTime =
+            new(_PRF_PFX + nameof(GetLastWriteTime));
+
+        private static readonly ProfilerMarker _PRF_GetLastWriteTimeUtc =
+            new(_PRF_PFX + nameof(GetLastWriteTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_SetLastAccessTime =
+            new(_PRF_PFX + nameof(SetLastAccessTime));
+
+        private static readonly ProfilerMarker _PRF_SetLastAccessTimeUtc =
+            new(_PRF_PFX + nameof(SetLastAccessTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetLastAccessTime =
+            new(_PRF_PFX + nameof(GetLastAccessTime));
+
+        private static readonly ProfilerMarker _PRF_GetLastAccessTimeUtc =
+            new(_PRF_PFX + nameof(GetLastAccessTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetFiles = new(_PRF_PFX + nameof(GetFiles));
+        private static readonly ProfilerMarker _PRF_GetDirectories = new(_PRF_PFX + nameof(GetDirectories));
+
+        private static readonly ProfilerMarker _PRF_GetFileSystemEntries =
+            new(_PRF_PFX + nameof(GetFileSystemEntries));
+
+        private static readonly ProfilerMarker _PRF_EnumerateDirectories =
+            new(_PRF_PFX + nameof(EnumerateDirectories));
+
+        private static readonly ProfilerMarker _PRF_EnumerateFiles = new(_PRF_PFX + nameof(EnumerateFiles));
+
+        private static readonly ProfilerMarker _PRF_EnumerateFileSystemEntries =
+            new(_PRF_PFX + nameof(EnumerateFileSystemEntries));
+
+        private static readonly ProfilerMarker _PRF_GetLogicalDrives =
+            new(_PRF_PFX + nameof(GetLogicalDrives));
+
+        private static readonly ProfilerMarker _PRF_GetDirectoryRoot =
+            new(_PRF_PFX + nameof(GetDirectoryRoot));
+
+        private static readonly ProfilerMarker _PRF_GetCurrentDirectory =
+            new(_PRF_PFX + nameof(GetCurrentDirectory));
+
+        private static readonly ProfilerMarker _PRF_SetCurrentDirectory =
+            new(_PRF_PFX + nameof(SetCurrentDirectory));
+
+        private static readonly ProfilerMarker _PRF_Move = new(_PRF_PFX + nameof(Move));
+        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
+
+        private static readonly ProfilerMarker _PRF_CreateDirectoryStructureForFilePath =
+            new ProfilerMarker(_PRF_PFX + nameof(CreateDirectoryStructureForFilePath));
+
+        #endregion
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
@@ -19,7 +20,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        #region Profiling And Tracing Markers
+        #region Static Fields and Autoproperties
 
         private static readonly ProfilerMarker _PRF_GetAllRuntimeMonoScripts =
             new(_PRF_PFX + nameof(GetAllRuntimeMonoScripts));
@@ -62,9 +63,6 @@ namespace Appalachia.CI.Integration.Assets
         private static Dictionary<Type, UnityEditor.MonoScript> _typeScriptLookup;
         private static List<UnityEditor.MonoScript> _allMonoScripts;
         private static List<UnityEditor.MonoScript> _runtimeMonoScripts;
-
-        private static readonly ProfilerMarker _PRF_GetAssetRepositoryPath =
-            new ProfilerMarker(_PRF_PFX + nameof(GetAssetRepositoryPath));
 
         #endregion
 
@@ -118,7 +116,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetAssetRepositoryPath(string assetPath, bool invalidateCache = true)
+        public static string GetAssetRepositoryPath(string assetPath, bool invalidateCache = false)
         {
             using (_PRF_GetAssetRepositoryPath.Auto())
             {
@@ -258,8 +256,10 @@ namespace Appalachia.CI.Integration.Assets
         {
             if (directoryInfo.Exists)
             {
-                var startInfo =
-                    new ProcessStartInfo {Arguments = directoryInfo.FullPath, FileName = "explorer.exe"};
+                var startInfo = new ProcessStartInfo
+                {
+                    Arguments = directoryInfo.FullPath, FileName = "explorer.exe"
+                };
 
                 Process.Start(startInfo);
             }
@@ -282,14 +282,13 @@ namespace Appalachia.CI.Integration.Assets
         {
             if (AppaDirectory.Exists(folderPath))
             {
-                var startInfo = new ProcessStartInfo {Arguments = folderPath, FileName = "explorer.exe"};
+                var startInfo = new ProcessStartInfo { Arguments = folderPath, FileName = "explorer.exe" };
 
                 Process.Start(startInfo);
             }
         }
 
-        public static void RegisterAdditionalAssetTypeFolders<T>(
-            Func<Type, string, string> folderFunction)
+        public static void RegisterAdditionalAssetTypeFolders<T>(Func<Type, string, string> folderFunction)
         {
             RegisterAdditionalAssetTypeFolders(typeof(T), folderFunction);
         }
@@ -346,6 +345,15 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        private static string GetDefaultAssetPath(string relativePathToRepositoryMember, string assetBasePath)
+        {
+            string baseDataFolder;
+            AppaLog.Error($"Could not find better location to save asset {relativePathToRepositoryMember}");
+
+            baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
+            return baseDataFolder;
+        }
+
         private static string GetSaveLocationMetadataInternal(
             string relativePathToRepositoryMember,
             string saveFileName,
@@ -360,26 +368,51 @@ namespace Appalachia.CI.Integration.Assets
 
                 var repositoryPath = GetAssetRepositoryPath(relativePathToRepositoryMember);
 
+                if ((repositoryPath != null) && repositoryPath.Contains("Library/PackageCache"))
+                {
+                    repositoryPath = null;
+                }
+
                 if (repositoryPath == null)
                 {
-                    var script = GetScriptFromType(ownerType);
-
-                    if (script == null)
+                    if (ownerType == null)
                     {
+                        if (relativePathToRepositoryMember.StartsWith("Packages"))
+                        {
+                            throw new NotSupportedException(
+                                $"Must provide an owner type for [{saveFiletype.Name}]."
+                            );
+                        }
+
                         baseDataFolder = GetDefaultAssetPath(relativePathToRepositoryMember, assetBasePath);
                     }
                     else
                     {
-                        var scriptPath = GetAssetPath(script);
-                        repositoryPath = GetAssetRepositoryPath(scriptPath);
+                        var script = GetScriptFromType(ownerType);
 
-                        if (repositoryPath == null)
+                        if (script == null)
                         {
-                            baseDataFolder = GetDefaultAssetPath(relativePathToRepositoryMember, assetBasePath);
+                            baseDataFolder = GetDefaultAssetPath(
+                                relativePathToRepositoryMember,
+                                assetBasePath
+                            );
                         }
                         else
                         {
-                            baseDataFolder = AppaPath.Combine(repositoryPath, "asset");
+                            var scriptPath = GetAssetPath(script);
+                            repositoryPath = GetAssetRepositoryPath(scriptPath);
+
+                            if (repositoryPath == null)
+                            {
+                                baseDataFolder = GetDefaultAssetPath(
+                                    relativePathToRepositoryMember,
+                                    assetBasePath
+                                );
+                            }
+                            else
+                            {
+                                baseDataFolder = AppaPath.Combine(repositoryPath, "asset");
+                            }
                         }
                     }
                 }
@@ -404,17 +437,19 @@ namespace Appalachia.CI.Integration.Assets
 
                 var finalFolder = AppaPath.Combine(baseDataFolder, finalFolderName);
 
+                var searchHits = AppaDirectory.GetDirectories(
+                    baseDataFolder,
+                    finalFolderName,
+                    SearchOption.AllDirectories
+                );
+
+                if ((searchHits != null) && (searchHits.Length > 0))
+                {
+                    return searchHits[0];
+                }
+
                 return finalFolder.ToRelativePath();
             }
-        }
-
-        private static string GetDefaultAssetPath(string relativePathToRepositoryMember, string assetBasePath)
-        {
-            string baseDataFolder;
-            AppaLog.Error($"Could not find better location to save asset {relativePathToRepositoryMember}");
-
-            baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
-            return baseDataFolder;
         }
 
         private static void InitializeTypeScriptLookups()
@@ -472,9 +507,9 @@ namespace Appalachia.CI.Integration.Assets
 
                 var atfl = _assetTypeFolderLookup;
 
-                atfl.Add(typeof(AnimationClip),              (_, _) => "Animations");
-                atfl.Add(typeof(AnimatorOverrideController), (_, _) => "Animations");
-                atfl.Add(typeof(UnityEditor.Animations.BlendTree),      (_, _) => "Animations");
+                atfl.Add(typeof(AnimationClip),                    (_, _) => "Animations");
+                atfl.Add(typeof(AnimatorOverrideController),       (_, _) => "Animations");
+                atfl.Add(typeof(UnityEditor.Animations.BlendTree), (_, _) => "Animations");
 
                 atfl.Add(typeof(AudioClip),  (_, _) => "Audio");
                 atfl.Add(typeof(AudioMixer), (_, _) => "Audio");
@@ -511,12 +546,19 @@ namespace Appalachia.CI.Integration.Assets
 
                 atfl.Add(typeof(Texture), (_, _) => "Textures");
 
-                atfl.Add(typeof(Sprite),                       (_, _) => "Sprites");
-                atfl.Add(typeof(SpriteAsset),                  (_, _) => "Sprites");
-                atfl.Add(typeof(SpriteAtlas),                  (_, _) => "Sprites");
+                atfl.Add(typeof(Sprite),                           (_, _) => "Sprites");
+                atfl.Add(typeof(SpriteAsset),                      (_, _) => "Sprites");
+                atfl.Add(typeof(SpriteAtlas),                      (_, _) => "Sprites");
                 atfl.Add(typeof(UnityEditor.U2D.SpriteAtlasAsset), (_, _) => "Sprites");
             }
         }
+
+        #region Profiling
+
+        private static readonly ProfilerMarker _PRF_GetAssetRepositoryPath =
+            new ProfilerMarker(_PRF_PFX + nameof(GetAssetRepositoryPath));
+
+        #endregion
     }
 }
 

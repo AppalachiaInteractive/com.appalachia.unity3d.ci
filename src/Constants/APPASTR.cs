@@ -43,6 +43,7 @@ namespace Appalachia.CI.Constants
 
         public const string Common = "Common";
         public const string Completed = "Completed";
+        public const string Components = "Components";
         public const string config = "config";
         public const string Content = "Content";
         public const string Context = "Context";
@@ -54,7 +55,10 @@ namespace Appalachia.CI.Constants
         public const string Count = "Count";
         public const string Current = "Current";
         public const string Current_Game = Current + _ + Game;
+        public const string Cursor = "Cursor";
         public const string data = "data";
+        public const string Default = "Default";
+        public const string Default_References = Default + _ + References;
         public const string Definitions = "Definitions";
         public const string Dependencies = "Dependencies";
         public const string Deserialize = "Deserialize";
@@ -90,6 +94,7 @@ namespace Appalachia.CI.Constants
         public const string Hide_Flags = Hide + _ + Flags;
         public const string ID = "ID";
         public const string Ideal = "Ideal";
+        public const string Input = "Input";
         public const string Integration = "Integration";
         public const string Integration_Analysis = Integration + _ + Analysis;
         public const string Interactive = "Interactive";
@@ -151,6 +156,8 @@ namespace Appalachia.CI.Constants
         public const string Review = "Review";
         public const string Runtime = "Runtime";
         public const string Scaling = "Scaling";
+        public const string Scene = "Scene";
+        public const string Scene_Behaviour = Scene + _ + Behaviour;
         public const string Scriptable = "Scriptable";
         public const string SCRIPTABLE = "SCRIPTABLE";
         public const string Search = "Search";
@@ -167,10 +174,13 @@ namespace Appalachia.CI.Constants
         public const string Status = "Status";
         public const string Tasks = "Tasks";
         public const string Templates = "Templates";
+        public const string Audio = "Audio";
         public const string Test = "Test";
         public const string Test_Files = Test + _ + Files;
         public const string To = "To";
         public const string Type = "Type";
+        public const string Unload = "Unload";
+        public const string Unload_Behaviour = Unload + _ + Behaviour;
         public const string url = "url";
         public const string User = "User";
         public const string Validity = "Validity";
