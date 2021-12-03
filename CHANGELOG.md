@@ -1,6 +1,4 @@
 ```
-C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
-Development environment loaded!  
  ________   ___  ___   ________   ________    ________   _______    ________      
 |\   ____\ |\  \|\  \ |\   __  \ |\   ___  \ |\   ____\ |\  ___ \  |\   ____\     
 \ \  \___| \ \  \\\  \\ \  \|\  \\ \  \\ \  \\ \  \___| \ \   __/| \ \  \___|_    
@@ -14,6 +12,9 @@ Development environment loaded!
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| faeef0915bf22f6a480f3ca896ceac640878d79d | 2021-12-02 | Chris Schubert | General code cleanup |
+| 6ade385649276637540fee7546c29e0e2a5f81f8 | 2021-12-02 | Chris Schubert | Basic refactoring of object scopes and lifetimes |
+| a8bb856158f68945d7660d628c319f5adfd8aa06 | 2021-11-21 | Chris Schubert | Updating changelog and releaselog |
 | 0a7be8326dec43aec7a126bc91953c1848c8e95b | 2021-11-21 | Chris Schubert | Updating asset manager usages |
 | aa97b449b45b1019224872f5c3eeb73ba427fedb | 2021-11-20 | Chris Schubert | Updating changelog and releaselog |
 | f8224e7724e6454581a0d8def8248192cb0c2393 | 2021-11-20 | Chris Schubert | Prference initialization and UI templates |
