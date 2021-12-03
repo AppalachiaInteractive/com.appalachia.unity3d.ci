@@ -1,4 +1,6 @@
 ```
+C:/Users/Chris/com.appalachia/unity3d/appa/Assets/Appalachia.CI
+Development environment loaded!  
  ______   ______   __       ______   ______   ______   ______    
 /\  == \ /\  ___\ /\ \     /\  ___\ /\  __ \ /\  ___\ /\  ___\   
 \ \  __< \ \  __\ \ \ \____\ \  __\ \ \  __ \\ \___  \\ \  __\   
@@ -13,6 +15,8 @@
 `0.2.0`
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| 49ae164b51ccbb2f1e017354b401116fbaee7a56 | 2021-12-03 | Chris Schubert | Fixing missing test assemblies |
+| 2c555cf40311bb65249af80f55ef8d810b90d4e8 | 2021-12-02 | Chris Schubert | Updating changelog and releaselog |
 | d8383f2916cd79039f1e6f030e9a3db635000274 | 2021-12-02 | Chris Schubert | Updating changelog and releaselog |
 | faeef0915bf22f6a480f3ca896ceac640878d79d | 2021-12-02 | Chris Schubert | General code cleanup |
 | 6ade385649276637540fee7546c29e0e2a5f81f8 | 2021-12-02 | Chris Schubert | Basic refactoring of object scopes and lifetimes |
