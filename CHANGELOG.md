@@ -12,6 +12,7 @@
 ## Releasing
 | Hash | Date | Author | Changes |
 |------|------|--------|---------|
+| d8383f2916cd79039f1e6f030e9a3db635000274 | 2021-12-02 | Chris Schubert | Updating changelog and releaselog |
 | faeef0915bf22f6a480f3ca896ceac640878d79d | 2021-12-02 | Chris Schubert | General code cleanup |
 | 6ade385649276637540fee7546c29e0e2a5f81f8 | 2021-12-02 | Chris Schubert | Basic refactoring of object scopes and lifetimes |
 | a8bb856158f68945d7660d628c319f5adfd8aa06 | 2021-11-21 | Chris Schubert | Updating changelog and releaselog |
