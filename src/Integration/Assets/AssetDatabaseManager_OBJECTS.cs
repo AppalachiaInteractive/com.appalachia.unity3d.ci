@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Appalachia.CI.Integration.Core;
 using Unity.Profiling;
 using Object = UnityEngine.Object;
 
@@ -9,9 +10,7 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        #region Profiling
-
-        private const string _PRF_PFX = nameof(AssetDatabaseManager) + ".";
+        #region Static Fields and Autoproperties
 
         private static readonly ProfilerMarker _PRF_GetAllMonoScripts =
             new(_PRF_PFX + nameof(GetAllMonoScripts));
@@ -34,17 +33,15 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetAssetGuid =
             new ProfilerMarker(_PRF_PFX + nameof(GetAssetGuid));
 
-        #endregion
-
-        
-
         private static Dictionary<string, string[]> _guidsByTypeName;
         private static Dictionary<string, string[]> _pathsByTypeName;
         private static Dictionary<string, Type[]> _typesByTypeName;
 
+        #endregion
 
         public static string[] GetAllAssetGuids(Type type = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllAssetGuids.Auto())
             {
                 var typeName = type?.Name ?? nameof(Object);
@@ -57,6 +54,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetAllAssetPaths<T>()
             where T : Object
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllAssetPaths.Auto())
             {
                 return GetAllAssetPaths(typeof(T));
@@ -65,6 +63,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string[] GetAllAssetPaths(Type type)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllAssetPaths.Auto())
             {
                 var typeName = type?.Name ?? nameof(Object);
@@ -76,6 +75,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static Type[] GetAllAssetTypes(Type type = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllAssetTypes.Auto())
             {
                 var typeName = type?.Name ?? nameof(Object);
@@ -87,9 +87,10 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string GetAssetGuid(Object asset)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAssetGuid.Auto())
             {
-                if (TryGetGUIDAndLocalFileIdentifier(asset, out var guid, out long _))
+                if (TryGetGUIDAndLocalFileIdentifier(asset, out var guid, out var _))
                 {
                     return guid;
                 }
@@ -100,6 +101,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string[] GetProjectAssetPaths(Type type = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetProjectAssetPaths.Auto())
             {
                 var assetPaths = GetAllAssetPaths(type);
@@ -116,6 +118,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static void InitializeTypeData(string typeName)
         {
+            ThrowIfInvalidState();
             using (_PRF_InitializeTypeData.Auto())
             {
                 _typesByTypeName ??= new Dictionary<string, Type[]>();
@@ -124,7 +127,9 @@ namespace Appalachia.CI.Integration.Assets
 
                 if (!_typesByTypeName.ContainsKey(typeName))
                 {
-                    var guids = FindAssets($"t: {typeName}");
+                    var searchTerm = SearchStringBuilder.Build.AddTypeName(typeName).Finish();
+
+                    var guids = FindAssets(searchTerm);
 
                     var sglength = guids.Length;
 

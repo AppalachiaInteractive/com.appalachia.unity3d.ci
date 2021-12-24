@@ -1,5 +1,7 @@
 // ReSharper disable MemberHidesStaticFromOuterClass
 
+using UnityEngine;
+
 namespace Appalachia.CI.Constants
 {
     public static class APPASTR
@@ -13,12 +15,18 @@ namespace Appalachia.CI.Constants
         public const string Analysis = "Analysis";
         public const string Any = "Any";
         public const string Any_Issues = Any + _ + Issues;
+        public const string APPA = "APPA";
         public const string Appalachia = "Appalachia";
         public const string APPALACHIA = "APPALACHIA";
         public const string Appalachia_Interactive = Appalachia + _ + Interactive;
         public const string APPALACHIA_INTERACTIVE = APPALACHIA + _ + INTERACTIVE;
         public const string Appalachia_Managed_Only = Appalachia + _ + Managed + _ + Only;
         public const string Appalachia_Only = Appalachia + _ + Only;
+        public const string AREA = "AREA";
+        public const string AREA_DATA = AREA + _ + DATA;
+        public const string AREA_MAN = AREA + _ + MAN;
+        public const string AREA_MANAGER = AREA + _ + MANAGER;
+        public const string AREA_METADATA = AREA + _ + METADATA;
         public const string ASMDEFBUTTON = "ASMDEFBUTTON";
         public const string Assemblies = "Assemblies";
         public const string Assembly = "Assembly";
@@ -33,13 +41,20 @@ namespace Appalachia.CI.Constants
         public const string Asset_Review = Asset + _ + Review;
         public const string Assets = "Assets";
         public const string Assets_Only = Assets + _ + Only;
+        public const string Audio = "Audio";
+        public const string BASE = "BASE";
+        public const string PLAY = "PLAY";
+        public const string PLAYABLE = "PLAYABLE";
         public const string Behaviour = "Behaviour";
         public const string BEHAVIOUR = "BEHAVIOUR";
+        public const string BHVR = "BHVR";
         public const string Buttons = "Buttons";
         public const string Canvas = "Canvas";
         public const string Canvas_Group = Canvas + _ + Group;
         public const string Canvas_Scaling = Canvas + _ + Scaling;
         public const string CI = "CI";
+        public const string COLL = "COLL";
+        public const string COLLECTION = "COLLECTION";
 
         public const string Common = "Common";
         public const string Completed = "Completed";
@@ -57,6 +72,7 @@ namespace Appalachia.CI.Constants
         public const string Current_Game = Current + _ + Game;
         public const string Cursor = "Cursor";
         public const string data = "data";
+        public const string DATA = "DATA";
         public const string Default = "Default";
         public const string Default_References = Default + _ + References;
         public const string Definitions = "Definitions";
@@ -74,6 +90,11 @@ namespace Appalachia.CI.Constants
         public const string Doozy_Graph = Doozy + _ + Graph;
         public const string Doozy_View = Doozy + _ + View;
         public const string Editor = "Editor";
+        public const string EDITOR = "EDITOR";
+        public const string EDITOR_ONLY = EDITOR + _ + ONLY;
+        public const string EDITOR_ONLY_BEHAVIOUR = EDITOR + _ + ONLY + _ + BEHAVIOUR;
+        public const string EDT = "EDT";
+        public const string EDT_ONLY = EDT + _ + ONLY;
         public const string File = "File";
         public const string File_Current = File + " (" + Ideal + ")";
         public const string File_Ideal = File + " (" + Current + ")";
@@ -85,6 +106,10 @@ namespace Appalachia.CI.Constants
         public const string Game = "Game";
         public const string Game_State = "Game State";
         public const string General = "General";
+        public const string GLB = "GLB";
+        public const string GLB_SNGT = GLB + _ + SNGT;
+        public const string GLOBAL = "GLOBAL";
+        public const string GLOBAL_SINGLETON = GLOBAL + _ + SINGLETON;
         public const string Graph = "Graph";
         public const string Graphic = "Graphic";
         public const string Graphic_Raycaster = Graphic + _ + Raycaster;
@@ -95,6 +120,10 @@ namespace Appalachia.CI.Constants
         public const string ID = "ID";
         public const string Ideal = "Ideal";
         public const string Input = "Input";
+        public const string INST = "INST";
+        public const string INST_BHVR = INST + _ + BHVR;
+        public const string INSTANCED = "INSTANCED";
+        public const string INSTANCED_BEHAVIOUR = INSTANCED + _ + BEHAVIOUR;
         public const string Integration = "Integration";
         public const string Integration_Analysis = Integration + _ + Analysis;
         public const string Interactive = "Interactive";
@@ -108,15 +137,23 @@ namespace Appalachia.CI.Constants
         public const string Issues = "Issues";
         public const string Keys = "Keys";
         public const string Level = "Level";
+        public const string LOOKUP = "LOOKUP";
         public const string Maintenance = "Maintenance";
         public const string Maintenance_Tasks = Maintenance + _ + Tasks;
+        public const string MAN = "MAN";
         public const string Managed = "Managed";
+        public const string MANAGER = "MANAGER";
+        public const string MDATA = "MDATA";
+        public const string MDATA_COLL = MDATA + _ + COLL;
         public const string Menu = "Menu";
         public const string Menu_Width = Menu + _ + Width;
         public const string Metadata = "Metadata";
+        public const string METADATA = "METADATA";
+        public const string METADATA_COLLECTION = METADATA + _ + COLLECTION;
         public const string Name = "Name";
         public const string Namespace = "Namespace";
         public const string Only = "Only";
+        public const string ONLY = "ONLY";
         public const string Only_Issues = Only + _ + Issues;
         public const string Open = "Open";
         public const string Open__asmdef = Open + _ + _asmdef;
@@ -146,8 +183,10 @@ namespace Appalachia.CI.Constants
         public const string Ref_ = "Ref.";
         public const string Ref_Assembly_Level = Ref_ + Assembly + Level;
         public const string References = "References";
+        public const string REPO = "REPO";
         public const string Repositories = "Repositories";
         public const string Repository = "Repository";
+        public const string REPOSITORY = "REPOSITORY";
         public const string Repository_Review = Repository + _ + Review;
         public const string Reserialize = "Reserialize";
         public const string Reserialize_All = Reserialize + _ + All;
@@ -160,6 +199,7 @@ namespace Appalachia.CI.Constants
         public const string Scene_Behaviour = Scene + _ + Behaviour;
         public const string Scriptable = "Scriptable";
         public const string SCRIPTABLE = "SCRIPTABLE";
+        public const string SCRPT = "SCRPT";
         public const string Search = "Search";
         public const string Select = "Select";
         public const string Serialize = "Serialize";
@@ -167,14 +207,39 @@ namespace Appalachia.CI.Constants
         public const string SINGLETON = "SINGLETON";
         public const string Singleton_Behaviour = Singleton + _ + Behaviour;
         public const string SINGLETON_BEHAVIOUR = SINGLETON + _ + BEHAVIOUR;
+        public const string SINGLETON_EDITOR_ONLY = SINGLETON + _ + EDITOR + _ + ONLY;
+        public const string SINGLETON_LOOKUP = SINGLETON + _ + LOOKUP;
         public const string Singleton_Scriptable = Singleton + _ + Scriptable;
         public const string SINGLETON_SCRIPTABLE = SINGLETON + _ + SCRIPTABLE;
         public const string Size = "Size";
+        public const string SNGT = "SNGT";
+        public const string SNGT_BHVR = SNGT + _ + BHVR;
+        public const string SNGT_EDT_ONLY = SNGT + _ + EDT + _ + ONLY;
+        public const string SNGT_LOOKUP = SNGT + _ + LOOKUP;
+        public const string SNGT_SCRPT = SNGT + _ + SCRPT;
         public const string src = "src";
         public const string Status = "Status";
+        public const string SYMBOL_AMPERSAND = "&";
+        public const string SYMBOL_ASTERISK = "*";
+        public const string SYMBOL_AT = "@";
+        public const string SYMBOL_CARET = "^";
+        public const string SYMBOL_COMMA = ",";
+        public const string SYMBOL_DOLLAR = "$";
+        public const string SYMBOL_EQUAL = "=";
+        public const string SYMBOL_EXCLAMATION = "!";
+        public const string SYMBOL_GREATERTHAN = ">";
+        public const string SYMBOL_HYPHEN = "-";
+        public const string SYMBOL_LESSTHAN = "<";
+        public const string SYMBOL_NUMBER = "#";
+        public const string SYMBOL_PARENS_CLOSE = ")";
+        public const string SYMBOL_PARENS_OPEN = "(";
+        public const string SYMBOL_PERCENT = "%";
+        public const string SYMBOL_PERIOD = ".";
+        public const string SYMBOL_PERIODPERIOD = "..";
+        public const string SYMBOL_PLUS = "+";
+        public const string SYMBOL_UNDERSCORE = "_";
         public const string Tasks = "Tasks";
         public const string Templates = "Templates";
-        public const string Audio = "Audio";
         public const string Test = "Test";
         public const string Test_Files = Test + _ + Files;
         public const string To = "To";
@@ -194,6 +259,55 @@ namespace Appalachia.CI.Constants
         public const string Workflow = "Workflow";
 
         private const string _ = " ";
+
+        #endregion
+
+        #region Nested type: ANIMATOR
+
+        public static class ANIMATOR
+        {
+            #region Constants and Static Readonly
+
+            public static readonly int Disabled = Animator.StringToHash("Disabled");
+            public static readonly int Hovering = Animator.StringToHash("Hovering");
+
+            public static readonly int Normal = Animator.StringToHash("Normal");
+            public static readonly int Pressed = Animator.StringToHash("Pressed");
+
+            #endregion
+
+            #region Nested type: LAYERS
+
+            public static class LAYERS
+            {
+                #region Constants and Static Readonly
+
+                public const string BaseLayer = "Base Layer";
+                public const string SpeedLayer = "Speed Layer";
+
+                #endregion
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Nested type: ASPECTS
+
+        public static class ASPECTS
+        {
+            #region Constants and Static Readonly
+
+            public const string BASE = "BASE";
+            public const string GROUP = BASE + "/" + Internal;
+            public const string GROUP_BUTTONS = GROUP + "/" + Buttons;
+            public const string GROUP_WORKFLOW = SHOW_WORKFLOW + "/" + Workflow;
+            public const string GROUP_WORKFLOW_PROD = GROUP_WORKFLOW + "/" + Productivity;
+            public const string SHOW_WORKFLOW = GROUP + "/$ShowWorkflow";
+
+            #endregion
+        }
 
         #endregion
 
@@ -316,6 +430,19 @@ namespace Appalachia.CI.Constants
 
                 #endregion
             }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Nested type: Formats
+
+        public static class Formats
+        {
+            #region Constants and Static Readonly
+
+            public const string FileTime = "_{0:yyyyMMdd-hhmmssfff}";
 
             #endregion
         }

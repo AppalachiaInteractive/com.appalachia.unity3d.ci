@@ -2,16 +2,18 @@
 using System;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Strings;
 using UnityEngine;
 
 namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
+        
         public static Texture2D SaveTextureAssetToFile<T>(T owner, Texture2D texture)
             where T : MonoBehaviour
         {
+            ThrowIfInvalidState();
             try
             {
                 var fileName = texture.name;
@@ -24,7 +26,10 @@ namespace Appalachia.CI.Integration.Assets
 
                 var savePathMetadata = GetSaveDirectoryForOwnedAsset<T, Texture2D>("x.png");
 
-                var targetSavePath = AppaPath.Combine(savePathMetadata.ToRelativePath(), $"{fileName}.png");
+                var targetSavePath = AppaPath.Combine(
+                    savePathMetadata.ToRelativePath(),
+                    ZString.Format("{0}.png", fileName)
+                );
 
                 var absolutePath = targetSavePath;
 
@@ -43,7 +48,8 @@ namespace Appalachia.CI.Integration.Assets
 
                 texture = LoadAssetAtPath<Texture2D>(targetSavePath);
 
-                var tImporter = UnityEditor.AssetImporter.GetAtPath(targetSavePath) as UnityEditor.TextureImporter;
+                var tImporter =
+                    UnityEditor.AssetImporter.GetAtPath(targetSavePath) as UnityEditor.TextureImporter;
                 if (tImporter != null)
                 {
                     tImporter.textureType = UnityEditor.TextureImporterType.Default;
@@ -56,7 +62,7 @@ namespace Appalachia.CI.Integration.Assets
             }
             catch (Exception ex)
             {
-                AppaLog.Error(ex);
+                Context.Log.Error(ex);
             }
 
             return texture;

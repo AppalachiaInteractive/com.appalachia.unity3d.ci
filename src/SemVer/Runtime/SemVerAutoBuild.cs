@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
-using Appalachia.Utility.Logging;
-using UnityEngine;
+using Appalachia.CI.Constants;
 
 namespace Appalachia.CI.SemVer
 {
@@ -10,6 +10,21 @@ namespace Appalachia.CI.SemVer
     /// <seealso cref="SemVer.Build" />
     public abstract class SemVerAutoBuild
     {
+        [NonSerialized] private AppaContext _context;
+
+        protected AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(this);
+                }
+
+                return _context;
+            }
+        }
+        
         /// <summary>
         ///     <see cref="SemVerAutoBuild" /> implementations
         /// </summary>
@@ -43,7 +58,7 @@ namespace Appalachia.CI.SemVer
         {
             internal sealed override string Set(string build)
             {
-               AppaLog.Warn("The build metadata is read-only");
+                Context.Log.Warn("The build metadata is read-only");
                 return build;
             }
         }

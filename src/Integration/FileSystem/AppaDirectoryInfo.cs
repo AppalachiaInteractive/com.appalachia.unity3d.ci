@@ -3,15 +3,31 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Extensions;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Strings;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaDirectoryInfo : AppaFileSystemInfo
     {
+        [NonSerialized] private static AppaContext _context;
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(AppaDirectoryInfo));
+                }
+
+                return _context;
+            }
+        }
+        
         #region Profiling And Tracing Markers
 
         private const string _PRF_PFX = nameof(AppaDirectoryInfo) + ".";
@@ -77,7 +93,7 @@ namespace Appalachia.CI.Integration.FileSystem
             }
             catch
             {
-                AppaLog.Error(nameof(AppaDirectoryInfo) + ": " + path);
+                Context.Log.Error($"{nameof(AppaDirectoryInfo)}: {path}");
                 throw;
             }
         }
@@ -125,13 +141,17 @@ namespace Appalachia.CI.Integration.FileSystem
                     return null;
                 }
 
-                var parentPath = parent.FullName.CleanFullPath();
+                var parentFullPath = parent.FullName;
+
+                var parentCleanPath = parentFullPath.CleanFullPath();
 
                 var projectRoot = ProjectLocations.GetProjectDirectoryPath();
 
-                if (!parentPath.Contains(projectRoot))
+                if (!parentCleanPath.Contains(projectRoot))
                 {
-                    throw new NotSupportedException($"Didn't find project root for {_directoryInfo.Parent}");
+                    throw new NotSupportedException(
+                        ZString.Format("Didn't find project root for {0}", _directoryInfo.Parent)
+                    );
                 }
 
                 return parent;

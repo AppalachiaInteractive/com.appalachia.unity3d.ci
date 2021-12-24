@@ -12,6 +12,7 @@ namespace Appalachia.CI.Integration.Assets
     {
         public AssetEditingScope(bool doEdit = true, bool refresh = true, bool saveAssets = true)
         {
+            AssetDatabaseManager.ThrowIfInvalidState();
             _doEdit = doEdit;
             _refresh = refresh;
             _saveAssets = saveAssets;
@@ -28,6 +29,7 @@ namespace Appalachia.CI.Integration.Assets
 
         void IDisposable.Dispose()
         {
+            AssetDatabaseManager.ThrowIfInvalidState();
             if (_doEdit)
             {
                 AssetDatabaseManager.StopAssetEditing();

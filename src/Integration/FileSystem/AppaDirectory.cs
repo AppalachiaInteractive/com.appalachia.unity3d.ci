@@ -2,14 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Extensions;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Strings;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaDirectory
     {
+        [NonSerialized] private static AppaContext _context;
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(AppaDirectory));
+                }
+
+                return _context;
+            }
+        }   
+        
+        
         /// <summary>Creates all directories and subdirectories in the specified path unless they already exist.</summary>
         /// <param name="path">The directory to create. </param>
         /// <returns>
@@ -676,7 +693,11 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     <paramref name="path" /> is a file name.
         /// </exception>
         /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive). </exception>
-        public static string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
+        public static string[] GetDirectories(
+            string path,
+            string searchPattern,
+            SearchOption searchOption,
+            bool throwIfMissing = true)
         {
             using (_PRF_GetDirectories.Auto())
             {
@@ -688,10 +709,20 @@ namespace Appalachia.CI.Integration.FileSystem
                 }
                 catch (Exception ex)
                 {
-                    AppaLog.Exception(
-                        $"Failed to find directories at {path} with search pattern {searchPattern}.",
+                    Context.Log.Error(
+                        ZString.Format(
+                            "Failed to find directories at {0} with search pattern {1}.",
+                            path,
+                            searchPattern
+                        ),
                         ex
                     );
+
+                    if (!throwIfMissing)
+                    {
+                        return null;
+                    }
+                    
                     throw;
                 }
             }
@@ -1131,7 +1162,7 @@ namespace Appalachia.CI.Integration.FileSystem
                 }
                 catch (IOException)
                 {
-                    AppaLog.Error($"[{sourceDirName}] is locked!");
+                    Context.Log.Error(ZString.Format("[{0}] is locked!", sourceDirName));
 
                     throw;
                 }

@@ -1,4 +1,4 @@
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Strings;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,7 +22,7 @@ namespace Appalachia.CI.SemVer
                 return;
             }
 
-           AppaLog.Warn($"{property.type} is not supported by {this}");
+            Context.Log.Warn(ZString.Format("{0} is not supported by {1}", property.type, this));
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.PropertyField(position, property);
             EditorGUI.EndProperty();

@@ -1,35 +1,48 @@
-#if UNITY_EDITOR
+using System;
+using Appalachia.CI.Constants;
+using Appalachia.Utility.Execution;
+using Appalachia.Utility.Strings;
+using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        #region Menu Items
+        [NonSerialized] private static AppaContext _context;
 
-
-        [UnityEditor.MenuItem(
-            PKG.Menu.Appalachia.RootTools.Base + "Clear Cached Asset Data",
-            false,
-            PKG.Menu.Appalachia.RootTools.Priority
-        )]
-        public static void InvalidateCache()
+        private static AppaContext Context
         {
-            _allAssetPaths = null;
-            _allMonoScripts = null;
-            _allProjectPaths = null;
-            _runtimeMonoScripts = null;
-            _scriptTypeLookup = null;
-            _typeScriptLookup = null;
-            _assetPathsByExtension = null;
-            _assetTypeFolderLookup = null;
-            _guidsByTypeName = null;
-            _pathsByTypeName = null;
-            _projectPathsByExtension = null;
-            _typesByTypeName = null;
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(AssetDatabaseManager));
+                }
+
+                return _context;
+            }
         }
+
+        internal static void ThrowIfInvalidState()
+        {
+            using (_PRF_ThrowIfInvalidState.Auto())
+            {
+                if (AppalachiaApplication.IsPlaying)
+                {
+                    throw new NotSupportedException(
+                        ZString.Format("Cannot use {0} during Play mode.", nameof(AssetDatabaseManager))
+                    );
+                }
+            }
+        }
+
+        #region Profiling
+
+        private const string _PRF_PFX = nameof(AssetDatabaseManager) + ".";
+
+        private static readonly ProfilerMarker _PRF_ThrowIfInvalidState =
+            new ProfilerMarker(_PRF_PFX + nameof(ThrowIfInvalidState));
 
         #endregion
     }
 }
-
-#endif

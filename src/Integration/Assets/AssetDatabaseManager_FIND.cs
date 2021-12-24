@@ -5,6 +5,7 @@ using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Strings;
 using Unity.Profiling;
 using Object = UnityEngine.Object;
 
@@ -18,45 +19,17 @@ namespace Appalachia.CI.Integration.Assets
 
         private static Dictionary<string, List<string>> _assetPathsByExtension;
         private static Dictionary<string, List<string>> _projectPathsByExtension;
+
+        private static Dictionary<Type, Dictionary<string, Object>> _firstLookupCache;
         private static string[] _allAssetPaths;
         private static string[] _allProjectPaths;
 
         #endregion
 
-        private static Dictionary<Type, Dictionary<string, Object>> _firstLookupCache;
-        
-        public static T FindFirstAssetMatch<T>(string searchString)
-            where T : Object
-        {
-            using (_PRF_FindFirstAsset.Auto())
-            {
-                _firstLookupCache ??= new Dictionary<Type, Dictionary<string, Object>>();
-                
-                if (!_firstLookupCache.ContainsKey(typeof(T)))
-                {
-                    _firstLookupCache.Add(typeof(T), new Dictionary<string, Object>());
-                }
-
-                if (_firstLookupCache[typeof(T)].ContainsKey(searchString))
-                {
-                    return _firstLookupCache[typeof(T)][searchString] as T;
-                }
-                
-                var results = FindAssets<T>(searchString);
-                var sortedResults = results.OrderByDescending(
-                    v => v.name == searchString ? 1 : 0 
-                    );
-                   var result = sortedResults.FirstOrDefault();
-
-                _firstLookupCache[typeof(T)].Add(searchString, result);
-
-                return result;
-            }
-        }
-
         public static string[] FindAssetGuids<T>(string searchString = null)
             where T : Object
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetGuids.Auto())
             {
                 InitializeAssetPathData();
@@ -67,6 +40,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string[] FindAssetGuids(Type t, string searchString = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetGuids.Auto())
             {
                 InitializeAssetPathData();
@@ -79,6 +53,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPaths(string searchString = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
             {
                 InitializeAssetPathData();
@@ -89,6 +64,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPaths<T>(string searchString = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
             {
                 InitializeAssetPathData();
@@ -99,6 +75,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPaths(Type t, string searchString = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
             {
                 InitializeAssetPathData();
@@ -125,6 +102,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPathsByExtension(string extension)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPathsByExtension.Auto())
             {
                 InitializeAssetPathData();
@@ -142,6 +120,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPathsByFileName(string name)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPathsByFileName.Auto())
             {
                 InitializeAssetPathData();
@@ -162,6 +141,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<string> FindAssetPathsBySubstring(string substring)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssetPathsBySubstring.Auto())
             {
                 InitializeAssetPathData();
@@ -182,6 +162,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<Object> FindAssets(Type t, string searchString = null)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssets.Auto())
             {
                 var paths = FindAssetPaths(t, searchString);
@@ -205,8 +186,9 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         public static List<T> FindAssets<T>(string searchString = null)
-        where T : Object
+            where T : Object
         {
+            ThrowIfInvalidState();
             using (_PRF_FindAssets.Auto())
             {
                 InitializeAssetPathData();
@@ -233,7 +215,7 @@ namespace Appalachia.CI.Integration.Assets
                     foreach (var subAsset in subAssets)
                     {
                         var subAssetType = subAsset.GetType();
-                        
+
                         if (t.IsAssignableFrom(subAssetType))
                         {
                             var cast = subAsset as T;
@@ -246,8 +228,52 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static T FindFirstAssetMatch<T>(string searchString)
+            where T : Object
+        {
+            ThrowIfInvalidState();
+            using (_PRF_FindFirstAsset.Auto())
+            {
+                return FindFirstAssetMatch(typeof(T), searchString) as T;
+            }
+        }
+
+        public static Object FindFirstAssetMatch(Type t, string searchString = null)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_FindFirstAsset.Auto())
+            {
+                _firstLookupCache ??= new Dictionary<Type, Dictionary<string, Object>>();
+
+                if (!_firstLookupCache.ContainsKey(t))
+                {
+                    _firstLookupCache.Add(t, new Dictionary<string, Object>());
+                }
+
+                if (searchString != null)
+                {
+                    if (_firstLookupCache[t].ContainsKey(searchString))
+                    {
+                        return _firstLookupCache[t][searchString];
+                    }
+                }
+
+                var results = FindAssets(t, searchString);
+                var sortedResults = results.OrderByDescending(v => v.name == searchString ? 1 : 0);
+                var result = sortedResults.FirstOrDefault();
+
+                if (searchString != null)
+                {
+                    _firstLookupCache[t].Add(searchString, result);
+                }
+
+                return result;
+            }
+        }
+
         public static List<string> FindProjectPathsByExtension(string extension)
         {
+            ThrowIfInvalidState();
             using (_PRF_FindProjectPathsByExtension.Auto())
             {
                 InitializeAssetPathData();
@@ -265,20 +291,27 @@ namespace Appalachia.CI.Integration.Assets
 
         private static string FormatSearchString(Type t, string searchString)
         {
+            ThrowIfInvalidState();
             using (_PRF_FormatSearchString.Auto())
             {
+                if (searchString.IsNullOrWhiteSpace() && (t == null))
+                {
+                    throw new ArgumentNullException(nameof(searchString));
+                }
+
                 if (t == null)
                 {
                     return searchString;
                 }
 
                 var typename = t.Name;
-                return $"t:{typename} {searchString ?? string.Empty}";
+                return ZString.Format("t:{0} {1}", typename, searchString ?? string.Empty);
             }
         }
 
         private static void InitializeAssetPathData()
         {
+            ThrowIfInvalidState();
             using (_PRF_InitializeAssetPathData.Auto())
             {
                 if ((_allAssetPaths == null) || (_allAssetPaths.Length == 0))

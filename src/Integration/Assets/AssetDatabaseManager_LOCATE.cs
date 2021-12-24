@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Reflection.Extensions;
+using Appalachia.Utility.Strings;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -68,6 +69,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static bool DoesFileExist(string path)
         {
+            ThrowIfInvalidState();
             using (_PRF_DoesFileExist.Auto())
             {
                 var info = new AppaFileInfo(path);
@@ -78,6 +80,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<UnityEditor.MonoScript> GetAllMonoScripts()
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllMonoScripts.Auto())
             {
                 if ((_allMonoScripts == null) || (_allMonoScripts.Count == 0))
@@ -105,6 +108,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static List<UnityEditor.MonoScript> GetAllRuntimeMonoScripts()
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAllRuntimeMonoScripts.Auto())
             {
                 if ((_runtimeMonoScripts == null) || (_runtimeMonoScripts.Count == 0))
@@ -118,6 +122,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string GetAssetRepositoryPath(string assetPath, bool invalidateCache = false)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAssetRepositoryPath.Auto())
             {
                 if (string.IsNullOrWhiteSpace(assetPath))
@@ -151,7 +156,7 @@ namespace Appalachia.CI.Integration.Assets
                 }
                 catch
                 {
-                    AppaLog.Error(assetPath);
+                    Context.Log.Error(assetPath);
                 }
 
                 var rootDirectory = directoryInfo.Parent;
@@ -164,6 +169,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string GetSaveDirectoryForAsset(Type assetType, string assetPath, Type ownerType)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForAsset.Auto())
             {
                 var assetName = AppaPath.GetFileName(assetPath);
@@ -176,6 +182,7 @@ namespace Appalachia.CI.Integration.Assets
             where TOwner : MonoBehaviour
             where TAsset : Object
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForOwnedAsset.Auto())
             {
                 var ownerType = typeof(TOwner);
@@ -191,6 +198,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetSaveDirectoryForScriptableObject<T, TOwner>()
             where T : ScriptableObject
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var scriptType = typeof(T);
@@ -203,6 +211,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetSaveDirectoryForScriptableObject<T>(Type ownerType)
             where T : ScriptableObject
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var scriptType = typeof(T);
@@ -213,6 +222,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static string GetSaveDirectoryForScriptableObject(Type scriptType, Type ownerType)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
                 var script = GetScriptFromType(scriptType);
@@ -224,6 +234,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static UnityEditor.MonoScript GetScriptFromType(Type t)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetScriptFromType.Auto())
             {
                 InitializeTypeScriptLookups();
@@ -239,6 +250,7 @@ namespace Appalachia.CI.Integration.Assets
 
         public static Type GetTypeFromScript(UnityEditor.MonoScript t)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetTypeFromScript.Auto())
             {
                 InitializeTypeScriptLookups();
@@ -297,6 +309,7 @@ namespace Appalachia.CI.Integration.Assets
             Type type,
             Func<Type, string, string> folderFunction)
         {
+            ThrowIfInvalidState();
             using (_PRF_RegisterAdditionalAssetTypeFolders.Auto())
             {
                 if (_assetTypeFolderLookup == null)
@@ -317,6 +330,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static string GetAssetFolderByType(Type t, string fileName)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetAssetFolderByType.Auto())
             {
                 string extension = null;
@@ -348,7 +362,12 @@ namespace Appalachia.CI.Integration.Assets
         private static string GetDefaultAssetPath(string relativePathToRepositoryMember, string assetBasePath)
         {
             string baseDataFolder;
-            AppaLog.Error($"Could not find better location to save asset {relativePathToRepositoryMember}");
+            Context.Log.Error(
+                ZString.Format(
+                    "Could not find better location to save asset [{0}]",
+                    relativePathToRepositoryMember
+                )
+            );
 
             baseDataFolder = AppaPath.Combine(assetBasePath, "Appalachia", "asset");
             return baseDataFolder;
@@ -360,8 +379,14 @@ namespace Appalachia.CI.Integration.Assets
             Type saveFiletype,
             Type ownerType)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetSaveLocationMetadataInternal.Auto())
             {
+                if (relativePathToRepositoryMember.IsNullOrWhiteSpace())
+                {
+                    throw new ArgumentNullException(nameof(relativePathToRepositoryMember));
+                }
+
                 var assetBasePath = ProjectLocations.GetAssetsDirectoryPath();
 
                 string baseDataFolder;
@@ -380,7 +405,7 @@ namespace Appalachia.CI.Integration.Assets
                         if (relativePathToRepositoryMember.StartsWith("Packages"))
                         {
                             throw new NotSupportedException(
-                                $"Must provide an owner type for [{saveFiletype.Name}]."
+                                ZString.Format("Must provide an owner type for [{0}].", saveFiletype.Name)
                             );
                         }
 
@@ -440,7 +465,8 @@ namespace Appalachia.CI.Integration.Assets
                 var searchHits = AppaDirectory.GetDirectories(
                     baseDataFolder,
                     finalFolderName,
-                    SearchOption.AllDirectories
+                    SearchOption.AllDirectories,
+                    false
                 );
 
                 if ((searchHits != null) && (searchHits.Length > 0))
@@ -454,6 +480,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static void InitializeTypeScriptLookups()
         {
+            ThrowIfInvalidState();
             using (_PRF_InitializeTypeScriptLookups.Auto())
             {
                 var initialize = false;
@@ -501,6 +528,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static void PopulateAssetTypeFolderLookup()
         {
+            ThrowIfInvalidState();
             using (_PRF_PopulateAssetTypeFolderLookup.Auto())
             {
                 _assetTypeFolderLookup = new Dictionary<Type, Func<Type, string, string>>();

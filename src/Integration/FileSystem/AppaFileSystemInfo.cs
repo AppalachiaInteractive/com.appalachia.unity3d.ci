@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using Appalachia.CI.Integration.Extensions;
-using UnityEngine;
+using Appalachia.Utility.Execution;
 
 namespace Appalachia.CI.Integration.FileSystem
 {
@@ -50,7 +50,7 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
 
         public string ParentWindowsDirectoryRelativePath =>
-            FullPath.Replace(Application.dataPath, string.Empty);
+            FullPath.Replace(AppalachiaApplication.DataPath, string.Empty);
 
         public abstract void Delete();
 

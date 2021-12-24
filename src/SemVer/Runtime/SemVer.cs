@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
-using Appalachia.Utility.Logging;
+using Appalachia.CI.Constants;
+using Appalachia.Utility.Strings;
 using UnityEngine;
 
 namespace Appalachia.CI.SemVer
@@ -11,6 +12,22 @@ namespace Appalachia.CI.SemVer
     [Serializable]
     public class SemVer : IComparable<SemVer>, IEquatable<SemVer>
     {
+        [NonSerialized] private static AppaContext _context;
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(SemVer));
+                }
+
+                return _context;
+            }
+        }
+        
+        
         public const char BuildPrefix = '+';
         public const char IdentifiersSeparator = '.';
         public const char PreReleasePrefix = '-';
@@ -83,7 +100,7 @@ namespace Appalachia.CI.SemVer
         /// </summary>
         /// <example>1.9.0</example>
         /// <returns>Major.Minor.Patch</returns>
-        public string Core => $"{major}.{minor}.{patch}";
+        public string Core => ZString.Format("{0}.{1}.{2}", major, minor, patch);
 
         /// <summary>
         ///     Build metadata MUST be ignored when determining version precedence. Thus two versions that differ only in
@@ -205,7 +222,7 @@ namespace Appalachia.CI.SemVer
             if (value >= max)
             {
                 clamped = max - 1;
-               AppaLog.Warn(name + " should be less than " + max);
+                Context.Log.Warn(name + " should be less than " + max);
             }
             else
             {

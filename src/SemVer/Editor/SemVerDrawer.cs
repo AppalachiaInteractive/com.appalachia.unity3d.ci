@@ -1,6 +1,7 @@
 using System;
+using Appalachia.CI.Constants;
 using Appalachia.Utility.Extensions;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Strings;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,6 +10,21 @@ namespace Appalachia.CI.SemVer
     [CustomPropertyDrawer(typeof(SemVer))]
     internal class SemVerDrawer : PropertyDrawer
     {
+        [NonSerialized] private static AppaContext _context;
+
+        protected static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(SemVerDrawer));
+                }
+
+                return _context;
+            }
+        }        
+        
         private const float IncrementButtonWidth = 40f;
 
         public SemVerDrawer()
@@ -50,7 +66,7 @@ namespace Appalachia.CI.SemVer
         protected SemVer DrawSemVer(Rect position, SerializedProperty property, GUIContent label)
         {
             InitPosition(position);
-            label.text = $"{label.text} {Target}";
+            label.text = ZString.Format("{0} {1}", label.text, Target);
             property.isExpanded = EditorGUI.Foldout(GetNextPosition(), property.isExpanded, label.text, true);
             if (!property.isExpanded)
             {
@@ -114,7 +130,7 @@ namespace Appalachia.CI.SemVer
             }
             catch (OverflowException)
             {
-               AppaLog.Warn("A version must not be negative");
+                Context.Log.Warn("A version must not be negative");
                 newVersionUint = version;
             }
 

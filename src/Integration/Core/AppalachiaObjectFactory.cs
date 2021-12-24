@@ -1,9 +1,12 @@
 using System;
 using System.Data;
+using System.Linq;
+using Appalachia.CI.Constants;
 using Appalachia.CI.Integration.Assets;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
-using Appalachia.Utility.Logging;
+using Appalachia.Utility.Extensions.Debugging;
+using Appalachia.Utility.Strings;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -11,6 +14,21 @@ namespace Appalachia.CI.Integration.Core
 {
     public static class AppalachiaObjectFactory
     {
+        [NonSerialized] private static AppaContext _context;
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(AppalachiaObjectFactory));
+                }
+
+                return _context;
+            }
+        }
+        
         public static ScriptableObject CreateNewAsset(
             Type t,
             string saveFolderPath = null,
@@ -21,7 +39,7 @@ namespace Appalachia.CI.Integration.Core
             {
                 return LoadExistingOrCreateNewAsset(
                     t,
-                    $"{t.Name}_{DateTime.Now:yyyyMMdd-hhmmssfff}.asset",
+                    ZString.Format("{0}_{1:yyyyMMdd-hhmmssfff}.asset", t.Name, DateTime.Now),
                     false,
                     false,
                     saveFolderPath,
@@ -105,25 +123,50 @@ namespace Appalachia.CI.Integration.Core
         {
             using (_PRF_LoadOrCreateNew.Auto())
             {
-                if (TryLoadExistingInstance(t, name, prependType, appendType, out var scriptableObject))
+                if (TryLoadExistingInstance(
+                        t,
+                        name,
+                        prependType,
+                        appendType,
+                        out var scriptableObject,
+                        out var searchString,
+                        out var searchResults
+                    ))
                 {
                     return scriptableObject;
                 }
 
+                Context.Log.Debug(
+                    ZString.Format(
+                        "Could not load instance of type [{0}] with name [{1}]. Searched [{2}].  Had results [{3}].  Will create.",
+                        t.Name,
+                        name,
+                        searchString,
+                        string.Join(", ", searchResults)
+                    )
+                );
+
                 if (t.IsAbstract)
                 {
-                    AppaLog.Error($"Can not create ScriptableObject of type [{t.Name}] as it is abstract.");
+                    Context.Log.Error(
+                        ZString.Format(
+                            "Can not create ScriptableObject of type [{0}] as it is abstract.",
+                            t.Name
+                        )
+                    );
                     return null;
                 }
-                
+
                 var instance = ScriptableObject.CreateInstance(t);
 
                 if (instance == null)
                 {
-                    AppaLog.Error($"Could not create ScriptableObject of type [{t.Name}]");
+                    Context.Log.Error(
+                        ZString.Format("Could not create ScriptableObject of type [{0}]", t.Name)
+                    );
                     return null;
                 }
-                
+
                 var cleanRelativeFilePath = GetCleanRelativeFilePath(name);
 
                 return SaveInstanceToAsset(
@@ -144,9 +187,12 @@ namespace Appalachia.CI.Integration.Core
             using (_PRF_RenameAsset.Auto())
             {
                 var path = AssetDatabaseManager.GetAssetPath(instance);
-                instance.name = newName;
 
-                AssetDatabaseManager.RenameAsset(path, newName);
+                var cleanName = AppaPath.GetFileNameWithoutExtension(newName);
+
+                instance.name = cleanName;
+
+                AssetDatabaseManager.RenameAsset(path, cleanName);
             }
         }
 #endif
@@ -227,7 +273,7 @@ namespace Appalachia.CI.Integration.Core
                     else
                     {
                         throw new DuplicateNameException(
-                            $"A scriptable object already exists at {assetPath}"
+                            ZString.Format("A scriptable object already exists at {0}", assetPath)
                         );
                     }
                 }
@@ -236,34 +282,57 @@ namespace Appalachia.CI.Integration.Core
 
                 AssetDatabaseManager.CreateAsset(i, assetPath);
 
-                if (i is IAppalachiaObject ao)
-                {
-                    ao.OnCreate();
-                }
-
                 i = AssetDatabaseManager.ImportAndLoadAssetAtPath(t, assetPath) as ScriptableObject;
+
+                if (i == null)
+                {
+                    i = AssetDatabaseManager.ImportAndLoadAssetAtPath(t, assetPath) as ScriptableObject;
+                }
 #endif
                 return i;
             }
         }
 
-        public static bool TryLoadExistingInstance<T>(string name, out T instance)
+        public static bool TryLoadExistingInstance<T>(
+            string name,
+            out T instance,
+            out string searchString,
+            out string[] searchResults)
             where T : ScriptableObject
         {
             using (_PRF_TryLoadExistingInstance.Auto())
             {
-                var result = TryLoadExistingInstance(typeof(T), name, out var scriptableObject);
+                var result = TryLoadExistingInstance(
+                    typeof(T),
+                    name,
+                    out var scriptableObject,
+                    out searchString,
+                    out searchResults
+                );
 
                 instance = scriptableObject as T;
                 return result;
             }
         }
 
-        public static bool TryLoadExistingInstance(Type t, string name, out ScriptableObject instance)
+        public static bool TryLoadExistingInstance(
+            Type t,
+            string name,
+            out ScriptableObject instance,
+            out string searchString,
+            out string[] searchResults)
         {
             using (_PRF_TryLoadExistingInstance.Auto())
             {
-                return TryLoadExistingInstance(t, name, false, false, out instance);
+                return TryLoadExistingInstance(
+                    t,
+                    name,
+                    false,
+                    false,
+                    out instance,
+                    out searchString,
+                    out searchResults
+                );
             }
         }
 
@@ -272,7 +341,9 @@ namespace Appalachia.CI.Integration.Core
             string name,
             bool prependType,
             bool appendType,
-            out ScriptableObject instance)
+            out ScriptableObject instance,
+            out string searchString,
+            out string[] searchResults)
         {
             using (_PRF_TryLoadExistingInstance.Auto())
             {
@@ -283,7 +354,9 @@ namespace Appalachia.CI.Integration.Core
                     prependType,
                     appendType,
                     cleanRelativeFilePath,
-                    out instance
+                    out instance,
+                    out searchString,
+                    out searchResults
                 );
             }
         }
@@ -293,7 +366,9 @@ namespace Appalachia.CI.Integration.Core
             bool prependType,
             bool appendType,
             string cleanRelativeFilePath,
-            out ScriptableObject instance)
+            out ScriptableObject instance,
+            out string searchString,
+            out string[] searchResults)
         {
             using (_PRF_TryLoadExistingInstance.Auto())
             {
@@ -304,15 +379,42 @@ namespace Appalachia.CI.Integration.Core
 
                 if (prependType)
                 {
-                    cleanFileName = $"{typeName}_{cleanFileName}";
+                    cleanFileName = ZString.Format("{0}_{1}", typeName, cleanFileName);
                 }
 
                 if (appendType)
                 {
-                    cleanFileName = $"{cleanFileName}_{typeName}";
+                    cleanFileName = ZString.Format("{0}_{1}", cleanFileName, typeName);
                 }
 
-                var any = AssetDatabaseManager.FindAssets($"t:{typeName} {cleanFileName}");
+                try
+                {
+                    var newNameStyle = AppalachiaNameConfig.FromLegacyOptions(t, prependType, appendType);
+
+                    newNameStyle.Finish(cleanRelativeFilePath);
+                    var newCleanFileName = newNameStyle.NameWithoutExtension;
+
+                    APPADEBUG.BREAKPOINT(
+                        () => ZString.Format(
+                            "Name issue! OLD:[{0}] vs. NEW:[{1}]",
+                            cleanFileName,
+                            newCleanFileName
+                        ),
+                        null,
+                        () => cleanFileName != newCleanFileName
+                    );
+                }
+                catch
+                {
+                    APPADEBUG.BREAKPOINT(() => "Exception generating new asset name", null);
+                }
+
+                searchString = SearchStringBuilder.Build.AddType(t).AddTerm(cleanFileName).Finish();
+
+                var any = AssetDatabaseManager.FindAssets(searchString);
+                searchResults = any.Select(AssetDatabaseManager.GUIDToAssetPath)
+                                   .Select(AppaPath.GetFileNameWithoutExtension)
+                                   .ToArray();
 
                 for (var i = 0; i < any.Length; i++)
                 {
@@ -328,6 +430,10 @@ namespace Appalachia.CI.Integration.Core
                         }
                     }
                 }
+
+#else
+                searchString = null;
+                searchResults = null;                      
 #endif
                 instance = null;
                 return false;

@@ -7,11 +7,9 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-
-        private static readonly ProfilerMarker _PRF_GetPrefabAsset = new ProfilerMarker(_PRF_PFX + nameof(GetPrefabAsset));
-        
         public static GameObject GetPrefabAsset(GameObject prefabInstance)
         {
+            ThrowIfInvalidState();
             using (_PRF_GetPrefabAsset.Auto())
             {
                 var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabInstance);
@@ -24,6 +22,13 @@ namespace Appalachia.CI.Integration.Assets
                 return LoadAssetAtPath<GameObject>(path);
             }
         }
+
+        #region Profiling
+
+        private static readonly ProfilerMarker _PRF_GetPrefabAsset =
+            new ProfilerMarker(_PRF_PFX + nameof(GetPrefabAsset));
+
+        #endregion
     }
 }
 

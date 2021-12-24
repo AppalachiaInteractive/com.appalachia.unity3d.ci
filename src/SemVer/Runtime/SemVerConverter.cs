@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Appalachia.Utility.Strings;
 
 namespace Appalachia.CI.SemVer
 {
@@ -51,11 +52,11 @@ namespace Appalachia.CI.SemVer
         {
             var preRelease = string.IsNullOrEmpty(semVer.preRelease)
                 ? string.Empty
-                : $"{SemVer.PreReleasePrefix}{semVer.preRelease}";
+                : ZString.Format("{0}{1}", SemVer.PreReleasePrefix, semVer.preRelease);
             var build = string.IsNullOrEmpty(semVer.Build)
                 ? string.Empty
-                : $"{SemVer.BuildPrefix}{semVer.Build}";
-            return string.Format(
+                : ZString.Format("{0}{1}", SemVer.BuildPrefix, semVer.Build);
+            return ZString.Format(
                 "{1}{0}{2}{0}{3}{4}{5}",
                 SemVer.IdentifiersSeparator,
                 semVer.major,
