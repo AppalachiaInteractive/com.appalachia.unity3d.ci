@@ -17,6 +17,7 @@
     "GUID:114502ff6121cf844bb1809be2620851",
     "GUID:01789cac4a2597b458bedef85a39c3f2",
     "GUID:56ca8901b63fd204692a4a27f67b605e",
+    "GUID:3c828359cbc17df40b7c6a746660461a",
     "GUID:f51ebe6a0ceec4240a699833d6309b23",
     "GUID:593a5b492d29ac6448b1ebf7f035ef33",
     "GUID:029c1c1b674aaae47a6841a0b89ad80e",
@@ -24,6 +25,7 @@
     "GUID:dc47925d1a5fa2946bdd37746b2b5d48",
     "GUID:28ae00157ecf0354981e730179f52cc3",
     "GUID:6b8c99229a4703f47b9e6e696c2e8d8d",
+    "GUID:284aa4bdad4f55545a39414678a7bd79",
     "GUID:53345eb42d09cce4db5ac81c557058f7",
     "GUID:09a26338a3eaeae49b2c37ac77d7b806",
     "GUID:5a230d34eb5ccf94f9781d31465451a3",
@@ -44,5 +46,6 @@
     "GUID:df380645f10b7bc4b97d4f5eb6303d95",
     "GUID:84651a3751eca9349aac36a66bba901b",
     "GUID:f06555f75b070af458a003d92f9efb00"
-  ]
+  ],
+  "Name": "AssemblyDefinitionModel"
 }

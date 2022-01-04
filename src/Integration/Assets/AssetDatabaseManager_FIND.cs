@@ -5,6 +5,7 @@ using System.Linq;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Extensions;
+using Appalachia.Utility.Reflection.Extensions;
 using Appalachia.Utility.Strings;
 using Unity.Profiling;
 using Object = UnityEngine.Object;
@@ -174,7 +175,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     var type = GetMainAssetTypeAtPath(path);
 
-                    if (t.IsAssignableFrom(type))
+                    if (t.ImplementsOrInheritsFrom(type))
                     {
                         var cast = LoadAssetAtPath(path, t);
                         results.Add(cast);
@@ -204,7 +205,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     var type = GetMainAssetTypeAtPath(path);
 
-                    if (t.IsAssignableFrom(type))
+                    if (t.ImplementsOrInheritsFrom(type))
                     {
                         var cast = LoadAssetAtPath<T>(path);
                         results.Add(cast);
@@ -216,7 +217,7 @@ namespace Appalachia.CI.Integration.Assets
                     {
                         var subAssetType = subAsset.GetType();
 
-                        if (t.IsAssignableFrom(subAssetType))
+                        if (t.ImplementsOrInheritsFrom(subAssetType))
                         {
                             var cast = subAsset as T;
                             results.Add(cast);

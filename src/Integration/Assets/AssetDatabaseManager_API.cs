@@ -14,8 +14,13 @@ using Object = UnityEngine.Object;
 
 namespace Appalachia.CI.Integration.Assets
 {
+    [UnityEditor.InitializeOnLoad]
     public static partial class AssetDatabaseManager
     {
+        static AssetDatabaseManager()
+        {
+        }
+        
         /// <summary>
         ///     <para>Changes during Refresh if anything has changed that can invalidate any artifact.</para>
         /// </summary>

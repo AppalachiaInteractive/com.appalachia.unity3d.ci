@@ -347,7 +347,7 @@ namespace Appalachia.CI.Integration.Assets
 
                 foreach (var assetType in _assetTypeFolderLookup.Keys)
                 {
-                    if (assetType.IsAssignableFrom(t))
+                    if (assetType.ImplementsOrInheritsFrom(t))
                     {
                         var typeFunction = _assetTypeFolderLookup[assetType];
 
