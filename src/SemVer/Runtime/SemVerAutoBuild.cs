@@ -10,21 +10,6 @@ namespace Appalachia.CI.SemVer
     /// <seealso cref="SemVer.Build" />
     public abstract class SemVerAutoBuild
     {
-        [NonSerialized] private AppaContext _context;
-
-        protected AppaContext Context
-        {
-            get
-            {
-                if (_context == null)
-                {
-                    _context = new AppaContext(this);
-                }
-
-                return _context;
-            }
-        }
-        
         /// <summary>
         ///     <see cref="SemVerAutoBuild" /> implementations
         /// </summary>
@@ -44,24 +29,41 @@ namespace Appalachia.CI.SemVer
             CloudBuildNumber
         }
 
+        #region Constants and Static Readonly
+
         public static readonly IReadOnlyDictionary<BuildType, SemVerAutoBuild> Instances =
             new Dictionary<BuildType, SemVerAutoBuild>
             {
-                {BuildType.Manual, new ManualBuild()}, {BuildType.CloudBuildNumber, new CloudBuildNumberBuild()}
+                { BuildType.Manual, new ManualBuild() },
+                { BuildType.CloudBuildNumber, new CloudBuildNumberBuild() }
             };
+
+        #endregion
+
+        #region Fields and Autoproperties
+
+        [NonSerialized] private AppaContext _context;
+
+        #endregion
+
+        protected AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(this);
+                }
+
+                return _context;
+            }
+        }
 
         internal abstract string Get(string build);
 
         internal abstract string Set(string build);
 
-        public abstract class ReadOnly : SemVerAutoBuild
-        {
-            internal sealed override string Set(string build)
-            {
-                Context.Log.Warn("The build metadata is read-only");
-                return build;
-            }
-        }
+        #region Nested type: CloudBuildNumberBuild
 
         private class CloudBuildNumberBuild : ReadOnly
         {
@@ -72,6 +74,10 @@ namespace Appalachia.CI.SemVer
                     : string.Empty;
             }
         }
+
+        #endregion
+
+        #region Nested type: ManualBuild
 
         private class ManualBuild : SemVerAutoBuild
         {
@@ -85,5 +91,20 @@ namespace Appalachia.CI.SemVer
                 return build;
             }
         }
+
+        #endregion
+
+        #region Nested type: ReadOnly
+
+        public abstract class ReadOnly : SemVerAutoBuild
+        {
+            internal sealed override string Set(string build)
+            {
+                Context.Log.Warn("The build metadata is read-only");
+                return build;
+            }
+        }
+
+        #endregion
     }
 }

@@ -14,6 +14,8 @@ namespace Appalachia.CI.SemVer
             Corrected = corrected;
         }
 
+        #region Fields and Autoproperties
+
         /// <summary>
         ///     Error messages. This collection is empty if the version is valid.
         /// </summary>
@@ -23,6 +25,8 @@ namespace Appalachia.CI.SemVer
         ///     Automatically corrected semantic version.
         /// </summary>
         public readonly SemVer Corrected;
+
+        #endregion
 
         /// <summary>
         ///     Does the version meet the <a href="https://semver.org/">Semantic Versioning 2.0.0</a> specification?

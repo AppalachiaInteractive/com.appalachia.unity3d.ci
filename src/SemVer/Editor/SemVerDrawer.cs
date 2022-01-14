@@ -10,7 +10,33 @@ namespace Appalachia.CI.SemVer
     [CustomPropertyDrawer(typeof(SemVer))]
     internal class SemVerDrawer : PropertyDrawer
     {
+        #region Constants and Static Readonly
+
+        private const float IncrementButtonWidth = 40f;
+
+        #endregion
+
+        public SemVerDrawer()
+        {
+            DrawAutoBuildPopup = true;
+        }
+
+        #region Static Fields and Autoproperties
+
         [NonSerialized] private static AppaContext _context;
+
+        #endregion
+
+        #region Fields and Autoproperties
+
+        protected bool DrawAutoBuildPopup { private get; set; }
+
+        protected SemVer Target { private get; set; }
+
+        private float _yMin;
+        private Rect _position;
+
+        #endregion
 
         protected static AppaContext Context
         {
@@ -23,20 +49,7 @@ namespace Appalachia.CI.SemVer
 
                 return _context;
             }
-        }        
-        
-        private const float IncrementButtonWidth = 40f;
-
-        public SemVerDrawer()
-        {
-            DrawAutoBuildPopup = true;
         }
-
-        private float _yMin;
-        private Rect _position;
-        protected bool DrawAutoBuildPopup { private get; set; }
-
-        protected SemVer Target { private get; set; }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -84,6 +97,11 @@ namespace Appalachia.CI.SemVer
             return corrected;
         }
 
+        private static GUIContent CreateGuiContentWithTooltip(string label)
+        {
+            return new(label, SemVerTooltip.Field[label]);
+        }
+
         private void CreateBuildField()
         {
             var position = GetNextPosition();
@@ -94,7 +112,7 @@ namespace Appalachia.CI.SemVer
                 var popupWidth = EditorGUIUtility.labelWidth + 120f;
                 popupPosition.width = popupWidth;
                 var selected = EditorGUI.EnumPopup(popupPosition, content, Target.autoBuild);
-                Target.autoBuild = (SemVerAutoBuild.BuildType) selected;
+                Target.autoBuild = (SemVerAutoBuild.BuildType)selected;
                 var textPosition = position;
                 textPosition.x = popupWidth + EditorGUIUtility.standardVerticalSpacing;
                 textPosition.width -= textPosition.x - 14f;
@@ -125,7 +143,7 @@ namespace Appalachia.CI.SemVer
                 var position = GetNextPosition();
                 position.width -= IncrementButtonWidth + EditorGUIUtility.standardVerticalSpacing;
                 var content = CreateGuiContentWithTooltip(label);
-                var newVersionInt = EditorGUI.IntField(position, content, (int) version);
+                var newVersionInt = EditorGUI.IntField(position, content, (int)version);
                 newVersionUint = Convert.ToUInt32(newVersionInt);
             }
             catch (OverflowException)
@@ -230,11 +248,6 @@ namespace Appalachia.CI.SemVer
 
             GUILayout.EndHorizontal();
             return isFixed ? result.Corrected : Target;
-        }
-
-        private static GUIContent CreateGuiContentWithTooltip(string label)
-        {
-            return new(label, SemVerTooltip.Field[label]);
         }
     }
 }

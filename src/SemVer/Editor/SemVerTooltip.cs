@@ -4,11 +4,7 @@ namespace Appalachia.CI.SemVer
 {
     internal static class SemVerTooltip
     {
-        public const string Build = "Build";
-        public const string Major = "Major";
-        public const string Minor = "Minor";
-        public const string Patch = "Patch";
-        public const string PreRelease = "Pre-Release";
+        #region Constants and Static Readonly
 
         public static readonly IReadOnlyDictionary<string, string> Field = new Dictionary<string, string>
         {
@@ -45,9 +41,17 @@ namespace Appalachia.CI.SemVer
 
         public static readonly IReadOnlyDictionary<string, string> Increment = new Dictionary<string, string>
         {
-            {Major, "Increment the major version, reset the patch and the minor version to 0."},
-            {Minor, "Increment the minor version, reset the patch version to 0."},
-            {Patch, "Increment the patch version."}
+            { Major, "Increment the major version, reset the patch and the minor version to 0." },
+            { Minor, "Increment the minor version, reset the patch version to 0." },
+            { Patch, "Increment the patch version." }
         };
+
+        public const string Build = "Build";
+        public const string Major = "Major";
+        public const string Minor = "Minor";
+        public const string Patch = "Patch";
+        public const string PreRelease = "Pre-Release";
+
+        #endregion
     }
 }

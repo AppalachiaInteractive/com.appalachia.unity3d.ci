@@ -36,18 +36,17 @@ namespace Appalachia.CI.Integration.Extensions
 
         #endregion
 
-        public static void ClearCachedData()
-        {
-            _toRelativePathLookup.Clear();
-            _cleanPathLookup.Clear();
-            _toAbsolutePathLookup.Clear();
-        }
-
         #region Static Fields and Autoproperties
 
-        [NonSerialized] private static Dictionary<string, string> _toRelativePathLookup;
         [NonSerialized] private static Dictionary<string, string> _cleanPathLookup;
         [NonSerialized] private static Dictionary<string, string> _toAbsolutePathLookup;
+
+        [NonSerialized] private static Dictionary<string, string> _toRelativePathLookup;
+
+        private static StringCleaningSet _cleanFullPathSet;
+        private static StringCleaningSet _cleanRelativePathSet;
+        private static StringCleaningSet _toAbsolutePathSet;
+        private static StringCleaningSet _toRelativePathSet;
 
         #endregion
 
@@ -60,13 +59,13 @@ namespace Appalachia.CI.Integration.Extensions
                     return string.Empty;
                 }
 
-                using var set = new StringCleaningSet();
+                _cleanFullPathSet ??= new StringCleaningSet();
 
-                set.Load(path);
+                _cleanFullPathSet.Load(path);
 
-                CleanFullPath(set);
+                CleanFullPath(_cleanFullPathSet);
 
-                return set.IsFinished ? set.Result : set.Finish();
+                return _cleanFullPathSet.IsFinished ? _cleanFullPathSet.Result : _cleanFullPathSet.Finish();
             }
         }
 
@@ -87,13 +86,15 @@ namespace Appalachia.CI.Integration.Extensions
                     return string.Empty;
                 }
 
-                using var set = new StringCleaningSet();
+                _cleanRelativePathSet ??= new StringCleaningSet();
 
-                set.Load(path);
+                _cleanRelativePathSet.Load(path);
 
-                CleanRelativePath(set);
+                CleanRelativePath(_cleanRelativePathSet);
 
-                return set.IsFinished ? set.Result : set.Finish();
+                return _cleanRelativePathSet.IsFinished
+                    ? _cleanRelativePathSet.Result
+                    : _cleanRelativePathSet.Finish();
             }
         }
 
@@ -115,6 +116,13 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
+        public static void ClearCachedData()
+        {
+            _toRelativePathLookup.Clear();
+            _cleanPathLookup.Clear();
+            _toAbsolutePathLookup.Clear();
+        }
+
         public static string ToAbsolutePath(this string relativePath)
         {
             using (_PRF_ToAbsolutePath.Auto())
@@ -124,13 +132,15 @@ namespace Appalachia.CI.Integration.Extensions
                     return string.Empty;
                 }
 
-                using var set = new StringCleaningSet();
+                _toAbsolutePathSet ??= new StringCleaningSet();
 
-                set.Load(relativePath);
+                _toAbsolutePathSet.Load(relativePath);
 
-                CleanRelativePath(set);
+                ToAbsolutePath(_toAbsolutePathSet);
 
-                return set.IsFinished ? set.Result : set.Finish();
+                return _toAbsolutePathSet.IsFinished
+                    ? _toAbsolutePathSet.Result
+                    : _toAbsolutePathSet.Finish();
             }
         }
 
@@ -187,13 +197,15 @@ namespace Appalachia.CI.Integration.Extensions
                     return string.Empty;
                 }
 
-                using var set = new StringCleaningSet();
+                _toRelativePathSet ??= new StringCleaningSet();
 
-                set.Load(absolutePath);
+                _toRelativePathSet.Load(absolutePath);
 
-                ToRelativePath(set);
+                ToRelativePath(_toRelativePathSet);
 
-                return set.IsFinished ? set.Result : set.Finish();
+                return _toRelativePathSet.IsFinished
+                    ? _toRelativePathSet.Result
+                    : _toRelativePathSet.Finish();
             }
         }
 
@@ -315,24 +327,6 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        private static bool HasToRelativePathResult(StringCleaningSet set)
-        {
-            using (_PRF_HasPreviouslyCachedAbsolutePath.Auto())
-            {
-                _toRelativePathLookup ??= new Dictionary<string, string>();
-
-                if (!_toRelativePathLookup.ContainsKey(set.input))
-                {
-                    return false;
-                }
-
-                var cachedResult = _toRelativePathLookup[set.input];
-                set.SetResult(cachedResult);
-
-                return true;
-            }
-        }
-
         private static bool HasCleanPathResult(StringCleaningSet set)
         {
             using (_PRF_HasPreviouslyCachedCleanPath.Auto())
@@ -353,9 +347,6 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        private static readonly ProfilerMarker _PRF_HasRelativeToAbsolutePathResult =
-            new ProfilerMarker(_PRF_PFX + nameof(HasToAbsolutePathResult));
-
         private static bool HasToAbsolutePathResult(StringCleaningSet set)
         {
             using (_PRF_HasRelativeToAbsolutePathResult.Auto())
@@ -374,9 +365,30 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
+        private static bool HasToRelativePathResult(StringCleaningSet set)
+        {
+            using (_PRF_HasPreviouslyCachedAbsolutePath.Auto())
+            {
+                _toRelativePathLookup ??= new Dictionary<string, string>();
+
+                if (!_toRelativePathLookup.ContainsKey(set.input))
+                {
+                    return false;
+                }
+
+                var cachedResult = _toRelativePathLookup[set.input];
+                set.SetResult(cachedResult);
+
+                return true;
+            }
+        }
+
         #region Profiling
 
         private const string _PRF_PFX = nameof(IntegrationStringExtensions) + ".";
+
+        private static readonly ProfilerMarker _PRF_HasRelativeToAbsolutePathResult =
+            new ProfilerMarker(_PRF_PFX + nameof(HasToAbsolutePathResult));
 
         private static readonly ProfilerMarker _PRF_HasPreviouslyCachedAbsolutePath =
             new ProfilerMarker(_PRF_PFX + nameof(HasToRelativePathResult));
@@ -393,7 +405,7 @@ namespace Appalachia.CI.Integration.Extensions
         private static readonly ProfilerMarker _PRF_CleanFullPath = new(_PRF_PFX + nameof(CleanFullPath));
 
         private static readonly ProfilerMarker _PRF_ToAbsolutePath = new(_PRF_PFX + nameof(ToAbsolutePath));
-        private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePaths));
+        private static readonly ProfilerMarker _PRF_ToRelativePath = new(_PRF_PFX + nameof(ToRelativePath));
         private static readonly ProfilerMarker _PRF_ToRelativePaths = new(_PRF_PFX + nameof(ToRelativePaths));
 
         private static readonly ProfilerMarker _PRF_CleanPackagePath =

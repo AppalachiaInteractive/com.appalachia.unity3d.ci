@@ -43,8 +43,6 @@ namespace Appalachia.CI.Constants
         public const string Assets_Only = Assets + _ + Only;
         public const string Audio = "Audio";
         public const string BASE = "BASE";
-        public const string PLAY = "PLAY";
-        public const string PLAYABLE = "PLAYABLE";
         public const string Behaviour = "Behaviour";
         public const string BEHAVIOUR = "BEHAVIOUR";
         public const string BHVR = "BHVR";
@@ -170,6 +168,8 @@ namespace Appalachia.CI.Constants
         public const string Package_Search = Package + _ + Search;
         public const string Packages = "Packages";
         public const string Path = "Path";
+        public const string PLAY = "PLAY";
+        public const string PLAYABLE = "PLAYABLE";
         public const string Presence = "Presence";
         public const string Productivity = "Productivity";
         public const string Publish = "Publish";
@@ -448,5 +448,12 @@ namespace Appalachia.CI.Constants
         }
 
         #endregion
+
+        public static class ObjectNames
+        {
+            public const string Services = "Services";
+            public const string Widgets = "Widgets";
+            public const string Features = "Features";
+        }
     }
 }

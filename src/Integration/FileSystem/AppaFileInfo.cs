@@ -7,36 +7,31 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaFileInfo : AppaFileSystemInfo
     {
-        #region Profiling And Tracing Markers
-
-        private const string _PRF_PFX = nameof(AppaFileInfo) + ".";
-        private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
-        private static readonly ProfilerMarker _PRF_CreateText = new(_PRF_PFX + nameof(CreateText));
-        private static readonly ProfilerMarker _PRF_AppendText = new(_PRF_PFX + nameof(AppendText));
-
-        private static readonly ProfilerMarker _PRF_CopyTo = new(_PRF_PFX + nameof(CopyTo));
-
-        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
-
-        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
-        private static readonly ProfilerMarker _PRF_Decrypt = new(_PRF_PFX + nameof(Decrypt));
-
-        private static readonly ProfilerMarker _PRF_Encrypt = new(_PRF_PFX + nameof(Encrypt));
-
-        private static readonly ProfilerMarker _PRF_Open = new(_PRF_PFX + nameof(Open));
-        private static readonly ProfilerMarker _PRF_OpenRead = new(_PRF_PFX + nameof(OpenRead));
-        private static readonly ProfilerMarker _PRF_OpenWrite = new(_PRF_PFX + nameof(OpenWrite));
-        private static readonly ProfilerMarker _PRF_MoveTo = new(_PRF_PFX + nameof(MoveTo));
-        private static readonly ProfilerMarker _PRF_Replace = new(_PRF_PFX + nameof(Replace));
-        private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
-
-        private static readonly ProfilerMarker _PRF_IsWithinSubdirectoryOf =
-            new(_PRF_PFX + nameof(IsWithinSubdirectoryOf));
-
-        private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
-        private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
-
-        #endregion
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> class, which acts as a wrapper for a
+        ///     file path.
+        /// </summary>
+        /// <param name="fileName">
+        ///     The fully qualified name of the new file, or the relative file name. Do not end the path with the directory separator
+        ///     character.
+        /// </param>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="fileName" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="T:System.ArgumentException">The file name is empty, contains only white spaces, or contains invalid characters. </exception>
+        /// <exception cref="T:System.UnauthorizedAccessException">Access to <paramref name="fileName" /> is denied. </exception>
+        /// <exception cref="T:System.IO.PathTooLongException">
+        ///     The specified path, file name, or both exceed the system-defined maximum length. For example, on
+        ///     Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.
+        /// </exception>
+        /// <exception cref="T:System.NotSupportedException">
+        ///     <paramref name="fileName" /> contains a colon (:) in the middle of the string.
+        /// </exception>
+        public AppaFileInfo(AssetPath fileName)
+        {
+            _fileInfo = new FileInfo(fileName.relativePath);
+        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaFileInfo" /> class, which acts as a wrapper for a
@@ -90,9 +85,13 @@ namespace Appalachia.CI.Integration.FileSystem
             _fileInfo = info;
         }
 
+        #region Fields and Autoproperties
+
         private readonly FileInfo _fileInfo;
 
         private string _lastDirectoryName;
+
+        #endregion
 
         public override AppaDirectoryInfo Parent => _fileInfo.Directory;
 
@@ -169,12 +168,14 @@ namespace Appalachia.CI.Integration.FileSystem
             set => _fileInfo.IsReadOnly = value;
         }
 
-        [DebuggerStepThrough] public static implicit operator AppaFileInfo(FileInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator AppaFileInfo(FileInfo o)
         {
             return new(o);
         }
 
-        [DebuggerStepThrough] public static implicit operator FileInfo(AppaFileInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator FileInfo(AppaFileInfo o)
         {
             return o._fileInfo;
         }
@@ -197,7 +198,8 @@ namespace Appalachia.CI.Integration.FileSystem
 
         /// <summary>Returns the path as a string.</summary>
         /// <returns>A string representing the path.</returns>
-        [DebuggerStepThrough] public override string ToString()
+        [DebuggerStepThrough]
+        public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
@@ -614,5 +616,36 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             return _fileInfo;
         }
+
+        #region Profiling
+
+        private const string _PRF_PFX = nameof(AppaFileInfo) + ".";
+        private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
+        private static readonly ProfilerMarker _PRF_CreateText = new(_PRF_PFX + nameof(CreateText));
+        private static readonly ProfilerMarker _PRF_AppendText = new(_PRF_PFX + nameof(AppendText));
+
+        private static readonly ProfilerMarker _PRF_CopyTo = new(_PRF_PFX + nameof(CopyTo));
+
+        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
+
+        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
+        private static readonly ProfilerMarker _PRF_Decrypt = new(_PRF_PFX + nameof(Decrypt));
+
+        private static readonly ProfilerMarker _PRF_Encrypt = new(_PRF_PFX + nameof(Encrypt));
+
+        private static readonly ProfilerMarker _PRF_Open = new(_PRF_PFX + nameof(Open));
+        private static readonly ProfilerMarker _PRF_OpenRead = new(_PRF_PFX + nameof(OpenRead));
+        private static readonly ProfilerMarker _PRF_OpenWrite = new(_PRF_PFX + nameof(OpenWrite));
+        private static readonly ProfilerMarker _PRF_MoveTo = new(_PRF_PFX + nameof(MoveTo));
+        private static readonly ProfilerMarker _PRF_Replace = new(_PRF_PFX + nameof(Replace));
+        private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
+
+        private static readonly ProfilerMarker _PRF_IsWithinSubdirectoryOf =
+            new(_PRF_PFX + nameof(IsWithinSubdirectoryOf));
+
+        private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
+        private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
+
+        #endregion
     }
 }

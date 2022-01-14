@@ -12,25 +12,13 @@ namespace Appalachia.CI.SemVer
     [Serializable]
     public class SemVer : IComparable<SemVer>, IEquatable<SemVer>
     {
-        [NonSerialized] private static AppaContext _context;
+        #region Constants and Static Readonly
 
-        private static AppaContext Context
-        {
-            get
-            {
-                if (_context == null)
-                {
-                    _context = new AppaContext(typeof(SemVer));
-                }
-
-                return _context;
-            }
-        }
-        
-        
         public const char BuildPrefix = '+';
         public const char IdentifiersSeparator = '.';
         public const char PreReleasePrefix = '-';
+
+        #endregion
 
         public SemVer()
         {
@@ -39,18 +27,26 @@ namespace Appalachia.CI.SemVer
             autoBuild = SemVerAutoBuild.BuildType.Manual;
         }
 
-        /// <summary>
-        ///     A pre-release version indicates that the version is unstable and might not satisfy the intended
-        ///     compatibility requirements as denoted by its associated normal version.
-        /// </summary>
-        /// <example>1.0.0-<b>alpha</b>, 1.0.0-<b>alpha.1</b>, 1.0.0-<b>0.3.7</b>, 1.0.0-<b>x.7.z.92</b></example>
-        public string preRelease;
+        #region Static Fields and Autoproperties
+
+        [NonSerialized] private static AppaContext _context;
+
+        #endregion
+
+        #region Fields and Autoproperties
 
         /// <summary>
         ///     Set the <see cref="Build">build</see> metadata automatically
         /// </summary>
         /// <seealso cref="Build" />
         public SemVerAutoBuild.BuildType autoBuild;
+
+        /// <summary>
+        ///     A pre-release version indicates that the version is unstable and might not satisfy the intended
+        ///     compatibility requirements as denoted by its associated normal version.
+        /// </summary>
+        /// <example>1.0.0-<b>alpha</b>, 1.0.0-<b>alpha.1</b>, 1.0.0-<b>0.3.7</b>, 1.0.0-<b>x.7.z.92</b></example>
+        public string preRelease;
 
         /// <summary>
         ///     Major version X (X.y.z | X > 0) MUST be incremented if any backwards incompatible changes are introduced
@@ -77,6 +73,21 @@ namespace Appalachia.CI.SemVer
 
         [SerializeField] private string build = string.Empty;
 
+        #endregion
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(SemVer));
+                }
+
+                return _context;
+            }
+        }
+
         /// <summary>
         ///     An internal version number. This number is used only to determine whether one version is more recent than
         ///     another, with higher numbers indicating more recent versions.
@@ -91,7 +102,7 @@ namespace Appalachia.CI.SemVer
             {
                 var clampedPatch = ClampAndroidBundleVersionCode(patch, "Patch");
                 var clampedMinor = ClampAndroidBundleVersionCode(minor, "Minor");
-                return (int) ((major * 10000) + (clampedMinor * 100) + clampedPatch);
+                return (int)((major * 10000) + (clampedMinor * 100) + clampedPatch);
             }
         }
 
@@ -111,6 +122,87 @@ namespace Appalachia.CI.SemVer
         {
             get => SemVerAutoBuild.Instances[autoBuild].Get(build);
             set => build = SemVerAutoBuild.Instances[autoBuild].Set(value);
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator ==(SemVer left, SemVer right)
+        {
+            return Equals(left, right);
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator >(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator >=(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
+
+        [DebuggerStepThrough]
+        public static implicit operator SemVer(string s)
+        {
+            return Parse(s);
+        }
+
+        [DebuggerStepThrough]
+        public static implicit operator string(SemVer s)
+        {
+            return s.ToString();
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator !=(SemVer left, SemVer right)
+        {
+            return !Equals(left, right);
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator <(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        [DebuggerStepThrough]
+        public static bool operator <=(SemVer left, SemVer right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static SemVer Parse(string semVer)
+        {
+            return SemVerConverter.FromString(semVer);
+        }
+
+        [DebuggerStepThrough]
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return (obj.GetType() == GetType()) && Equals((SemVer)obj);
+        }
+
+        [DebuggerStepThrough]
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        [DebuggerStepThrough]
+        public override string ToString()
+        {
+            return SemVerConverter.ToString(this);
         }
 
         /// <summary>
@@ -165,56 +257,6 @@ namespace Appalachia.CI.SemVer
             return new SemVerValidator().Validate(this);
         }
 
-        [DebuggerStepThrough] public int CompareTo(SemVer other)
-        {
-            return new SemVerComparer().Compare(this, other);
-        }
-
-        [DebuggerStepThrough] public bool Equals(SemVer other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return CompareTo(other) == 0;
-        }
-
-        [DebuggerStepThrough] public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return (obj.GetType() == GetType()) && Equals((SemVer) obj);
-        }
-
-        [DebuggerStepThrough] public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        [DebuggerStepThrough] public override string ToString()
-        {
-            return SemVerConverter.ToString(this);
-        }
-
-        public static SemVer Parse(string semVer)
-        {
-            return SemVerConverter.FromString(semVer);
-        }
-
         private static uint ClampAndroidBundleVersionCode(uint value, string name)
         {
             uint clamped;
@@ -232,44 +274,34 @@ namespace Appalachia.CI.SemVer
             return clamped;
         }
 
-        [DebuggerStepThrough] public static bool operator ==(SemVer left, SemVer right)
+        #region IComparable<SemVer> Members
+
+        [DebuggerStepThrough]
+        public int CompareTo(SemVer other)
         {
-            return Equals(left, right);
+            return new SemVerComparer().Compare(this, other);
         }
 
-        [DebuggerStepThrough] public static bool operator >(SemVer left, SemVer right)
+        #endregion
+
+        #region IEquatable<SemVer> Members
+
+        [DebuggerStepThrough]
+        public bool Equals(SemVer other)
         {
-            return left.CompareTo(right) > 0;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return CompareTo(other) == 0;
         }
 
-        [DebuggerStepThrough] public static bool operator >=(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) >= 0;
-        }
-
-        [DebuggerStepThrough] public static bool operator !=(SemVer left, SemVer right)
-        {
-            return !Equals(left, right);
-        }
-
-        [DebuggerStepThrough] public static bool operator <(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) < 0;
-        }
-
-        [DebuggerStepThrough] public static bool operator <=(SemVer left, SemVer right)
-        {
-            return left.CompareTo(right) <= 0;
-        }
-
-        [DebuggerStepThrough] public static implicit operator SemVer(string s)
-        {
-            return Parse(s);
-        }
-
-        [DebuggerStepThrough] public static implicit operator string(SemVer s)
-        {
-            return s.ToString();
-        }
+        #endregion
     }
 }

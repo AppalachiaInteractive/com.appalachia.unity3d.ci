@@ -14,7 +14,11 @@ namespace Appalachia.CI.Integration.Core
 {
     public static class AppalachiaObjectFactory
     {
+        #region Static Fields and Autoproperties
+
         [NonSerialized] private static AppaContext _context;
+
+        #endregion
 
         private static AppaContext Context
         {
@@ -28,7 +32,7 @@ namespace Appalachia.CI.Integration.Core
                 return _context;
             }
         }
-        
+
         public static ScriptableObject CreateNewAsset(
             Type t,
             string saveFolderPath = null,
@@ -413,27 +417,25 @@ namespace Appalachia.CI.Integration.Core
 
                 var any = AssetDatabaseManager.FindAssets(searchString);
                 searchResults = any.Select(AssetDatabaseManager.GUIDToAssetPath)
-                                   .Select(AppaPath.GetFileNameWithoutExtension)
+                                   .Select(p => p.fileNameWithoutExtension)
                                    .ToArray();
 
                 for (var i = 0; i < any.Length; i++)
                 {
                     var path = AssetDatabaseManager.GUIDToAssetPath(any[i]);
-                    var existingName = AppaPath.GetFileNameWithoutExtension(path);
+                    var existingName = path.fileNameWithoutExtension;
 
                     if ((existingName != null) &&
                         string.Equals(cleanFileName.ToLower(), existingName.ToLower()))
                     {
-                        {
-                            instance = AssetDatabaseManager.LoadAssetAtPath(path, t) as ScriptableObject;
-                            return true;
-                        }
+                        instance = AssetDatabaseManager.LoadAssetAtPath(path, t) as ScriptableObject;
+                        return true;
                     }
                 }
 
 #else
                 searchString = null;
-                searchResults = null;                      
+                searchResults = null;
 #endif
                 instance = null;
                 return false;

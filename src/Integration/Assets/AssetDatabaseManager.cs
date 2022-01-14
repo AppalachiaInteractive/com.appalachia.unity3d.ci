@@ -8,7 +8,11 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
+        #region Static Fields and Autoproperties
+
         [NonSerialized] private static AppaContext _context;
+
+        #endregion
 
         private static AppaContext Context
         {

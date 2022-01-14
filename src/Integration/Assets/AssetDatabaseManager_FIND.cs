@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Reflection.Extensions;
@@ -16,14 +15,15 @@ namespace Appalachia.CI.Integration.Assets
     {
         #region Static Fields and Autoproperties
 
+        private static AssetPath[] _allAssetPaths;
+        private static AssetPath[] _allProjectPaths;
+
         private static char[] _extensionTrims;
 
-        private static Dictionary<string, List<string>> _assetPathsByExtension;
-        private static Dictionary<string, List<string>> _projectPathsByExtension;
+        private static Dictionary<string, List<AssetPath>> _assetPathsByExtension;
+        private static Dictionary<string, List<AssetPath>> _projectPathsByExtension;
 
         private static Dictionary<Type, Dictionary<string, Object>> _firstLookupCache;
-        private static string[] _allAssetPaths;
-        private static string[] _allProjectPaths;
 
         #endregion
 
@@ -52,7 +52,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPaths(string searchString = null)
+        public static List<AssetPath> FindAssetPaths(string searchString = null)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
@@ -63,7 +63,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPaths<T>(string searchString = null)
+        public static List<AssetPath> FindAssetPaths<T>(string searchString = null)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
@@ -74,7 +74,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPaths(Type t, string searchString = null)
+        public static List<AssetPath> FindAssetPaths(Type t, string searchString = null)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPaths.Auto())
@@ -82,14 +82,14 @@ namespace Appalachia.CI.Integration.Assets
                 InitializeAssetPathData();
 
                 var guids = FindAssetGuids(t, searchString);
-                var paths = new List<string>(guids.Length);
+                var paths = new List<AssetPath>(guids.Length);
 
                 for (var index = 0; index < guids.Length; index++)
                 {
                     var guid = guids[index];
-                    var path = GUIDToAssetPath(guid).CleanFullPath();
+                    var path = GUIDToAssetPath(guid);
 
-                    if (!AppaFile.Exists(path))
+                    if (!path.FileExists)
                     {
                         continue;
                     }
@@ -101,7 +101,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPathsByExtension(string extension)
+        public static List<AssetPath> FindAssetPathsByExtension(string extension)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPathsByExtension.Auto())
@@ -119,18 +119,18 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPathsByFileName(string name)
+        public static List<AssetPath> FindAssetPathsByFileName(string name)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPathsByFileName.Auto())
             {
                 InitializeAssetPathData();
 
-                var output = new List<string>();
+                var output = new List<AssetPath>();
 
                 foreach (var path in _allAssetPaths)
                 {
-                    if (name == AppaPath.GetFileName(path))
+                    if (name == path.fileName)
                     {
                         output.Add(path);
                     }
@@ -140,18 +140,18 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindAssetPathsBySubstring(string substring)
+        public static List<AssetPath> FindAssetPathsBySubstring(string substring)
         {
             ThrowIfInvalidState();
             using (_PRF_FindAssetPathsBySubstring.Auto())
             {
                 InitializeAssetPathData();
 
-                var output = new List<string>();
+                var output = new List<AssetPath>();
 
                 foreach (var path in _allAssetPaths)
                 {
-                    if (path.Contains(substring))
+                    if (path.absolutePath.Contains(substring))
                     {
                         output.Add(path);
                     }
@@ -173,11 +173,11 @@ namespace Appalachia.CI.Integration.Assets
                 {
                     var path = paths[i];
 
-                    var type = GetMainAssetTypeAtPath(path);
+                    var type = GetMainAssetTypeAtPath(path.relativePath);
 
                     if (t.ImplementsOrInheritsFrom(type))
                     {
-                        var cast = LoadAssetAtPath(path, t);
+                        var cast = LoadAssetAtPath(path.relativePath, t);
                         results.Add(cast);
                     }
                 }
@@ -272,7 +272,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static List<string> FindProjectPathsByExtension(string extension)
+        public static List<AssetPath> FindProjectPathsByExtension(string extension)
         {
             ThrowIfInvalidState();
             using (_PRF_FindProjectPathsByExtension.Auto())
@@ -331,11 +331,11 @@ namespace Appalachia.CI.Integration.Assets
 
                 if ((_projectPathsByExtension == null) || (_projectPathsByExtension.Count == 0))
                 {
-                    _projectPathsByExtension = new Dictionary<string, List<string>>();
+                    _projectPathsByExtension = new Dictionary<string, List<AssetPath>>();
 
                     foreach (var asset in _allProjectPaths)
                     {
-                        var extension = AppaPath.GetExtension(asset).CleanExtension();
+                        var extension = asset.extension;
 
                         if (string.IsNullOrWhiteSpace(extension))
                         {
@@ -344,7 +344,7 @@ namespace Appalachia.CI.Integration.Assets
 
                         if (!_projectPathsByExtension.ContainsKey(extension))
                         {
-                            _projectPathsByExtension.Add(extension, new List<string>());
+                            _projectPathsByExtension.Add(extension, new List<AssetPath>());
                         }
 
                         _projectPathsByExtension[extension].Add(asset);
@@ -353,11 +353,11 @@ namespace Appalachia.CI.Integration.Assets
 
                 if ((_assetPathsByExtension == null) || (_assetPathsByExtension.Count == 0))
                 {
-                    _assetPathsByExtension = new Dictionary<string, List<string>>();
+                    _assetPathsByExtension = new Dictionary<string, List<AssetPath>>();
 
                     foreach (var asset in _allAssetPaths)
                     {
-                        var extension = AppaPath.GetExtension(asset).CleanExtension();
+                        var extension = asset.extension;
 
                         if (string.IsNullOrWhiteSpace(extension))
                         {
@@ -366,7 +366,7 @@ namespace Appalachia.CI.Integration.Assets
 
                         if (!_assetPathsByExtension.ContainsKey(extension))
                         {
-                            _assetPathsByExtension.Add(extension, new List<string>());
+                            _assetPathsByExtension.Add(extension, new List<AssetPath>());
                         }
 
                         _assetPathsByExtension[extension].Add(asset);

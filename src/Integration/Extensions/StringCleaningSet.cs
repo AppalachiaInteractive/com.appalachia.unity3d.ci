@@ -11,11 +11,13 @@ namespace Appalachia.CI.Integration.Extensions
         public StringCleaningSet()
         {
             _builder = new Utf16ValueStringBuilder(false);
+            _builderInitialized = true;
         }
 
         #region Fields and Autoproperties
 
         public string input;
+
         private bool _builderInitialized;
         private bool _finished;
         private string _result;
@@ -43,18 +45,22 @@ namespace Appalachia.CI.Integration.Extensions
 
         public char this[int i]
         {
-            get => _builder[i];
+            get
+            {
+                using (_PRF_this_set.Auto())
+                {
+                    return _builder[i];
+                }
+            }
             set
             {
-                _builder[i] = value;
-                _finished = false;
-                _result = null;
+                using (_PRF_this_get.Auto())
+                {
+                    _builder[i] = value;
+                    _finished = false;
+                    _result = null;
+                }
             }
-        }
-
-        public void Dispose()
-        {
-            _builder.Dispose();
         }
 
         public string Finish()
@@ -146,11 +152,6 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
-        private static readonly ProfilerMarker _PRF_SetResult =
-            new ProfilerMarker(_PRF_PFX + nameof(SetResult));
-
-        private static readonly ProfilerMarker _PRF_Reset = new ProfilerMarker(_PRF_PFX + nameof(Reset));
-
         public void SetResult(string result)
         {
             using (_PRF_SetResult.Auto())
@@ -160,9 +161,29 @@ namespace Appalachia.CI.Integration.Extensions
             }
         }
 
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            _builder.Dispose();
+        }
+
+        #endregion
+
         #region Profiling
 
         private const string _PRF_PFX = nameof(StringCleaningSet) + ".";
+
+        private static readonly ProfilerMarker _PRF_this_set =
+            new ProfilerMarker(_PRF_PFX + "this[int i].set");
+
+        private static readonly ProfilerMarker _PRF_this_get =
+            new ProfilerMarker(_PRF_PFX + "this[int i].get");
+
+        private static readonly ProfilerMarker _PRF_SetResult =
+            new ProfilerMarker(_PRF_PFX + nameof(SetResult));
+
+        private static readonly ProfilerMarker _PRF_Reset = new ProfilerMarker(_PRF_PFX + nameof(Reset));
         private static readonly ProfilerMarker _PRF_Peek = new ProfilerMarker(_PRF_PFX + nameof(Peek));
         private static readonly ProfilerMarker _PRF_Replace = new ProfilerMarker(_PRF_PFX + nameof(Replace));
         private static readonly ProfilerMarker _PRF_Remove = new ProfilerMarker(_PRF_PFX + nameof(Remove));

@@ -6,39 +6,6 @@ namespace Appalachia.CI.SemVer
 {
     internal class SemVerComparer : IComparer<SemVer>
     {
-        public int Compare(SemVer x, SemVer y)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return 0;
-            }
-
-            if (ReferenceEquals(null, y))
-            {
-                return 1;
-            }
-
-            if (ReferenceEquals(x, null))
-            {
-                return -1;
-            }
-
-            var majorComparison = x.major.CompareTo(y.major);
-            if (majorComparison != 0)
-            {
-                return majorComparison;
-            }
-
-            var minorComparison = x.minor.CompareTo(y.minor);
-            if (minorComparison != 0)
-            {
-                return minorComparison;
-            }
-
-            var patchComparison = x.patch.CompareTo(y.patch);
-            return patchComparison != 0 ? patchComparison : ComparePreReleaseVersions(x, y);
-        }
-
         private static int ComparePreReleaseIdentifiers(string xIdentifier, string yIdentifier)
         {
             var isXNumber = int.TryParse(xIdentifier, out var xNumber);
@@ -93,5 +60,42 @@ namespace Appalachia.CI.SemVer
         {
             return !string.IsNullOrEmpty(semVer.preRelease);
         }
+
+        #region IComparer<SemVer> Members
+
+        public int Compare(SemVer x, SemVer y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, y))
+            {
+                return 1;
+            }
+
+            if (ReferenceEquals(x, null))
+            {
+                return -1;
+            }
+
+            var majorComparison = x.major.CompareTo(y.major);
+            if (majorComparison != 0)
+            {
+                return majorComparison;
+            }
+
+            var minorComparison = x.minor.CompareTo(y.minor);
+            if (minorComparison != 0)
+            {
+                return minorComparison;
+            }
+
+            var patchComparison = x.patch.CompareTo(y.patch);
+            return patchComparison != 0 ? patchComparison : ComparePreReleaseVersions(x, y);
+        }
+
+        #endregion
     }
 }

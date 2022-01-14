@@ -9,7 +9,6 @@ namespace Appalachia.CI.Integration.Assets
 {
     public static partial class AssetDatabaseManager
     {
-        
         public static Texture2D SaveTextureAssetToFile<T>(T owner, Texture2D texture)
             where T : MonoBehaviour
         {

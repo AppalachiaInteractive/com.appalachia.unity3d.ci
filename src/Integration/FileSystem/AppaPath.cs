@@ -10,7 +10,19 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaPath
     {
+        #region Constants and Static Readonly
+
+        private const char SLASH = '/';
+
+        #endregion
+
+        #region Static Fields and Autoproperties
+
         [NonSerialized] private static AppaContext _context;
+
+        #endregion
+
+        public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         private static AppaContext Context
         {
@@ -24,14 +36,6 @@ namespace Appalachia.CI.Integration.FileSystem
                 return _context;
             }
         }
-
-        #region Constants and Static Readonly
-
-        private const char SLASH = '/';
-
-        #endregion
-        
-        public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         public static string Combine(List<string> paths)
         {

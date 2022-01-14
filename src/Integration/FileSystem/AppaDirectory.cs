@@ -11,7 +11,11 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaDirectory
     {
+        #region Static Fields and Autoproperties
+
         [NonSerialized] private static AppaContext _context;
+
+        #endregion
 
         private static AppaContext Context
         {
@@ -24,9 +28,8 @@ namespace Appalachia.CI.Integration.FileSystem
 
                 return _context;
             }
-        }   
-        
-        
+        }
+
         /// <summary>Creates all directories and subdirectories in the specified path unless they already exist.</summary>
         /// <param name="path">The directory to create. </param>
         /// <returns>
@@ -722,7 +725,7 @@ namespace Appalachia.CI.Integration.FileSystem
                     {
                         return null;
                     }
-                    
+
                     throw;
                 }
             }
@@ -770,11 +773,11 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
         /// </exception>
         /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is not found or is invalid (for example, it is on an unmapped drive). </exception>
-        public static string[] GetFiles(string path)
+        public static AssetPath[] GetFiles(string path)
         {
             using (_PRF_GetFiles.Auto())
             {
-                return Directory.GetFiles(path).Select(p => p.CleanFullPath()).ToArray();
+                return Directory.GetFiles(path).Select(AssetPath.FromAbsolutePath).ToArray();
             }
         }
 
@@ -805,11 +808,11 @@ namespace Appalachia.CI.Integration.FileSystem
         ///     Windows-based platforms, paths must be less than 248 characters and file names must be less than 260 characters.
         /// </exception>
         /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is not found or is invalid (for example, it is on an unmapped drive). </exception>
-        public static string[] GetFiles(string path, string searchPattern)
+        public static AssetPath[] GetFiles(string path, string searchPattern)
         {
             using (_PRF_GetFiles.Auto())
             {
-                return Directory.GetFiles(path, searchPattern).Select(p => p.CleanFullPath()).ToArray();
+                return Directory.GetFiles(path, searchPattern).Select(AssetPath.FromAbsolutePath).ToArray();
             }
         }
 
@@ -850,28 +853,18 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <exception cref="T:System.IO.IOException">
         ///     <paramref name="path" /> is a file name.-or-A network error has occurred.
         /// </exception>
-        public static string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
+        public static AssetPath[] GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
             using (_PRF_GetFiles.Auto())
             {
                 if (!Directory.Exists(path))
                 {
-                    return Array.Empty<string>();
+                    return Array.Empty<AssetPath>();
                 }
 
-                var files = Directory.GetFiles(path, searchPattern, searchOption);
-
-                var destinationFileIndex = 0;
-
-                for (var sourceFileIndex = 0; sourceFileIndex < files.Length; sourceFileIndex++)
-                {
-                    var file = files[sourceFileIndex].CleanFullPath();
-
-                    files[destinationFileIndex] = file;
-                    destinationFileIndex += 1;
-                }
-
-                Array.Resize(ref files, destinationFileIndex);
+                var files = Directory.GetFiles(path, searchPattern, searchOption)
+                                     .Select(AssetPath.FromAbsolutePath)
+                                     .ToArray();
                 return files;
             }
         }

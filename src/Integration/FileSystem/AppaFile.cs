@@ -8,69 +8,6 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public static class AppaFile
     {
-        #region Profiling And Tracing Markers
-
-        private const string _PRF_PFX = nameof(AppaFile) + ".";
-        private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
-        private static readonly ProfilerMarker _PRF_CreateText = new(_PRF_PFX + nameof(CreateText));
-        private static readonly ProfilerMarker _PRF_AppendText = new(_PRF_PFX + nameof(AppendText));
-        private static readonly ProfilerMarker _PRF_Copy = new(_PRF_PFX + nameof(Copy));
-        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
-        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
-        private static readonly ProfilerMarker _PRF_Exists = new(_PRF_PFX + nameof(Exists));
-        private static readonly ProfilerMarker _PRF_Open = new(_PRF_PFX + nameof(Open));
-        private static readonly ProfilerMarker _PRF_SetCreationTime = new(_PRF_PFX + nameof(SetCreationTime));
-
-        private static readonly ProfilerMarker _PRF_SetCreationTimeUtc =
-            new(_PRF_PFX + nameof(SetCreationTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetCreationTime = new(_PRF_PFX + nameof(GetCreationTime));
-
-        private static readonly ProfilerMarker _PRF_GetCreationTimeUtc =
-            new(_PRF_PFX + nameof(GetCreationTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_SetLastAccessTime =
-            new(_PRF_PFX + nameof(SetLastAccessTime));
-
-        private static readonly ProfilerMarker _PRF_SetLastAccessTimeUtc =
-            new(_PRF_PFX + nameof(SetLastAccessTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetLastAccessTime =
-            new(_PRF_PFX + nameof(GetLastAccessTime));
-
-        private static readonly ProfilerMarker _PRF_GetLastAccessTimeUtc =
-            new(_PRF_PFX + nameof(GetLastAccessTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_SetLastWriteTime =
-            new(_PRF_PFX + nameof(SetLastWriteTime));
-
-        private static readonly ProfilerMarker _PRF_SetLastWriteTimeUtc =
-            new(_PRF_PFX + nameof(SetLastWriteTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_GetLastWriteTime =
-            new(_PRF_PFX + nameof(GetLastWriteTime));
-
-        private static readonly ProfilerMarker _PRF_GetLastWriteTimeUtc =
-            new(_PRF_PFX + nameof(GetLastWriteTimeUtc));
-
-        private static readonly ProfilerMarker _PRF_OpenRead = new(_PRF_PFX + nameof(OpenRead));
-        private static readonly ProfilerMarker _PRF_OpenWrite = new(_PRF_PFX + nameof(OpenWrite));
-        private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
-        private static readonly ProfilerMarker _PRF_WriteAllText = new(_PRF_PFX + nameof(WriteAllText));
-        private static readonly ProfilerMarker _PRF_ReadAllBytes = new(_PRF_PFX + nameof(ReadAllBytes));
-        private static readonly ProfilerMarker _PRF_WriteAllBytes = new(_PRF_PFX + nameof(WriteAllBytes));
-        private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
-        private static readonly ProfilerMarker _PRF_ReadLines = new(_PRF_PFX + nameof(ReadLines));
-        private static readonly ProfilerMarker _PRF_WriteAllLines = new(_PRF_PFX + nameof(WriteAllLines));
-        private static readonly ProfilerMarker _PRF_AppendAllText = new(_PRF_PFX + nameof(AppendAllText));
-        private static readonly ProfilerMarker _PRF_AppendAllLines = new(_PRF_PFX + nameof(AppendAllLines));
-
-        private static readonly ProfilerMarker _PRF_Move = new(_PRF_PFX + nameof(Move));
-
-        private static readonly ProfilerMarker _PRF_Replace = new(_PRF_PFX + nameof(Replace));
-
-        #endregion
-
         /// <summary>
         ///     Appends lines to a file, and then closes the file. If the specified file does not exist, this method creates a file, writes the specified
         ///     lines to the file, and then closes the file.
@@ -505,6 +442,22 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_Delete.Auto())
             {
                 File.Delete(path);
+            }
+        }
+
+        /// <summary>Determines whether the specified file exists.</summary>
+        /// <param name="path">The file to check. </param>
+        /// <returns>
+        ///     <see langword="true" /> if the caller has the required permissions and <paramref name="path" /> contains the name of an existing file; otherwise,
+        ///     <see langword="false" />. This method also returns <see langword="false" /> if <paramref name="path" /> is <see langword="null" />, an invalid
+        ///     path, or a zero-length string. If the caller does not have sufficient permissions to read the specified file, no exception is thrown and the
+        ///     method returns <see langword="false" /> regardless of the existence of <paramref name="path" />.
+        /// </returns>
+        public static bool Exists(AssetPath path)
+        {
+            using (_PRF_Exists.Auto())
+            {
+                return path.FileExists;
             }
         }
 
@@ -1717,5 +1670,68 @@ namespace Appalachia.CI.Integration.FileSystem
                 File.WriteAllText(path, contents, encoding);
             }
         }
+
+        #region Profiling
+
+        private const string _PRF_PFX = nameof(AppaFile) + ".";
+        private static readonly ProfilerMarker _PRF_OpenText = new(_PRF_PFX + nameof(OpenText));
+        private static readonly ProfilerMarker _PRF_CreateText = new(_PRF_PFX + nameof(CreateText));
+        private static readonly ProfilerMarker _PRF_AppendText = new(_PRF_PFX + nameof(AppendText));
+        private static readonly ProfilerMarker _PRF_Copy = new(_PRF_PFX + nameof(Copy));
+        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
+        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
+        private static readonly ProfilerMarker _PRF_Exists = new(_PRF_PFX + nameof(Exists));
+        private static readonly ProfilerMarker _PRF_Open = new(_PRF_PFX + nameof(Open));
+        private static readonly ProfilerMarker _PRF_SetCreationTime = new(_PRF_PFX + nameof(SetCreationTime));
+
+        private static readonly ProfilerMarker _PRF_SetCreationTimeUtc =
+            new(_PRF_PFX + nameof(SetCreationTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetCreationTime = new(_PRF_PFX + nameof(GetCreationTime));
+
+        private static readonly ProfilerMarker _PRF_GetCreationTimeUtc =
+            new(_PRF_PFX + nameof(GetCreationTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_SetLastAccessTime =
+            new(_PRF_PFX + nameof(SetLastAccessTime));
+
+        private static readonly ProfilerMarker _PRF_SetLastAccessTimeUtc =
+            new(_PRF_PFX + nameof(SetLastAccessTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetLastAccessTime =
+            new(_PRF_PFX + nameof(GetLastAccessTime));
+
+        private static readonly ProfilerMarker _PRF_GetLastAccessTimeUtc =
+            new(_PRF_PFX + nameof(GetLastAccessTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_SetLastWriteTime =
+            new(_PRF_PFX + nameof(SetLastWriteTime));
+
+        private static readonly ProfilerMarker _PRF_SetLastWriteTimeUtc =
+            new(_PRF_PFX + nameof(SetLastWriteTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_GetLastWriteTime =
+            new(_PRF_PFX + nameof(GetLastWriteTime));
+
+        private static readonly ProfilerMarker _PRF_GetLastWriteTimeUtc =
+            new(_PRF_PFX + nameof(GetLastWriteTimeUtc));
+
+        private static readonly ProfilerMarker _PRF_OpenRead = new(_PRF_PFX + nameof(OpenRead));
+        private static readonly ProfilerMarker _PRF_OpenWrite = new(_PRF_PFX + nameof(OpenWrite));
+        private static readonly ProfilerMarker _PRF_ReadAllText = new(_PRF_PFX + nameof(ReadAllText));
+        private static readonly ProfilerMarker _PRF_WriteAllText = new(_PRF_PFX + nameof(WriteAllText));
+        private static readonly ProfilerMarker _PRF_ReadAllBytes = new(_PRF_PFX + nameof(ReadAllBytes));
+        private static readonly ProfilerMarker _PRF_WriteAllBytes = new(_PRF_PFX + nameof(WriteAllBytes));
+        private static readonly ProfilerMarker _PRF_ReadAllLines = new(_PRF_PFX + nameof(ReadAllLines));
+        private static readonly ProfilerMarker _PRF_ReadLines = new(_PRF_PFX + nameof(ReadLines));
+        private static readonly ProfilerMarker _PRF_WriteAllLines = new(_PRF_PFX + nameof(WriteAllLines));
+        private static readonly ProfilerMarker _PRF_AppendAllText = new(_PRF_PFX + nameof(AppendAllText));
+        private static readonly ProfilerMarker _PRF_AppendAllLines = new(_PRF_PFX + nameof(AppendAllLines));
+
+        private static readonly ProfilerMarker _PRF_Move = new(_PRF_PFX + nameof(Move));
+
+        private static readonly ProfilerMarker _PRF_Replace = new(_PRF_PFX + nameof(Replace));
+
+        #endregion
     }
 }

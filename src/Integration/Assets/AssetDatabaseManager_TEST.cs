@@ -8,7 +8,6 @@ namespace Appalachia.CI.Integration.Assets
         public static void TestAssetType<T>()
             where T : Object
         {
-            
         }
     }
 }

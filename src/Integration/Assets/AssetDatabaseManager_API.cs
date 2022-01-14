@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
+using Appalachia.Utility.Constants;
+using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Strings;
 using Unity.Profiling;
 using UnityEngine;
@@ -17,10 +19,34 @@ namespace Appalachia.CI.Integration.Assets
     [UnityEditor.InitializeOnLoad]
     public static partial class AssetDatabaseManager
     {
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCancelled
+        {
+            add => UnityEditor.AssetDatabase.importPackageCancelled += value;
+            remove => UnityEditor.AssetDatabase.importPackageCancelled -= value;
+        }
+
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCompleted
+        {
+            add => UnityEditor.AssetDatabase.importPackageCompleted += value;
+            remove => UnityEditor.AssetDatabase.importPackageCompleted -= value;
+        }
+
+        public static event UnityEditor.AssetDatabase.ImportPackageFailedCallback importPackageFailed
+        {
+            add => UnityEditor.AssetDatabase.importPackageFailed += value;
+            remove => UnityEditor.AssetDatabase.importPackageFailed -= value;
+        }
+
+        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageStarted
+        {
+            add => UnityEditor.AssetDatabase.importPackageStarted += value;
+            remove => UnityEditor.AssetDatabase.importPackageStarted -= value;
+        }
+
         static AssetDatabaseManager()
         {
         }
-        
+
         /// <summary>
         ///     <para>Changes during Refresh if anything has changed that can invalidate any artifact.</para>
         /// </summary>
@@ -58,30 +84,6 @@ namespace Appalachia.CI.Integration.Assets
         {
             get => UnityEditor.AssetDatabase.ActiveRefreshImportMode;
             set => UnityEditor.AssetDatabase.ActiveRefreshImportMode = value;
-        }
-
-        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCancelled
-        {
-            add => UnityEditor.AssetDatabase.importPackageCancelled += value;
-            remove => UnityEditor.AssetDatabase.importPackageCancelled -= value;
-        }
-
-        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageCompleted
-        {
-            add => UnityEditor.AssetDatabase.importPackageCompleted += value;
-            remove => UnityEditor.AssetDatabase.importPackageCompleted -= value;
-        }
-
-        public static event UnityEditor.AssetDatabase.ImportPackageCallback importPackageStarted
-        {
-            add => UnityEditor.AssetDatabase.importPackageStarted += value;
-            remove => UnityEditor.AssetDatabase.importPackageStarted -= value;
-        }
-
-        public static event UnityEditor.AssetDatabase.ImportPackageFailedCallback importPackageFailed
-        {
-            add => UnityEditor.AssetDatabase.importPackageFailed += value;
-            remove => UnityEditor.AssetDatabase.importPackageFailed -= value;
         }
 
         /// <summary>
@@ -664,7 +666,7 @@ namespace Appalachia.CI.Integration.Assets
         /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
         /// <param name="searchInFolders">The folders where the search will start.</param>
         /// <returns>
-        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
+        ///     <para>Array of matching asset. Note that GUIDs will be returned. If no matching assets were found, returns empty array.</para>
         /// </returns>
         public static string[] FindAssets(string filter)
         {
@@ -681,7 +683,7 @@ namespace Appalachia.CI.Integration.Assets
         /// <param name="filter">The filter string can contain search data.  See below for details about this string.</param>
         /// <param name="searchInFolders">The folders where the search will start.</param>
         /// <returns>
-        ///     <para>Array of matching asset. Note that s will be returned. If no matching assets were found, returns empty array.</para>
+        ///     <para>Array of matching asset. Note that GUIDs will be returned. If no matching assets were found, returns empty array.</para>
         /// </returns>
         public static string[] FindAssets(string filter, string[] searchInFolders)
         {
@@ -761,39 +763,44 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] GetAllAssetPaths()
+        public static AssetPath[] GetAllAssetPaths()
         {
             ThrowIfInvalidState();
             using (_PRF_GetAllAssetPaths.Auto())
             {
-                var paths = UnityEditor.AssetDatabase.GetAllAssetPaths();
-
-                //paths.Sort();
-
-                return paths;
+                return UnityEditor.AssetDatabase.GetAllAssetPaths()
+                                  .Select(AssetPath.FromRelativePath)
+                                  .ToArray();
             }
         }
-        
-        public static string[] GetAllProjectPaths()
+
+        public static AssetPath[] GetAllProjectPaths()
         {
             ThrowIfInvalidState();
             using (_PRF_GetAllProjectPaths.Auto())
             {
-                var assets = GetAllAssetPaths();
-
                 var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
+                var assetsLocation = ProjectLocations.GetAssetsDirectoryPath();
 
-                var files = AppaDirectory.GetFiles(packageLocation, "*.*", SearchOption.AllDirectories);
+                var packageFilePaths = AppaDirectory.GetFiles(
+                    packageLocation,
+                    "*.*",
+                    SearchOption.AllDirectories
+                );
+                var assetFilePaths = AppaDirectory.GetFiles(
+                    assetsLocation,
+                    "*.*",
+                    SearchOption.AllDirectories
+                );
 
-                var assetsLookup = assets.ToHashSet();
+                return assetFilePaths.Concat(packageFilePaths).Where(ap => !ap.IsExcluded).ToArray();
 
-                var cleanFileCount = 0;
-
+                /*
                 using var set = new StringCleaningSet();
 
-                for (var sourceFileIndex = 0; sourceFileIndex < files.Length; sourceFileIndex++)
+                for (var sourceFileIndex = 0; sourceFileIndex < packageFilePaths'.Length; sourceFileIndex++)
                 {
-                    var sourceFile = files[sourceFileIndex];
+                    var sourceFile = packageFilePaths'[sourceFileIndex];
 
                     set.Load(sourceFile);
 
@@ -801,35 +808,19 @@ namespace Appalachia.CI.Integration.Assets
 
                     var finished = set.IsFinished ? set.Result : set.Finish();
 
-                    if (finished.Contains("~/") || assetsLookup.Contains(finished))
+                    if ( || assetsLookup.Contains(finished))
                     {
                         continue;
                     }
 
-                    files[cleanFileCount] = finished;
+                    packageFilePaths'[cleanFileCount] = finished;
                     cleanFileCount += 1;
                 }
 
-                assets = CopyFilePathArray(assets, cleanFileCount, files);
+                assets = CopyFilePathArray(assets, cleanFileCount, packageFilePaths');
 
                 //Array.Sort(assets);
-                return assets;
-            }
-        }
-
-        private static readonly ProfilerMarker _PRF_CopyFilePathArray =
-            new ProfilerMarker(_PRF_PFX + nameof(CopyFilePathArray));
-
-        private static string[] CopyFilePathArray(string[] assets, int cleanFileCount, string[] files)
-        {
-            using (_PRF_CopyFilePathArray.Auto())
-            {
-                var assetsLength = assets.Length;
-
-                Array.Resize(ref assets, assetsLength + cleanFileCount);
-
-                Array.Copy(files, 0, assets, assetsLength, cleanFileCount);
-                return assets;
+                return assets;*/
             }
         }
 
@@ -1307,6 +1298,34 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>Returns the type of the main asset object at assetPath.</para>
         /// </summary>
         /// <param name="path">Filesystem path of the asset to load.</param>
+        public static Type GetMainAssetTypeAtPath(AssetPath path)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_GetMainAssetTypeAtPath.Auto())
+            {
+                var relativePath = path.relativePath;
+                var result = UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(relativePath);
+
+                if (result != null)
+                {
+                    return result;
+                }
+
+                var assetObjects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
+
+                if (assetObjects is { Length: > 0 })
+                {
+                    result = assetObjects[0].GetType();
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the type of the main asset object at assetPath.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path of the asset to load.</param>
         public static Type GetMainAssetTypeAtPath(string path)
         {
             ThrowIfInvalidState();
@@ -1438,12 +1457,13 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>Path of the asset relative to the project folder.</para>
         /// </returns>
-        public static string GUIDToAssetPath(string guid)
+        public static AssetPath GUIDToAssetPath(string guid)
         {
             ThrowIfInvalidState();
             using (_PRF_GUIDToAssetPath.Auto())
             {
-                return UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                return AssetPath.FromRelativePath(path);
             }
         }
 
@@ -1454,12 +1474,13 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>Path of the asset relative to the project folder.</para>
         /// </returns>
-        public static string GUIDToAssetPath(UnityEditor.GUID guid)
+        public static AssetPath GUIDToAssetPath(UnityEditor.GUID guid)
         {
             ThrowIfInvalidState();
             using (_PRF_GUIDToAssetPath.Auto())
             {
-                return UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                return AssetPath.FromRelativePath(path);
             }
         }
 
@@ -2010,6 +2031,23 @@ namespace Appalachia.CI.Integration.Assets
         /// <returns>
         ///     <para>Returns true if the folder exists.</para>
         /// </returns>
+        public static bool IsValidFolder(AssetPath path)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_IsValidFolder.Auto())
+            {
+                var relativePath = path.relativePath;
+                return UnityEditor.AssetDatabase.IsValidFolder(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Given a path to a folder, returns true if it exists, false otherwise.</para>
+        /// </summary>
+        /// <param name="path">The path to the folder.</param>
+        /// <returns>
+        ///     <para>Returns true if the folder exists.</para>
+        /// </returns>
         public static bool IsValidFolder(string path)
         {
             ThrowIfInvalidState();
@@ -2017,6 +2055,20 @@ namespace Appalachia.CI.Integration.Assets
             {
                 var relativePath = path.ToRelativePath();
                 return UnityEditor.AssetDatabase.IsValidFolder(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns all sub Assets at assetPath.</para>
+        /// </summary>
+        /// <param name="path"></param>
+        public static Object[] LoadAllAssetRepresentationsAtPath(AssetPath path)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
+            {
+                var relativePath = path.relativePath;
+                return UnityEditor.AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
             }
         }
 
@@ -2038,13 +2090,90 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>Returns an array of all Assets at assetPath.</para>
         /// </summary>
         /// <param name="path">Filesystem path to the asset.</param>
-        public static Object[] LoadAllAssetsAtPath(string path)
+        public static Object[] LoadAllAssetsAtPath(AssetPath path)
         {
             ThrowIfInvalidState();
             using (_PRF_LoadAllAssetsAtPath.Auto())
             {
+                var relativePath = path.relativePath;
+                return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns an array of all Assets at assetPath.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path to the asset.</param>
+        public static Object[] LoadAllAssetsAtPath(string path)
+        {
+            ThrowIfInvalidState();
+
+            if (path.EndsWith(".prefab"))
+            {
+                throw new NotSupportedException(
+                    ZString.Format(
+                        "If you intend to retrieve all objects from within a prefab, call {0} instead.",
+                        nameof(LoadAllObjectsInPrefabAsset)
+                    )
+                );
+            }
+
+            using (_PRF_LoadAllAssetsAtPath.Auto())
+            {
                 var relativePath = path.ToRelativePath();
                 return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns an array of all Assets at assetPath.</para>
+        /// </summary>
+        /// <param name="path">Filesystem path to the asset.</param>
+        public static Object[] LoadAllObjectsInPrefabAsset(string path)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_LoadAllObjectsInPrefabAsset.Auto())
+            {
+                var relativePath = path.ToRelativePath();
+                return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Returns the first asset object of type type at given path assetPath.</para>
+        /// </summary>
+        /// <param name="path">Path of the asset to load.</param>
+        /// <param name="type">Data type of the asset.</param>
+        /// <returns>
+        ///     <para>The asset matching the parameters.</para>
+        /// </returns>
+        public static Object LoadAssetAtPath(AssetPath path, Type type)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_LoadAssetAtPath.Auto())
+            {
+                var relativePath = path.relativePath;
+                return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, type);
+            }
+        }
+
+        public static T LoadAssetAtPath<T>(AssetPath path)
+            where T : Object
+        {
+            ThrowIfInvalidState();
+            using (_PRF_LoadAssetAtPath.Auto())
+            {
+                var relativePath = path.relativePath;
+                try
+                {
+                    return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(relativePath);
+                }
+                catch (Exception ex)
+                {
+                    Context.Log.Error(ZString.Format("Exception loading the asset at [{0}]", path), null, ex);
+
+                    throw;
+                }
             }
         }
 
@@ -2083,6 +2212,23 @@ namespace Appalachia.CI.Integration.Assets
 
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Returns the main asset object at assetPath.
+        ///         The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file which may contain multiples meshes and GameObjects).
+        ///     </para>
+        /// </summary>
+        /// <param name="path">Filesystem path of the asset to load.</param>
+        public static Object LoadMainAssetAtPath(AssetPath path)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_LoadMainAssetAtPath.Auto())
+            {
+                var relativePath = path.relativePath;
+                return UnityEditor.AssetDatabase.LoadMainAssetAtPath(relativePath);
             }
         }
 
@@ -2302,20 +2448,21 @@ namespace Appalachia.CI.Integration.Assets
 
         [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
         public static void Refresh(
-            [CallerMemberName] string memberName = null,
-            [CallerFilePath] string filePath = null,
-            [CallerLineNumber] int lineNumber = 0)
+            [CallerFilePath] string callerFilePath = null,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
             using (_PRF_Refresh.Auto())
             {
-                Context.Log.Trace(
-                    "Asset Database Refresh Invoked!",
-                    null,
-                    true,
-                    memberName,
-                    filePath,
-                    lineNumber
+                Context.Log.Warn(
+                    ZString.Format(
+                        "{0} was called via {1} at {2}:{3}",
+                        nameof(Refresh),
+                        callerMemberName.FormatMethodForLogging(),
+                        callerFilePath.FormatNameForLogging(),
+                        callerLineNumber.FormatForLogging()
+                    )
                 );
 
                 UnityEditor.AssetDatabase.Refresh();
@@ -2326,11 +2473,25 @@ namespace Appalachia.CI.Integration.Assets
         ///     <para>Import any changed assets.</para>
         /// </summary>
         /// <param name="options"></param>
-        public static void Refresh(UnityEditor.ImportAssetOptions options)
+        public static void Refresh(
+            UnityEditor.ImportAssetOptions options,
+            [CallerFilePath] string callerFilePath = null,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
             using (_PRF_Refresh.Auto())
             {
+                Context.Log.Warn(
+                    ZString.Format(
+                        "{0} was called via {1} at {2}:{3}",
+                        nameof(Refresh),
+                        callerMemberName.FormatMethodForLogging(),
+                        callerFilePath.FormatNameForLogging(),
+                        callerLineNumber.FormatForLogging()
+                    )
+                );
+
                 UnityEditor.AssetDatabase.Refresh(options);
             }
         }
@@ -2434,8 +2595,22 @@ namespace Appalachia.CI.Integration.Assets
             ThrowIfInvalidState();
             using (_PRF_RenameAsset.Auto())
             {
+                var oldExtension = AppaPath.GetExtension(path);
+
+                var newBaseName = AppaPath.GetFileNameWithoutExtension(newName);
+                var newExtension = AppaPath.GetExtension(newName);
+
+                var newFileName = newExtension.IsNotNullOrWhiteSpace()
+                    ? newName
+                    : ZString.Concat(newBaseName, oldExtension);
+
                 var relativePath = path.ToRelativePath();
-                return UnityEditor.AssetDatabase.RenameAsset(relativePath, newName);
+
+                var assetObject = UnityEditor.AssetDatabase.LoadAssetAtPath<Object>(path);
+                assetObject.name = newBaseName;
+                UnityEditor.EditorUtility.SetDirty(assetObject);
+
+                return UnityEditor.AssetDatabase.RenameAsset(relativePath, newFileName);
             }
         }
 
@@ -2485,11 +2660,24 @@ namespace Appalachia.CI.Integration.Assets
         /// <summary>
         ///     <para>Writes all unsaved asset changes to disk.</para>
         /// </summary>
-        public static void SaveAssets()
+        public static void SaveAssets(
+            [CallerFilePath] string callerFilePath = null,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
             using (_PRF_SaveAssets.Auto())
             {
+                Context.Log.Warn(
+                    ZString.Format(
+                        "{0} was called via {1} at {2}:{3}",
+                        nameof(SaveAssets),
+                        callerMemberName.FormatMethodForLogging(),
+                        callerFilePath.FormatNameForLogging(),
+                        callerLineNumber.FormatForLogging()
+                    )
+                );
+
                 UnityEditor.AssetDatabase.SaveAssets();
             }
         }
@@ -2665,6 +2853,9 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         #region Profiling
+
+        private static readonly ProfilerMarker _PRF_LoadAllObjectsInPrefabAsset =
+            new ProfilerMarker(_PRF_PFX + nameof(LoadAllObjectsInPrefabAsset));
 
         private static readonly ProfilerMarker _PRF_CanOpenForEdit = new(_PRF_PFX + nameof(CanOpenForEdit));
         private static readonly ProfilerMarker _PRF_IsOpenForEdit = new(_PRF_PFX + nameof(IsOpenForEdit));

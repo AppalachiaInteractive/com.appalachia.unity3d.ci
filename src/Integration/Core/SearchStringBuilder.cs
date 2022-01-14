@@ -131,6 +131,9 @@ namespace Appalachia.CI.Integration.Core
 
         private const string _PRF_PFX = nameof(SearchStringBuilder) + ".";
 
+        private static readonly ProfilerMarker _PRF_Initialize =
+            new ProfilerMarker(_PRF_PFX + nameof(Initialize));
+
         private static readonly ProfilerMarker _PRF_SearchStringBuilder =
             new ProfilerMarker(_PRF_PFX + nameof(SearchStringBuilder));
 
@@ -146,9 +149,6 @@ namespace Appalachia.CI.Integration.Core
         private static readonly ProfilerMarker _PRF_Finish = new ProfilerMarker(_PRF_PFX + nameof(Finish));
 
         private static readonly ProfilerMarker _PRF_Reset = new ProfilerMarker(_PRF_PFX + nameof(Reset));
-
-        private static readonly ProfilerMarker _PRF_Initialize =
-            new ProfilerMarker(_PRF_PFX + nameof(Initialize));
 
         private static readonly ProfilerMarker _PRF_GetTermPrefix =
             new ProfilerMarker(_PRF_PFX + nameof(GetTermPrefix));

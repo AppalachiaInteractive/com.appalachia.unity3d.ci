@@ -7,8 +7,12 @@ namespace Appalachia.CI.SemVer
 {
     internal class SemVerValidator
     {
+        #region Fields and Autoproperties
+
         private List<string> _errors;
         private SemVer _corrected;
+
+        #endregion
 
         public SemVerValidationResult Validate(SemVer semVer)
         {
@@ -17,6 +21,11 @@ namespace Appalachia.CI.SemVer
             ValidatePreRelease(semVer);
             ValidateBuild(semVer);
             return new SemVerValidationResult(_errors.AsReadOnly(), _corrected.Clone());
+        }
+
+        private static string JoinIdentifiers(string[] identifiers)
+        {
+            return string.Join(SemVer.IdentifiersSeparator.ToString(), identifiers);
         }
 
         private void ValidateBuild(SemVer semVer)
@@ -38,7 +47,7 @@ namespace Appalachia.CI.SemVer
                 return new string[0];
             }
 
-            var separators = new[] {SemVer.IdentifiersSeparator};
+            var separators = new[] { SemVer.IdentifiersSeparator };
             var strings = identifiers.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             if (strings.Length < (identifiers.Count(c => c == SemVer.IdentifiersSeparator) + 1))
             {
@@ -89,11 +98,6 @@ namespace Appalachia.CI.SemVer
             identifiers = ValidateLeadingZeroes(identifiers);
             var joined = JoinIdentifiers(identifiers);
             _corrected.preRelease = joined;
-        }
-
-        private static string JoinIdentifiers(string[] identifiers)
-        {
-            return string.Join(SemVer.IdentifiersSeparator.ToString(), identifiers);
         }
     }
 }

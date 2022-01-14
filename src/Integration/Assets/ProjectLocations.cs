@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.CI.Integration.FileSystem;
 using Appalachia.Utility.Execution;
-using Appalachia.Utility.Strings;
 using Unity.Profiling;
 
 namespace Appalachia.CI.Integration.Assets
@@ -91,10 +90,7 @@ namespace Appalachia.CI.Integration.Assets
                 var packagesDirectoryPathRelative = GetPackagesDirectoryPathRelative();
 
                 _packagesDirectoryPath = GetAssetsDirectoryPath()
-                   .Replace(
-                        ZString.Format("{0}", assetsDirectoryPathRelative),
-                        packagesDirectoryPathRelative
-                    );
+                   .Replace(assetsDirectoryPathRelative, packagesDirectoryPathRelative);
 
                 return _packagesDirectoryPath;
             }

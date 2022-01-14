@@ -10,6 +10,16 @@ namespace Appalachia.CI.Integration.InputRemapping
 {
     public static class Input
     {
+        private enum KeyEventType
+        {
+            Key = 0,
+            IsPressed = 0,
+            KeyDown = 10,
+            WasPressedThisFrame = 10,
+            KeyUp = 20,
+            WasReleasedThisFrame = 20
+        }
+
         public static int touchCount
         {
             get
@@ -431,16 +441,6 @@ namespace Appalachia.CI.Integration.InputRemapping
                             GetKeyEvent(Key.RightShift, keyEventType);
 
             return isShifted && isPressed;
-        }
-
-        private enum KeyEventType
-        {
-            Key = 0,
-            IsPressed = 0,
-            KeyDown = 10,
-            WasPressedThisFrame = 10,
-            KeyUp = 20,
-            WasReleasedThisFrame = 20
         }
     }
 }

@@ -13,64 +13,6 @@ namespace Appalachia.CI.Integration.FileSystem
 {
     public sealed class AppaDirectoryInfo : AppaFileSystemInfo
     {
-        [NonSerialized] private static AppaContext _context;
-
-        private static AppaContext Context
-        {
-            get
-            {
-                if (_context == null)
-                {
-                    _context = new AppaContext(typeof(AppaDirectoryInfo));
-                }
-
-                return _context;
-            }
-        }
-        
-        #region Profiling And Tracing Markers
-
-        private const string _PRF_PFX = nameof(AppaDirectoryInfo) + ".";
-
-        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
-
-        private static readonly ProfilerMarker _PRF_CreateSubdirectory =
-            new(_PRF_PFX + nameof(CreateSubdirectory));
-
-        private static readonly ProfilerMarker _PRF_GetFiles = new(_PRF_PFX + nameof(GetFiles));
-        private static readonly ProfilerMarker _PRF_GetDirectories = new(_PRF_PFX + nameof(GetDirectories));
-
-        private static readonly ProfilerMarker _PRF_GetFileSystemInfos =
-            new(_PRF_PFX + nameof(GetFileSystemInfos));
-
-        private static readonly ProfilerMarker _PRF_EnumerateDirectories =
-            new(_PRF_PFX + nameof(EnumerateDirectories));
-
-        private static readonly ProfilerMarker _PRF_EnumerateFiles = new(_PRF_PFX + nameof(EnumerateFiles));
-
-        private static readonly ProfilerMarker _PRF_EnumerateFileSystemInfos =
-            new(_PRF_PFX + nameof(EnumerateFileSystemInfos));
-
-        private static readonly ProfilerMarker _PRF_MoveTo = new(_PRF_PFX + nameof(MoveTo));
-        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
-
-        private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
-
-        private static readonly ProfilerMarker _PRF_HasSiblingDirectory =
-            new(_PRF_PFX + nameof(HasSiblingDirectory));
-
-        private static readonly ProfilerMarker _PRF_HasSubDirectory = new(_PRF_PFX + nameof(HasSubDirectory));
-
-        private static readonly ProfilerMarker _PRF_IsPathInAnySubdirectory =
-            new(_PRF_PFX + nameof(DoesPathExistInAnySubdirectory));
-
-        private static readonly ProfilerMarker _PRF_IsFileInAnySubdirectory =
-            new(_PRF_PFX + nameof(IsFileInAnySubdirectory));
-
-        private static readonly ProfilerMarker _PRF_HasSiblingFile = new(_PRF_PFX + nameof(HasSiblingFile));
-
-        #endregion
-
         /// <summary>Initializes a new instance of the <see cref="T:Appalachia.CI.Integration.FileSystem.AppaDirectoryInfo" /> class on the specified path.</summary>
         /// <param name="path">A string specifying the path on which to create the <see langword="AppaDirectoryInfo" />. </param>
         /// <exception cref="T:System.ArgumentNullException">
@@ -117,12 +59,35 @@ namespace Appalachia.CI.Integration.FileSystem
             _directoryInfo = info;
         }
 
+        #region Static Fields and Autoproperties
+
+        [NonSerialized] private static AppaContext _context;
+
+        #endregion
+
+        #region Fields and Autoproperties
+
         /// <summary>Gets the root portion of the directory.</summary>
         /// <returns>An object that represents the root of the directory.</returns>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission. </exception>
         public AppaDirectoryInfo Root { get; }
 
         private readonly DirectoryInfo _directoryInfo;
+
+        #endregion
+
+        private static AppaContext Context
+        {
+            get
+            {
+                if (_context == null)
+                {
+                    _context = new AppaContext(typeof(AppaDirectoryInfo));
+                }
+
+                return _context;
+            }
+        }
 
         /// <summary>Gets the parent directory of a specified subdirectory.</summary>
         /// <returns>
@@ -174,12 +139,14 @@ namespace Appalachia.CI.Integration.FileSystem
 
         public override string RelativePath => FullPath.ToRelativePath();
 
-        [DebuggerStepThrough] public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator AppaDirectoryInfo(DirectoryInfo o)
         {
             return new(o);
         }
 
-        [DebuggerStepThrough] public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator DirectoryInfo(AppaDirectoryInfo o)
         {
             return o._directoryInfo;
         }
@@ -206,7 +173,8 @@ namespace Appalachia.CI.Integration.FileSystem
 
         /// <summary>Returns the original path that was passed by the user.</summary>
         /// <returns>Returns the original path that was passed by the user.</returns>
-        [DebuggerStepThrough] public override string ToString()
+        [DebuggerStepThrough]
+        public override string ToString()
         {
             using (_PRF_ToString.Auto())
             {
@@ -290,6 +258,20 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        public void DeleteRecursively()
+        {
+            foreach (var file in GetFiles("*", SearchOption.AllDirectories))
+            {
+                if (file.IsReadOnly)
+                {
+                    File.SetAttributes(file.FullPath, FileAttributes.Normal);
+                    file.Delete();
+                }
+            }
+
+            Delete(true);
+        }
+
         public bool DoesPathExistInAnySubdirectory(string path)
         {
             using (_PRF_IsPathInAnySubdirectory.Auto())
@@ -315,7 +297,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_EnumerateDirectories.Auto())
             {
-                return _directoryInfo.EnumerateDirectories().Select(d => (AppaDirectoryInfo) d);
+                return _directoryInfo.EnumerateDirectories().Select(d => (AppaDirectoryInfo)d);
             }
         }
 
@@ -338,7 +320,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_EnumerateDirectories.Auto())
             {
-                return _directoryInfo.EnumerateDirectories(searchPattern).Select(d => (AppaDirectoryInfo) d);
+                return _directoryInfo.EnumerateDirectories(searchPattern).Select(d => (AppaDirectoryInfo)d);
             }
         }
 
@@ -371,7 +353,7 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_EnumerateDirectories.Auto())
             {
                 return _directoryInfo.EnumerateDirectories(searchPattern, searchOption)
-                                     .Select(d => (AppaDirectoryInfo) d);
+                                     .Select(d => (AppaDirectoryInfo)d);
             }
         }
 
@@ -386,7 +368,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_EnumerateFiles.Auto())
             {
-                return _directoryInfo.EnumerateFiles().Select(fs => (AppaFileInfo) fs);
+                return _directoryInfo.EnumerateFiles().Select(fs => (AppaFileInfo)fs);
             }
         }
 
@@ -408,7 +390,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_EnumerateFiles.Auto())
             {
-                return _directoryInfo.EnumerateFiles(searchPattern).Select(fs => (AppaFileInfo) fs);
+                return _directoryInfo.EnumerateFiles(searchPattern).Select(fs => (AppaFileInfo)fs);
             }
         }
 
@@ -438,7 +420,7 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_EnumerateFiles.Auto())
             {
                 return _directoryInfo.EnumerateFiles(searchPattern, searchOption)
-                                     .Select(fs => (AppaFileInfo) fs);
+                                     .Select(fs => (AppaFileInfo)fs);
             }
         }
 
@@ -453,7 +435,7 @@ namespace Appalachia.CI.Integration.FileSystem
         {
             using (_PRF_EnumerateFileSystemInfos.Auto())
             {
-                return _directoryInfo.EnumerateFileSystemInfos().Select(fs => (AppaFileSystemInfo) fs);
+                return _directoryInfo.EnumerateFileSystemInfos().Select(fs => (AppaFileSystemInfo)fs);
             }
         }
 
@@ -477,7 +459,7 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_EnumerateFileSystemInfos.Auto())
             {
                 return _directoryInfo.EnumerateFileSystemInfos(searchPattern)
-                                     .Select(fs => (AppaFileSystemInfo) fs);
+                                     .Select(fs => (AppaFileSystemInfo)fs);
             }
         }
 
@@ -513,7 +495,7 @@ namespace Appalachia.CI.Integration.FileSystem
             using (_PRF_EnumerateFileSystemInfos.Auto())
             {
                 return _directoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption)
-                                     .Select(fs => (AppaFileSystemInfo) fs);
+                                     .Select(fs => (AppaFileSystemInfo)fs);
             }
         }
 
@@ -965,18 +947,47 @@ namespace Appalachia.CI.Integration.FileSystem
             return _directoryInfo;
         }
 
-        public void DeleteRecursively()
-        {
-            foreach (var file in GetFiles("*", SearchOption.AllDirectories))
-            {
-                if (file.IsReadOnly)
-                {
-                    File.SetAttributes(file.FullPath, FileAttributes.Normal);
-                    file.Delete();                    
-                }
-            }
+        #region Profiling
 
-            Delete(true);
-        }
+        private const string _PRF_PFX = nameof(AppaDirectoryInfo) + ".";
+
+        private static readonly ProfilerMarker _PRF_Create = new(_PRF_PFX + nameof(Create));
+
+        private static readonly ProfilerMarker _PRF_CreateSubdirectory =
+            new(_PRF_PFX + nameof(CreateSubdirectory));
+
+        private static readonly ProfilerMarker _PRF_GetFiles = new(_PRF_PFX + nameof(GetFiles));
+        private static readonly ProfilerMarker _PRF_GetDirectories = new(_PRF_PFX + nameof(GetDirectories));
+
+        private static readonly ProfilerMarker _PRF_GetFileSystemInfos =
+            new(_PRF_PFX + nameof(GetFileSystemInfos));
+
+        private static readonly ProfilerMarker _PRF_EnumerateDirectories =
+            new(_PRF_PFX + nameof(EnumerateDirectories));
+
+        private static readonly ProfilerMarker _PRF_EnumerateFiles = new(_PRF_PFX + nameof(EnumerateFiles));
+
+        private static readonly ProfilerMarker _PRF_EnumerateFileSystemInfos =
+            new(_PRF_PFX + nameof(EnumerateFileSystemInfos));
+
+        private static readonly ProfilerMarker _PRF_MoveTo = new(_PRF_PFX + nameof(MoveTo));
+        private static readonly ProfilerMarker _PRF_Delete = new(_PRF_PFX + nameof(Delete));
+
+        private static readonly ProfilerMarker _PRF_ToString = new(_PRF_PFX + nameof(ToString));
+
+        private static readonly ProfilerMarker _PRF_HasSiblingDirectory =
+            new(_PRF_PFX + nameof(HasSiblingDirectory));
+
+        private static readonly ProfilerMarker _PRF_HasSubDirectory = new(_PRF_PFX + nameof(HasSubDirectory));
+
+        private static readonly ProfilerMarker _PRF_IsPathInAnySubdirectory =
+            new(_PRF_PFX + nameof(DoesPathExistInAnySubdirectory));
+
+        private static readonly ProfilerMarker _PRF_IsFileInAnySubdirectory =
+            new(_PRF_PFX + nameof(IsFileInAnySubdirectory));
+
+        private static readonly ProfilerMarker _PRF_HasSiblingFile = new(_PRF_PFX + nameof(HasSiblingFile));
+
+        #endregion
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Appalachia.CI.Integration.Core;
+using Appalachia.CI.Integration.FileSystem;
 using Unity.Profiling;
 using Object = UnityEngine.Object;
 
@@ -33,8 +34,9 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetAssetGuid =
             new ProfilerMarker(_PRF_PFX + nameof(GetAssetGuid));
 
+        private static Dictionary<string, AssetPath[]> _pathsByTypeName;
+
         private static Dictionary<string, string[]> _guidsByTypeName;
-        private static Dictionary<string, string[]> _pathsByTypeName;
         private static Dictionary<string, Type[]> _typesByTypeName;
 
         #endregion
@@ -51,7 +53,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] GetAllAssetPaths<T>()
+        public static AssetPath[] GetAllAssetPaths<T>()
             where T : Object
         {
             ThrowIfInvalidState();
@@ -61,7 +63,7 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] GetAllAssetPaths(Type type)
+        public static AssetPath[] GetAllAssetPaths(Type type)
         {
             ThrowIfInvalidState();
             using (_PRF_GetAllAssetPaths.Auto())
@@ -99,16 +101,18 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string[] GetProjectAssetPaths(Type type = null)
+        public static AssetPath[] GetProjectAssetPaths(Type type = null)
         {
             ThrowIfInvalidState();
             using (_PRF_GetProjectAssetPaths.Auto())
             {
                 var assetPaths = GetAllAssetPaths(type);
 
-                var filteredAssetPaths = assetPaths
-                                        .Where(p => p.StartsWith("Assets/") && p.Contains("Appalachia"))
-                                        .ToArray();
+                var filteredAssetPaths = assetPaths.Where(
+                                                        p => p.relativePath.StartsWith("Assets/") &&
+                                                             p.relativePath.Contains("Appalachia")
+                                                    )
+                                                   .ToArray();
 
                 Array.Sort(filteredAssetPaths);
 
@@ -122,7 +126,7 @@ namespace Appalachia.CI.Integration.Assets
             using (_PRF_InitializeTypeData.Auto())
             {
                 _typesByTypeName ??= new Dictionary<string, Type[]>();
-                _pathsByTypeName ??= new Dictionary<string, string[]>();
+                _pathsByTypeName ??= new Dictionary<string, AssetPath[]>();
                 _guidsByTypeName ??= new Dictionary<string, string[]>();
 
                 if (!_typesByTypeName.ContainsKey(typeName))
@@ -133,7 +137,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     var sglength = guids.Length;
 
-                    var paths = new string[sglength];
+                    var paths = new AssetPath[sglength];
                     var types = new Type[sglength];
 
                     for (var i = 0; i < sglength; i++)
@@ -152,6 +156,10 @@ namespace Appalachia.CI.Integration.Assets
                 }
             }
         }
+
+        #region Profiling
+
+        #endregion
     }
 }
 

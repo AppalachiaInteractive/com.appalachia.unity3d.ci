@@ -48,7 +48,8 @@ namespace Appalachia.CI.SemVer
             return semVer;
         }
 
-        [DebuggerStepThrough] public static string ToString(SemVer semVer)
+        [DebuggerStepThrough]
+        public static string ToString(SemVer semVer)
         {
             var preRelease = string.IsNullOrEmpty(semVer.preRelease)
                 ? string.Empty

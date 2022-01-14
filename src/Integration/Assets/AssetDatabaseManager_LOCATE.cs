@@ -91,7 +91,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     foreach (var monoscriptPath in monoScriptPaths)
                     {
-                        var importer = UnityEditor.AssetImporter.GetAtPath(monoscriptPath);
+                        var importer = UnityEditor.AssetImporter.GetAtPath(monoscriptPath.relativePath);
 
                         if (importer is UnityEditor.MonoImporter mi)
                         {

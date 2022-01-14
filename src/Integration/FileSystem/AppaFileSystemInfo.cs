@@ -54,16 +54,18 @@ namespace Appalachia.CI.Integration.FileSystem
 
         public abstract void Delete();
 
-        protected abstract FileSystemInfo GetFileSystemInfo();
-
-        [DebuggerStepThrough] public static implicit operator AppaFileSystemInfo(FileSystemInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator AppaFileSystemInfo(FileSystemInfo o)
         {
-            return o is FileInfo fi ? (AppaFileInfo) fi : (AppaDirectoryInfo) (DirectoryInfo) o;
+            return o is FileInfo fi ? (AppaFileInfo)fi : (AppaDirectoryInfo)(DirectoryInfo)o;
         }
 
-        [DebuggerStepThrough] public static implicit operator FileSystemInfo(AppaFileSystemInfo o)
+        [DebuggerStepThrough]
+        public static implicit operator FileSystemInfo(AppaFileSystemInfo o)
         {
             return o.GetFileSystemInfo();
         }
+
+        protected abstract FileSystemInfo GetFileSystemInfo();
     }
 }
