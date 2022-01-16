@@ -16,6 +16,7 @@ namespace Appalachia.CI.Constants
         public const string Any = "Any";
         public const string Any_Issues = Any + _ + Issues;
         public const string APPA = "APPA";
+        public const string Image = "Image";
         public const string Appalachia = "Appalachia";
         public const string APPALACHIA = "APPALACHIA";
         public const string Appalachia_Interactive = Appalachia + _ + Interactive;
@@ -202,6 +203,8 @@ namespace Appalachia.CI.Constants
         public const string SCRPT = "SCRPT";
         public const string Search = "Search";
         public const string Select = "Select";
+        public const string Selectable = "Selectable";
+        public const string SELECTABLE = "SELECTABLE";
         public const string Serialize = "Serialize";
         public const string Singleton = "Singleton";
         public const string SINGLETON = "SINGLETON";
@@ -212,6 +215,7 @@ namespace Appalachia.CI.Constants
         public const string Singleton_Scriptable = Singleton + _ + Scriptable;
         public const string SINGLETON_SCRIPTABLE = SINGLETON + _ + SCRIPTABLE;
         public const string Size = "Size";
+        public const string SLCT = "SLCT";
         public const string SNGT = "SNGT";
         public const string SNGT_BHVR = SNGT + _ + BHVR;
         public const string SNGT_EDT_ONLY = SNGT + _ + EDT + _ + ONLY;
@@ -449,11 +453,38 @@ namespace Appalachia.CI.Constants
 
         #endregion
 
+        #region Nested type: GroupNames
+
+        public static class GroupNames
+        {
+            #region Constants and Static Readonly
+
+            public const string Color = "Color";
+            public const string Content = "Content";
+            public const string Dimensions = "Dimensions";
+            public const string Logo = "Logo";
+            public const string Rendering = "Rendering";
+            public const string Style = "Style";
+            public const string Transitions = "Transitions";
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Nested type: ObjectNames
+
         public static class ObjectNames
         {
+            #region Constants and Static Readonly
+
+            public const string Features = "Features";
             public const string Services = "Services";
             public const string Widgets = "Widgets";
-            public const string Features = "Features";
+
+            #endregion
         }
+
+        #endregion
     }
 }

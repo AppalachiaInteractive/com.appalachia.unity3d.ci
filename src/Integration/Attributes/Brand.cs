@@ -9,6 +9,7 @@ namespace Appalachia.CI.Integration.Attributes
         private const string BACKGROUND_BASE = Utility.Colors.Colors.Appalachia.HEX.DarkBrown;
 
         private const string BACKGROUND_BEHAVIOUR = Utility.Colors.Colors.Appalachia.HEX.Black;
+        private const string BACKGROUND_SELECTABLE = Utility.Colors.Colors.Appalachia.HEX.Black;
         private const string BACKGROUND_OBJECT = Utility.Colors.Colors.Appalachia.HEX.DeepBrown;
         private const string BACKGROUND_PLAYABLE = Utility.Colors.Colors.Appalachia.HEX.Tan;
         private const string BACKGROUND_REPOSITORY = Utility.Colors.Colors.Appalachia.HEX.Blue;
@@ -141,6 +142,24 @@ namespace Appalachia.CI.Integration.Attributes
 
         #endregion
 
+        #region Nested type: AppalachiaBehaviour
+
+        public static class AppalachiaSelectable
+        {
+            #region Constants and Static Readonly
+
+            public const string Banner = BACKGROUND_SELECTABLE;
+            public const string Color = Utility.Colors.Colors.Appalachia.HEX.Orange;
+            public const string Fallback = SLCT;
+            public const string Icon = Squirrel.Orange;
+            public const string Label = SELECTABLE;
+            public const string Text = SELECTABLE;
+
+            #endregion
+        }
+
+        #endregion
+        
         #region Nested type: AreaManager
 
         public static class AreaManager
