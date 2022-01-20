@@ -24,10 +24,16 @@ namespace Appalachia.CI.Integration.Attributes
 
             public const string Banner = BACKGROUND_BASE;
             public const string Color = Utility.Colors.Colors.Appalachia.HEX.Cream;
-            public const string Fallback = BASE;
+
+            /*public const string Fallback = BASE;*/
             public const string Icon = Squirrel.Cream;
             public const string Label = BASE;
-            public const string Text = BASE;
+
+            /*public const string Text = BASE;*/
+            public const int TitleHeight = 14;
+            public const int TitleSize = 10;
+            public const int SubtitleSize = 10;
+            public const string SubtitleText = "";
 
             #endregion
         }
