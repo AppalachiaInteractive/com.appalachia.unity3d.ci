@@ -94,6 +94,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void AddObjectToAsset(Object objectToAdd, string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_AddObjectToAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -109,6 +110,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void AddObjectToAsset(Object objectToAdd, Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_AddObjectToAsset.Auto())
             {
                 UnityEditor.AssetDatabase.AddObjectToAsset(objectToAdd, assetObject);
@@ -121,6 +123,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void AllowAutoRefresh()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_AllowAutoRefresh.Auto())
             {
                 UnityEditor.AssetDatabase.AllowAutoRefresh();
@@ -141,6 +144,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string AssetPathToGUID(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_AssetPathToGUID.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -162,6 +166,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string AssetPathToGUID(string path, UnityEditor.AssetPathToGUIDOptions options)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_AssetPathToGUID.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -180,6 +185,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanConnectToCacheServer(string ip, ushort port)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanConnectToCacheServer.Auto())
             {
                 return UnityEditor.AssetDatabase.CanConnectToCacheServer(ip, port);
@@ -196,6 +202,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenAssetInEditor(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenAssetInEditor.Auto())
             {
                 return UnityEditor.AssetDatabase.CanOpenAssetInEditor(instanceID);
@@ -221,6 +228,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject);
@@ -246,6 +254,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(Object assetObject, UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, statusOptions);
@@ -271,6 +280,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -297,6 +307,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(string path, UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -307,6 +318,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(Object assetObject, out string message)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, out message);
@@ -319,6 +331,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.CanOpenForEdit(assetObject, out message, statusOptions);
@@ -328,6 +341,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CanOpenForEdit(string path, out string message)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -341,6 +355,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -355,6 +370,7 @@ namespace Appalachia.CI.Integration.Assets
                 UnityEditor.StatusQueryOptions.UseCachedIfPossible)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CanOpenForEdit.Auto())
             {
                 UnityEditor.AssetDatabase.CanOpenForEdit(
@@ -372,6 +388,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ClearImporterOverride(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ClearImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -386,7 +403,8 @@ namespace Appalachia.CI.Integration.Assets
         public static void ClearLabels(Object obj)
         {
             ThrowIfInvalidState();
-            ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
+            
             using (_PRF_ClearLabels.Auto())
             {
                 UnityEditor.AssetDatabase.ClearLabels(obj);
@@ -399,6 +417,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void CloseCacheServerConnection()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CloseCacheServerConnection.Auto())
             {
                 UnityEditor.AssetDatabase.CloseCacheServerConnection();
@@ -413,6 +432,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool Contains(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_Contains.Auto())
             {
                 return UnityEditor.AssetDatabase.Contains(obj);
@@ -427,6 +447,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool Contains(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_Contains.Auto())
             {
                 return UnityEditor.AssetDatabase.Contains(instanceID);
@@ -444,6 +465,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool CopyAsset(string path, string newPath)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CopyAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -460,6 +482,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void CreateAsset(Object asset, string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CreateAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -490,6 +513,7 @@ namespace Appalachia.CI.Integration.Assets
             bool createStructure = true)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_CreateFolder.Auto())
             {
                 parentFolder = parentFolder.CleanFullPath();
@@ -545,6 +569,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool DeleteAsset(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_DeleteAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.DeleteAsset(path);
@@ -554,6 +579,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool DeleteAssets(string[] paths, List<string> outFailedPaths)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_DeleteAssets.Auto())
             {
                 return UnityEditor.AssetDatabase.DeleteAssets(paths, outFailedPaths);
@@ -566,6 +592,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void DisallowAutoRefresh()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_DisallowAutoRefresh.Auto())
             {
                 UnityEditor.AssetDatabase.DisallowAutoRefresh();
@@ -582,6 +609,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ExportPackage(string path, string fileName)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -599,6 +627,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ExportPackage(string path, string fileName, UnityEditor.ExportPackageOptions flags)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -616,6 +645,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ExportPackage(string[] paths, string fileName)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
@@ -636,6 +666,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.ExportPackageOptions flags)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ExportPackage.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
@@ -654,6 +685,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string ExtractAsset(Object asset, string newPath)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ExtractAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.ExtractAsset(asset, newPath);
@@ -671,6 +703,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] FindAssets(string filter)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_FindAssets.Auto())
             {
                 return UnityEditor.AssetDatabase.FindAssets(filter);
@@ -688,6 +721,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] FindAssets(string filter, string[] searchInFolders)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_FindAssets.Auto())
             {
                 return UnityEditor.AssetDatabase.FindAssets(filter, searchInFolders);
@@ -700,6 +734,7 @@ namespace Appalachia.CI.Integration.Assets
                 UnityEditor.ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ForceReserializeAssets.Auto())
             {
                 UnityEditor.AssetDatabase.ForceReserializeAssets(assetPaths, options);
@@ -714,6 +749,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ForceReserializeAssets()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ForceReserializeAssets.Auto())
             {
                 UnityEditor.AssetDatabase.ForceReserializeAssets();
@@ -729,6 +765,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ForceToDesiredWorkerCount()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ForceToDesiredWorkerCount.Auto())
             {
                 UnityEditor.AssetDatabase.ForceToDesiredWorkerCount();
@@ -742,6 +779,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GenerateUniqueAssetPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GenerateUniqueAssetPath.Auto())
             {
                 return UnityEditor.AssetDatabase.GenerateUniqueAssetPath(path);
@@ -757,6 +795,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetAllAssetBundleNames()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAllAssetBundleNames.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAllAssetBundleNames();
@@ -766,6 +805,7 @@ namespace Appalachia.CI.Integration.Assets
         public static AssetPath[] GetAllAssetPaths()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAllAssetPaths.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAllAssetPaths()
@@ -777,6 +817,7 @@ namespace Appalachia.CI.Integration.Assets
         public static AssetPath[] GetAllProjectPaths()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAllProjectPaths.Auto())
             {
                 var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
@@ -838,6 +879,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetAssetBundleDependencies(string assetBundleName, bool recursive)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetBundleDependencies.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetBundleDependencies(assetBundleName, recursive);
@@ -855,6 +897,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Hash128 GetAssetDependencyHash(UnityEditor.GUID guid)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetDependencyHash.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetDependencyHash(guid);
@@ -872,6 +915,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Hash128 GetAssetDependencyHash(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetDependencyHash.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -886,6 +930,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetAssetOrScenePath(Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetOrScenePath.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetOrScenePath(assetObject);
@@ -903,6 +948,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetAssetPath(Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetPath.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetPath(assetObject);
@@ -920,6 +966,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetAssetPath(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetPath.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetPath(instanceID);
@@ -933,6 +980,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetAssetPathFromTextMetaFilePath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetPathFromTextMetaFilePath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -947,6 +995,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetAssetPathsFromAssetBundle(string assetBundleName)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetPathsFromAssetBundle.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
@@ -966,6 +1015,7 @@ namespace Appalachia.CI.Integration.Assets
             string assetName)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAssetPathsFromAssetBundleAndAssetName.Auto())
             {
                 return UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(
@@ -985,6 +1035,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Type[] GetAvailableImporterTypes(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAvailableImporterTypes.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -995,6 +1046,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object GetBuiltinExtraResource(Type type, string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetBuiltinExtraResource.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1006,6 +1058,7 @@ namespace Appalachia.CI.Integration.Assets
             where T : Object
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetBuiltinExtraResource.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1020,6 +1073,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Texture GetCachedIcon(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCachedIcon.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1036,6 +1090,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetCacheServerAddress()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCacheServerAddress.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCacheServerAddress();
@@ -1051,6 +1106,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool GetCacheServerEnableDownload()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCacheServerEnableDownload.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCacheServerEnableDownload();
@@ -1066,6 +1122,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool GetCacheServerEnableUpload()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCacheServerEnableUpload.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCacheServerEnableUpload();
@@ -1081,6 +1138,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetCacheServerNamespacePrefix()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCacheServerNamespacePrefix.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCacheServerNamespacePrefix();
@@ -1096,6 +1154,7 @@ namespace Appalachia.CI.Integration.Assets
         public static ushort GetCacheServerPort()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCacheServerPort.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCacheServerPort();
@@ -1111,6 +1170,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetCurrentCacheServerIp()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetCurrentCacheServerIp.Auto())
             {
                 return UnityEditor.AssetDatabase.GetCurrentCacheServerIp();
@@ -1136,6 +1196,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetDependencies(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1162,6 +1223,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetDependencies(string path, bool recursive)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1188,6 +1250,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetDependencies(string[] paths)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
@@ -1214,6 +1277,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetDependencies(string[] paths, bool recursive)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetDependencies.Auto())
             {
                 var relativePaths = paths.ToRelativePaths();
@@ -1231,6 +1295,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetImplicitAssetBundleName(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetImplicitAssetBundleName.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1248,6 +1313,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetImplicitAssetBundleVariantName(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetImplicitAssetBundleVariantName.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1265,6 +1331,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Type GetImporterOverride(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1275,6 +1342,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetLabels(UnityEditor.GUID guid)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetLabels.Auto())
             {
                 return UnityEditor.AssetDatabase.GetLabels(guid);
@@ -1288,6 +1356,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetLabels(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetLabels.Auto())
             {
                 return UnityEditor.AssetDatabase.GetLabels(obj);
@@ -1301,6 +1370,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Type GetMainAssetTypeAtPath(AssetPath path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetMainAssetTypeAtPath.Auto())
             {
                 var relativePath = path.relativePath;
@@ -1315,7 +1385,14 @@ namespace Appalachia.CI.Integration.Assets
 
                 if (assetObjects is { Length: > 0 })
                 {
-                    result = assetObjects[0].GetType();
+                    var first = assetObjects[0];
+
+                    if (first == null)
+                    {
+                        return null;
+                    }
+
+                    result = first.GetType();
                 }
 
                 return result;
@@ -1329,6 +1406,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Type GetMainAssetTypeAtPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetMainAssetTypeAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1343,7 +1421,14 @@ namespace Appalachia.CI.Integration.Assets
 
                 if (assetObjects is { Length: > 0 })
                 {
-                    result = assetObjects[0].GetType();
+                    var first = assetObjects[0];
+
+                    if (first == null)
+                    {
+                        return null;
+                    }
+
+                    result = first.GetType();
                 }
 
                 return result;
@@ -1360,6 +1445,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetSubFolders(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetSubFolders.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1377,6 +1463,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetTextMetaDataPathFromAssetPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetTextMetaDataPathFromAssetPath.Auto())
             {
                 return UnityEditor.AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
@@ -1393,6 +1480,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string GetTextMetaFilePathFromAssetPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetTextMetaFilePathFromAssetPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1411,6 +1499,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Type GetTypeFromPathAndFileID(string path, long localIdentifierInFile)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetTypeFromPathAndFileID.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1427,6 +1516,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string[] GetUnusedAssetBundleNames()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetUnusedAssetBundleNames.Auto())
             {
                 return UnityEditor.AssetDatabase.GetUnusedAssetBundleNames();
@@ -1443,6 +1533,7 @@ namespace Appalachia.CI.Integration.Assets
         public static UnityEditor.GUID GUIDFromAssetPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GUIDFromAssetPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1460,6 +1551,7 @@ namespace Appalachia.CI.Integration.Assets
         public static AssetPath GUIDToAssetPath(string guid)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GUIDToAssetPath.Auto())
             {
                 var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
@@ -1477,6 +1569,7 @@ namespace Appalachia.CI.Integration.Assets
         public static AssetPath GUIDToAssetPath(UnityEditor.GUID guid)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GUIDToAssetPath.Auto())
             {
                 var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
@@ -1487,6 +1580,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object ImportAndLoadAssetAtPath(Type t, string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ImportAndLoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1573,6 +1667,7 @@ namespace Appalachia.CI.Integration.Assets
             where T : Object
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ImportAndLoadAssetAtPath.Auto())
             {
                 return ImportAndLoadAssetAtPath(typeof(T), path) as T;
@@ -1587,6 +1682,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ImportAsset(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ImportAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1602,6 +1698,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ImportAsset(string path, UnityEditor.ImportAssetOptions options)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ImportAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1617,6 +1714,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ImportPackage(string path, bool interactive)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ImportPackage.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1627,6 +1725,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsAssetImportWorkerProcess()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsAssetImportWorkerProcess.Auto())
             {
                 return UnityEditor.AssetDatabase.IsAssetImportWorkerProcess();
@@ -1642,6 +1741,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsCacheServerEnabled()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsCacheServerEnabled.Auto())
             {
                 return UnityEditor.AssetDatabase.IsCacheServerEnabled();
@@ -1657,6 +1757,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsConnectedToCacheServer()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsConnectedToCacheServer.Auto())
             {
                 return UnityEditor.AssetDatabase.IsConnectedToCacheServer();
@@ -1672,6 +1773,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsDirectoryMonitoringEnabled()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsDirectoryMonitoringEnabled.Auto())
             {
                 return UnityEditor.AssetDatabase.IsDirectoryMonitoringEnabled();
@@ -1686,6 +1788,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsForeignAsset(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsForeignAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsForeignAsset(obj);
@@ -1700,6 +1803,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsForeignAsset(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsForeignAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsForeignAsset(instanceID);
@@ -1714,6 +1818,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsMainAsset(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMainAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMainAsset(obj);
@@ -1728,6 +1833,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsMainAsset(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMainAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMainAsset(instanceID);
@@ -1741,6 +1847,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsMainAssetAtPathLoaded(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMainAssetAtPathLoaded.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1763,6 +1870,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsMetaFileOpenForEdit(Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject);
@@ -1786,6 +1894,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject, statusOptions);
@@ -1795,6 +1904,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsMetaFileOpenForEdit(Object assetObject, out string message)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message);
@@ -1807,6 +1917,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsMetaFileOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsMetaFileOpenForEdit(
@@ -1825,6 +1936,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsNativeAsset(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsNativeAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsNativeAsset(obj);
@@ -1839,6 +1951,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsNativeAsset(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsNativeAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsNativeAsset(instanceID);
@@ -1861,6 +1974,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(Object assetObject)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject);
@@ -1883,6 +1997,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(Object assetObject, UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, statusOptions);
@@ -1905,6 +2020,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1928,6 +2044,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(string path, UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1938,6 +2055,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(Object assetObject, out string message)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, out message);
@@ -1950,6 +2068,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 return UnityEditor.AssetDatabase.IsOpenForEdit(assetObject, out message, statusOptions);
@@ -1959,6 +2078,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsOpenForEdit(string path, out string message)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1972,6 +2092,7 @@ namespace Appalachia.CI.Integration.Assets
             UnityEditor.StatusQueryOptions statusOptions)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -1986,6 +2107,7 @@ namespace Appalachia.CI.Integration.Assets
                 UnityEditor.StatusQueryOptions.UseCachedIfPossible)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsOpenForEdit.Auto())
             {
                 UnityEditor.AssetDatabase.IsOpenForEdit(
@@ -2004,6 +2126,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsSubAsset(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsSubAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsSubAsset(obj);
@@ -2018,6 +2141,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsSubAsset(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsSubAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.IsSubAsset(instanceID);
@@ -2034,6 +2158,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsValidFolder(AssetPath path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsValidFolder.Auto())
             {
                 var relativePath = path.relativePath;
@@ -2051,6 +2176,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool IsValidFolder(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsValidFolder.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2065,6 +2191,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object[] LoadAllAssetRepresentationsAtPath(AssetPath path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
             {
                 var relativePath = path.relativePath;
@@ -2079,6 +2206,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object[] LoadAllAssetRepresentationsAtPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2093,6 +2221,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object[] LoadAllAssetsAtPath(AssetPath path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllAssetsAtPath.Auto())
             {
                 var relativePath = path.relativePath;
@@ -2107,6 +2236,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object[] LoadAllAssetsAtPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
 
             if (path.EndsWith(".prefab"))
             {
@@ -2132,6 +2262,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object[] LoadAllObjectsInPrefabAsset(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllObjectsInPrefabAsset.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2150,9 +2281,11 @@ namespace Appalachia.CI.Integration.Assets
         public static Object LoadAssetAtPath(AssetPath path, Type type)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.relativePath;
+
                 return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, type);
             }
         }
@@ -2161,6 +2294,7 @@ namespace Appalachia.CI.Integration.Assets
             where T : Object
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.relativePath;
@@ -2188,9 +2322,11 @@ namespace Appalachia.CI.Integration.Assets
         public static Object LoadAssetAtPath(string path, Type type)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
+
                 return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, type);
             }
         }
@@ -2199,6 +2335,8 @@ namespace Appalachia.CI.Integration.Assets
             where T : Object
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
+
             using (_PRF_LoadAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2225,6 +2363,7 @@ namespace Appalachia.CI.Integration.Assets
         public static Object LoadMainAssetAtPath(AssetPath path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadMainAssetAtPath.Auto())
             {
                 var relativePath = path.relativePath;
@@ -2242,9 +2381,11 @@ namespace Appalachia.CI.Integration.Assets
         public static Object LoadMainAssetAtPath(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadMainAssetAtPath.Auto())
             {
                 var relativePath = path.ToRelativePath();
+
                 return UnityEditor.AssetDatabase.LoadMainAssetAtPath(relativePath);
             }
         }
@@ -2259,6 +2400,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool MakeEditable(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_MakeEditable.Auto())
             {
                 return UnityEditor.AssetDatabase.MakeEditable(path);
@@ -2271,6 +2413,7 @@ namespace Appalachia.CI.Integration.Assets
             List<string> outNotEditablePaths = null)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_MakeEditable.Auto())
             {
                 return UnityEditor.AssetDatabase.MakeEditable(paths, prompt, outNotEditablePaths);
@@ -2288,6 +2431,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string MoveAsset(string oldPath, string newPath)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_MoveAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.MoveAsset(oldPath, newPath);
@@ -2297,6 +2441,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool MoveAssetsToTrash(string[] paths, List<string> outFailedPaths)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_MoveAssetsToTrash.Auto())
             {
                 return UnityEditor.AssetDatabase.MoveAssetsToTrash(paths, outFailedPaths);
@@ -2313,6 +2458,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool MoveAssetToTrash(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_MoveAssetToTrash.Auto())
             {
                 return UnityEditor.AssetDatabase.MoveAssetToTrash(path);
@@ -2329,6 +2475,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(int instanceID)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(instanceID);
@@ -2345,6 +2492,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(int instanceID, int lineNumber)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(instanceID, lineNumber);
@@ -2361,6 +2509,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(int instanceID, int lineNumber, int columnNumber)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(instanceID, lineNumber, columnNumber);
@@ -2377,6 +2526,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(Object target)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(target);
@@ -2393,6 +2543,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(Object target, int lineNumber)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(target, lineNumber);
@@ -2409,6 +2560,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(Object target, int lineNumber, int columnNumber)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(target, lineNumber, columnNumber);
@@ -2422,6 +2574,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAsset(Object[] objects)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.OpenAsset(objects);
@@ -2438,6 +2591,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool OpenAssetAtPath(string assetPath)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_OpenAssetAtPath.Auto())
             {
                 var type = UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(assetPath);
@@ -2453,6 +2607,7 @@ namespace Appalachia.CI.Integration.Assets
             [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_Refresh.Auto())
             {
                 Context.Log.Warn(
@@ -2480,6 +2635,7 @@ namespace Appalachia.CI.Integration.Assets
             [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_Refresh.Auto())
             {
                 Context.Log.Warn(
@@ -2502,6 +2658,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void RefreshSettings()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RefreshSettings.Auto())
             {
                 UnityEditor.AssetDatabase.RefreshSettings();
@@ -2522,6 +2679,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void RegisterCustomDependency(string dependency, Hash128 hashOfValue)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RegisterCustomDependency.Auto())
             {
                 UnityEditor.AssetDatabase.RegisterCustomDependency(dependency, hashOfValue);
@@ -2537,6 +2695,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ReleaseCachedFileHandles()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ReleaseCachedFileHandles.Auto())
             {
                 UnityEditor.AssetDatabase.ReleaseCachedFileHandles();
@@ -2551,6 +2710,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool RemoveAssetBundleName(string assetBundleName, bool forceRemove)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RemoveAssetBundleName.Auto())
             {
                 return UnityEditor.AssetDatabase.RemoveAssetBundleName(assetBundleName, forceRemove);
@@ -2564,6 +2724,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void RemoveObjectFromAsset(Object objectToRemove)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RemoveObjectFromAsset.Auto())
             {
                 UnityEditor.AssetDatabase.RemoveObjectFromAsset(objectToRemove);
@@ -2576,6 +2737,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void RemoveUnusedAssetBundleNames()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RemoveUnusedAssetBundleNames.Auto())
             {
                 UnityEditor.AssetDatabase.RemoveUnusedAssetBundleNames();
@@ -2593,6 +2755,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string RenameAsset(string path, string newName)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_RenameAsset.Auto())
             {
                 var oldExtension = AppaPath.GetExtension(path);
@@ -2623,6 +2786,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void ResetCacheServerReconnectTimer()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ResetCacheServerReconnectTimer.Auto())
             {
                 UnityEditor.AssetDatabase.ResetCacheServerReconnectTimer();
@@ -2637,6 +2801,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void SaveAssetIfDirty(UnityEditor.GUID guid)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SaveAssetIfDirty.Auto())
             {
                 UnityEditor.AssetDatabase.SaveAssetIfDirty(guid);
@@ -2651,6 +2816,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void SaveAssetIfDirty(Object obj)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SaveAssetIfDirty.Auto())
             {
                 UnityEditor.AssetDatabase.SaveAssetIfDirty(obj);
@@ -2666,6 +2832,7 @@ namespace Appalachia.CI.Integration.Assets
             [CallerLineNumber] int callerLineNumber = 0)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SaveAssets.Auto())
             {
                 Context.Log.Warn(
@@ -2686,6 +2853,7 @@ namespace Appalachia.CI.Integration.Assets
             where T : UnityEditor.AssetImporters.ScriptedImporter
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SetImporterOverride.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2701,6 +2869,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void SetLabels(Object obj, string[] labels)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SetLabels.Auto())
             {
                 UnityEditor.AssetDatabase.SetLabels(obj, labels);
@@ -2715,6 +2884,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void SetMainObject(Object mainObject, string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_SetMainObject.Auto())
             {
                 var relativePath = path.ToRelativePath();
@@ -2737,6 +2907,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void StartAssetEditing()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_StartAssetEditing.Auto())
             {
                 Context.Log.Trace("Asset database editing has begun and importing is suspended.");
@@ -2759,6 +2930,7 @@ namespace Appalachia.CI.Integration.Assets
         public static void StopAssetEditing()
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_StopAssetEditing.Auto())
             {
                 Context.Log.Trace("Asset database editing has finished and importing will resume.");
@@ -2769,6 +2941,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool TryGetGUIDAndLocalFileIdentifier(Object obj, out string guid, out long localId)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
                 return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out guid, out localId);
@@ -2778,6 +2951,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool TryGetGUIDAndLocalFileIdentifier(int instanceID, out string guid, out long localId)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
                 return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
@@ -2795,6 +2969,7 @@ namespace Appalachia.CI.Integration.Assets
             where T : Object
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_TryGetGUIDAndLocalFileIdentifier.Auto())
             {
                 return UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
@@ -2815,6 +2990,7 @@ namespace Appalachia.CI.Integration.Assets
         public static uint UnregisterCustomDependencyPrefixFilter(string prefixFilter)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_UnregisterCustomDependencyPrefixFilter.Auto())
             {
                 return UnityEditor.AssetDatabase.UnregisterCustomDependencyPrefixFilter(prefixFilter);
@@ -2832,6 +3008,7 @@ namespace Appalachia.CI.Integration.Assets
         public static string ValidateMoveAsset(string oldPath, string newPath)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_ValidateMoveAsset.Auto())
             {
                 return UnityEditor.AssetDatabase.ValidateMoveAsset(oldPath, newPath);
@@ -2845,6 +3022,7 @@ namespace Appalachia.CI.Integration.Assets
         public static bool WriteImportSettingsIfDirty(string path)
         {
             ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_WriteImportSettingsIfDirty.Auto())
             {
                 var relativePath = path.ToRelativePath();

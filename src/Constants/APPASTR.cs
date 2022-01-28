@@ -8,6 +8,7 @@ namespace Appalachia.CI.Constants
     {
         #region Constants and Static Readonly
 
+        public const string Camera = "Camera";
         public const string _asmdef = ".asmdef";
         public const string _dotSettings = ".dotSettings";
         public const string _git = ".git";
@@ -186,6 +187,9 @@ namespace Appalachia.CI.Constants
         public const string Publish_Status = Publish + _ + Status;
         public const string Published = "Published";
         public const string Published_Version = Published + _ + Version;
+        public const string Raw = "Raw";
+        public const string Raw_Image = Raw + _ + Image;
+        public const string Raw_Image_Canvas = Raw + _ + Image + _ + Canvas;
         public const string Raycaster = "Raycaster";
         public const string Reanalyze = "Reanalyze";
         public const string Reanalyze_All = Reanalyze + _ + All;

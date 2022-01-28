@@ -167,14 +167,24 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveDirectoryForAsset(Type assetType, string assetPath, Type ownerType)
+        public static string GetSaveDirectoryForAsset(
+            Type assetType,
+            string assetPath,
+            Type ownerType,
+            bool throwIfPackage = true)
         {
             ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForAsset.Auto())
             {
                 var assetName = AppaPath.GetFileName(assetPath);
 
-                return GetSaveLocationMetadataInternal(assetPath, assetName, assetType, ownerType);
+                return GetSaveLocationMetadataInternal(
+                    assetPath,
+                    assetName,
+                    assetType,
+                    ownerType,
+                    throwIfPackage
+                );
             }
         }
 
@@ -220,7 +230,10 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static string GetSaveDirectoryForScriptableObject(Type scriptType, Type ownerType)
+        public static string GetSaveDirectoryForScriptableObject(
+            Type scriptType,
+            Type ownerType,
+            bool throwIfPackage = true)
         {
             ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
@@ -228,7 +241,13 @@ namespace Appalachia.CI.Integration.Assets
                 var script = GetScriptFromType(scriptType);
                 var scriptPath = GetAssetPath(script);
 
-                return GetSaveLocationMetadataInternal(scriptPath, null, scriptType, ownerType);
+                return GetSaveLocationMetadataInternal(
+                    scriptPath,
+                    null,
+                    scriptType,
+                    ownerType,
+                    throwIfPackage
+                );
             }
         }
 
@@ -377,7 +396,8 @@ namespace Appalachia.CI.Integration.Assets
             string relativePathToRepositoryMember,
             string saveFileName,
             Type saveFiletype,
-            Type ownerType)
+            Type ownerType,
+            bool throwIfPackage = true)
         {
             ThrowIfInvalidState();
             using (_PRF_GetSaveLocationMetadataInternal.Auto())
@@ -402,7 +422,7 @@ namespace Appalachia.CI.Integration.Assets
                 {
                     if (ownerType == null)
                     {
-                        if (relativePathToRepositoryMember.StartsWith("Packages"))
+                        if (throwIfPackage && relativePathToRepositoryMember.StartsWith("Packages"))
                         {
                             throw new NotSupportedException(
                                 ZString.Format("Must provide an owner type for [{0}].", saveFiletype.Name)

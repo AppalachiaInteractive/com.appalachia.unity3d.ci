@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Appalachia.CI.Integration.Extensions;
 using Appalachia.Utility.Extensions;
 using Appalachia.Utility.Strings;
@@ -8,7 +9,7 @@ using UnityEngine;
 namespace Appalachia.CI.Integration.FileSystem
 {
     [Serializable]
-    public sealed class AssetPath : IEquatable<AssetPath>
+    public sealed class AssetPath : IEquatable<AssetPath>, IComparable<AssetPath>, IComparable
     {
         #region Constants and Static Readonly
 
@@ -121,7 +122,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_ParentDirectoryExists.Auto())
                 {
-                    var dirInfo = new AppaDirectoryInfo(relativePath);
+                    var dirInfo = new AppaDirectoryInfo(directoryName);
 
                     return dirInfo.Exists;
                 }
@@ -250,12 +251,32 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        public static bool operator >(AssetPath left, AssetPath right)
+        {
+            return Comparer<AssetPath>.Default.Compare(left, right) > 0;
+        }
+
+        public static bool operator >=(AssetPath left, AssetPath right)
+        {
+            return Comparer<AssetPath>.Default.Compare(left, right) >= 0;
+        }
+
         public static bool operator !=(AssetPath left, AssetPath right)
         {
             using (_PRF_neq.Auto())
             {
                 return !Equals(left, right);
             }
+        }
+
+        public static bool operator <(AssetPath left, AssetPath right)
+        {
+            return Comparer<AssetPath>.Default.Compare(left, right) < 0;
+        }
+
+        public static bool operator <=(AssetPath left, AssetPath right)
+        {
+            return Comparer<AssetPath>.Default.Compare(left, right) <= 0;
         }
 
         public override bool Equals(object obj)
@@ -283,6 +304,102 @@ namespace Appalachia.CI.Integration.FileSystem
                 return (extension == ext) || (extension == _extensionCheckFormat.Format(ext));
             }
         }
+
+        #region IComparable Members
+
+        public int CompareTo(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return 1;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return 0;
+            }
+
+            return obj is AssetPath other
+                ? CompareTo(other)
+                : throw new ArgumentException($"Object must be of type {nameof(AssetPath)}");
+        }
+
+        #endregion
+
+        #region IComparable<AssetPath> Members
+
+        public int CompareTo(AssetPath other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other))
+            {
+                return 1;
+            }
+
+            var relativePathComparison = string.Compare(
+                _relativePath,
+                other._relativePath,
+                StringComparison.Ordinal
+            );
+            if (relativePathComparison != 0)
+            {
+                return relativePathComparison;
+            }
+
+            var absolutePathComparison = string.Compare(
+                _absolutePath,
+                other._absolutePath,
+                StringComparison.Ordinal
+            );
+            if (absolutePathComparison != 0)
+            {
+                return absolutePathComparison;
+            }
+
+            var initialPathComparison = string.Compare(
+                _initialPath,
+                other._initialPath,
+                StringComparison.Ordinal
+            );
+            if (initialPathComparison != 0)
+            {
+                return initialPathComparison;
+            }
+
+            var directoryNameComparison = string.Compare(
+                _directoryName,
+                other._directoryName,
+                StringComparison.Ordinal
+            );
+            if (directoryNameComparison != 0)
+            {
+                return directoryNameComparison;
+            }
+
+            var extensionComparison = string.Compare(_extension, other._extension, StringComparison.Ordinal);
+            if (extensionComparison != 0)
+            {
+                return extensionComparison;
+            }
+
+            var fileNameComparison = string.Compare(_fileName, other._fileName, StringComparison.Ordinal);
+            if (fileNameComparison != 0)
+            {
+                return fileNameComparison;
+            }
+
+            return string.Compare(
+                _fileNameWithoutExtensions,
+                other._fileNameWithoutExtensions,
+                StringComparison.Ordinal
+            );
+        }
+
+        #endregion
 
         #region IEquatable<AssetPath> Members
 
