@@ -404,7 +404,7 @@ namespace Appalachia.CI.Integration.Assets
         {
             ThrowIfInvalidState();
             using var scope = APPASERIALIZE.OnAssetEditing();
-            
+
             using (_PRF_ClearLabels.Auto())
             {
                 UnityEditor.AssetDatabase.ClearLabels(obj);
@@ -2745,39 +2745,6 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         /// <summary>
-        ///     <para>Rename an asset file.</para>
-        /// </summary>
-        /// <param name="path">The path where the asset currently resides.</param>
-        /// <param name="newName">The new name which should be given to the asset.</param>
-        /// <returns>
-        ///     <para>An empty string, if the asset has been successfully renamed, otherwise an error message.</para>
-        /// </returns>
-        public static string RenameAsset(string path, string newName)
-        {
-            ThrowIfInvalidState();
-            using var scope = APPASERIALIZE.OnAssetEditing();
-            using (_PRF_RenameAsset.Auto())
-            {
-                var oldExtension = AppaPath.GetExtension(path);
-
-                var newBaseName = AppaPath.GetFileNameWithoutExtension(newName);
-                var newExtension = AppaPath.GetExtension(newName);
-
-                var newFileName = newExtension.IsNotNullOrWhiteSpace()
-                    ? newName
-                    : ZString.Concat(newBaseName, oldExtension);
-
-                var relativePath = path.ToRelativePath();
-
-                var assetObject = UnityEditor.AssetDatabase.LoadAssetAtPath<Object>(path);
-                assetObject.name = newBaseName;
-                UnityEditor.EditorUtility.SetDirty(assetObject);
-
-                return UnityEditor.AssetDatabase.RenameAsset(relativePath, newFileName);
-            }
-        }
-
-        /// <summary>
         ///     <para>
         ///         Resets the internal cache server connection reconnect timer values. The default delay timer value is 1 second, and the max delay value is 5
         ///         minutes. Everytime a connection attempt fails it will double the delay timer value, until a maximum time of the max value.
@@ -2910,7 +2877,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_StartAssetEditing.Auto())
             {
-                Context.Log.Trace("Asset database editing has begun and importing is suspended.");
+                /*Context.Log.Trace("Asset database editing has begun and importing is suspended.");*/
                 UnityEditor.AssetDatabase.StartAssetEditing();
             }
         }
@@ -2933,7 +2900,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_StopAssetEditing.Auto())
             {
-                Context.Log.Trace("Asset database editing has finished and importing will resume.");
+                /*Context.Log.Trace("Asset database editing has finished and importing will resume.");*/
                 UnityEditor.AssetDatabase.StopAssetEditing();
             }
         }
@@ -2998,6 +2965,61 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         /// <summary>
+        ///     Renames an asset file.  The file extension is only required on <see cref="newName" /> to change the existing file extension.
+        ///     The file will stay in the same directory.  To move the file to a different directory, call <see cref="MoveAsset" />.
+        /// </summary>
+        /// <param name="asset">The asset to rename.</param>
+        /// <param name="newName">The new asset name.</param>
+        public static void UpdateAssetName(Object asset, string newName)
+        {
+            ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
+
+            using (_PRF_UpdateAssetName.Auto())
+            {
+                var assetPath = GetAssetPath(asset);
+
+                UpdateAssetName(assetPath, newName);
+            }
+        }
+
+        /// <summary>
+        ///     <para>Rename an asset file.</para>
+        /// </summary>
+        /// <param name="path">The path where the asset currently resides.</param>
+        /// <param name="newName">The new name which should be given to the asset.</param>
+        public static void UpdateAssetName(string path, string newName)
+        {
+            ThrowIfInvalidState();
+            using var scope = APPASERIALIZE.OnAssetEditing();
+
+            using (_PRF_UpdateAssetName.Auto())
+            {
+                var oldExtension = AppaPath.GetExtension(path);
+
+                var newBaseName = AppaPath.GetFileNameWithoutExtension(newName);
+                var newExtension = AppaPath.GetExtension(newName);
+
+                var newFileName = newExtension.IsNotNullOrWhiteSpace()
+                    ? newName
+                    : ZString.Concat(newBaseName, oldExtension);
+
+                var relativePath = path.ToRelativePath();
+
+                var assetObject = UnityEditor.AssetDatabase.LoadAssetAtPath<Object>(path);
+                assetObject.name = newBaseName;
+                UnityEditor.EditorUtility.SetDirty(assetObject);
+
+                var result = UnityEditor.AssetDatabase.RenameAsset(relativePath, newFileName);
+
+                if (result.IsNotNullOrEmpty())
+                {
+                    throw new InvalidOperationException(result);
+                }
+            }
+        }
+
+        /// <summary>
         ///     <para>Checks if an asset file can be moved from one folder to another. (Without actually moving the file).</para>
         /// </summary>
         /// <param name="oldPath">The path where the asset currently resides.</param>
@@ -3031,6 +3053,9 @@ namespace Appalachia.CI.Integration.Assets
         }
 
         #region Profiling
+
+        private static readonly ProfilerMarker _PRF_UpdateAssetName =
+            new ProfilerMarker(_PRF_PFX + nameof(UpdateAssetName));
 
         private static readonly ProfilerMarker _PRF_LoadAllObjectsInPrefabAsset =
             new ProfilerMarker(_PRF_PFX + nameof(LoadAllObjectsInPrefabAsset));
@@ -3070,7 +3095,7 @@ namespace Appalachia.CI.Integration.Assets
 
         private static readonly ProfilerMarker _PRF_MoveAsset = new(_PRF_PFX + nameof(MoveAsset));
         private static readonly ProfilerMarker _PRF_ExtractAsset = new(_PRF_PFX + nameof(ExtractAsset));
-        private static readonly ProfilerMarker _PRF_RenameAsset = new(_PRF_PFX + nameof(RenameAsset));
+        private static readonly ProfilerMarker _PRF_RenameAsset = new(_PRF_PFX + nameof(UpdateAssetName));
 
         private static readonly ProfilerMarker _PRF_MoveAssetToTrash =
             new(_PRF_PFX + nameof(MoveAssetToTrash));

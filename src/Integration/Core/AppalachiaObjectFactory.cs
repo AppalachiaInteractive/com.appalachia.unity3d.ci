@@ -196,7 +196,7 @@ namespace Appalachia.CI.Integration.Core
 
                 instance.name = cleanName;
 
-                AssetDatabaseManager.RenameAsset(path, cleanName);
+                AssetDatabaseManager.UpdateAssetName(path, cleanName);
             }
         }
 #endif
