@@ -137,6 +137,7 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <returns>The directory name.</returns>
         public override string Name => _directoryInfo.Name;
 
+        /// <inheritdoc />
         public override string RelativePath => FullPath.ToRelativePath();
 
         [DebuggerStepThrough]
@@ -942,6 +943,7 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <inheritdoc />
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _directoryInfo;

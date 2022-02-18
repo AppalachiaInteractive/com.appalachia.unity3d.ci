@@ -55,8 +55,8 @@ namespace Appalachia.CI.Integration.Assets
         private static readonly ProfilerMarker _PRF_GetTypeFromScript =
             new(_PRF_PFX + nameof(GetTypeFromScript));
 
-        private static readonly ProfilerMarker _PRF_GetScriptFromType =
-            new(_PRF_PFX + nameof(GetScriptFromType));
+        private static readonly ProfilerMarker _PRF_GetMonoScriptFromType =
+            new(_PRF_PFX + nameof(GetMonoScriptFromType));
 
         private static Dictionary<UnityEditor.MonoScript, Type> _scriptTypeLookup;
         private static Dictionary<string, string> _assetRepoLookup;
@@ -167,6 +167,22 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
+        public static UnityEditor.MonoScript GetMonoScriptFromType(Type t)
+        {
+            ThrowIfInvalidState();
+            using (_PRF_GetMonoScriptFromType.Auto())
+            {
+                InitializeTypeScriptLookups();
+
+                if (!_typeScriptLookup.ContainsKey(t))
+                {
+                    return null;
+                }
+
+                return _typeScriptLookup[t];
+            }
+        }
+
         public static string GetSaveDirectoryForAsset(
             Type assetType,
             string assetPath,
@@ -198,7 +214,7 @@ namespace Appalachia.CI.Integration.Assets
                 var ownerType = typeof(TOwner);
                 var assetType = typeof(TAsset);
 
-                var ownerScript = GetScriptFromType(ownerType);
+                var ownerScript = GetMonoScriptFromType(ownerType);
                 var ownerPath = GetAssetPath(ownerScript);
 
                 return GetSaveLocationMetadataInternal(ownerPath, fileName, assetType, ownerType);
@@ -238,7 +254,7 @@ namespace Appalachia.CI.Integration.Assets
             ThrowIfInvalidState();
             using (_PRF_GetSaveLocationForScriptableObject.Auto())
             {
-                var script = GetScriptFromType(scriptType);
+                var script = GetMonoScriptFromType(scriptType);
                 var scriptPath = GetAssetPath(script);
 
                 return GetSaveLocationMetadataInternal(
@@ -248,22 +264,6 @@ namespace Appalachia.CI.Integration.Assets
                     ownerType,
                     throwIfPackage
                 );
-            }
-        }
-
-        public static UnityEditor.MonoScript GetScriptFromType(Type t)
-        {
-            ThrowIfInvalidState();
-            using (_PRF_GetScriptFromType.Auto())
-            {
-                InitializeTypeScriptLookups();
-
-                if (!_typeScriptLookup.ContainsKey(t))
-                {
-                    return null;
-                }
-
-                return _typeScriptLookup[t];
             }
         }
 
@@ -433,7 +433,7 @@ namespace Appalachia.CI.Integration.Assets
                     }
                     else
                     {
-                        var script = GetScriptFromType(ownerType);
+                        var script = GetMonoScriptFromType(ownerType);
 
                         if (script == null)
                         {

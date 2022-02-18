@@ -279,6 +279,7 @@ namespace Appalachia.CI.Integration.FileSystem
             return Comparer<AssetPath>.Default.Compare(left, right) <= 0;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             using (_PRF_Equals.Auto())
@@ -287,6 +288,7 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             using (_PRF_GetHashCode.Auto())

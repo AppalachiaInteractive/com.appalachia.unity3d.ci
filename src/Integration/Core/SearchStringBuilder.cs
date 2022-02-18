@@ -29,6 +29,7 @@ namespace Appalachia.CI.Integration.Core
 
         public static SearchStringBuilder Build => new();
 
+        /// <inheritdoc />
         public override string ToString()
         {
             using (_PRF_ToString.Auto())

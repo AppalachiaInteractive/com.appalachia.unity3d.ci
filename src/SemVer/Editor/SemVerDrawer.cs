@@ -51,11 +51,13 @@ namespace Appalachia.CI.SemVer
             }
         }
 
+        /// <inheritdoc />
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return _position.yMax - _yMin;
         }
 
+        /// <inheritdoc />
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var targetObject = property.serializedObject.targetObject;

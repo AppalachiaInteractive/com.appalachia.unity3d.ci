@@ -12,6 +12,7 @@ namespace Appalachia.CI.SemVer
             DrawAutoBuildPopup = false;
         }
 
+        /// <inheritdoc />
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.type == "string")

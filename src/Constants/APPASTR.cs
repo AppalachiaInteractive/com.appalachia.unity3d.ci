@@ -20,6 +20,8 @@ namespace Appalachia.CI.Constants
         public const string APPALACHIA_INTERACTIVE = APPALACHIA + _ + INTERACTIVE;
         public const string Appalachia_Managed_Only = Appalachia + _ + Managed + _ + Only;
         public const string Appalachia_Only = Appalachia + _ + Only;
+        public const string Apply = "Apply";
+        public const string Apply_Metadata = Apply + _ + Metadata;
         public const string AREA = "AREA";
         public const string AREA_DATA = AREA + _ + DATA;
         public const string AREA_MAN = AREA + _ + MAN;
@@ -54,7 +56,6 @@ namespace Appalachia.CI.Constants
         public const string Buttons3 = "Buttons3";
         public const string Buttons4 = "Buttons4";
         public const string Buttons5 = "Buttons5";
-
         public const string Camera = "Camera";
         public const string Canvas = "Canvas";
         public const string Canvas_Group = Canvas + _ + Group;
@@ -62,7 +63,6 @@ namespace Appalachia.CI.Constants
         public const string CI = "CI";
         public const string COLL = "COLL";
         public const string COLLECTION = "COLLECTION";
-
         public const string Common = "Common";
         public const string Completed = "Completed";
         public const string Complex = "Complex";
@@ -94,7 +94,16 @@ namespace Appalachia.CI.Constants
         public const string Developer = "Developer";
         public const string Directories = "Directories";
         public const string Directory = "Directory";
+        public const string Disable = "Disable";
+        public const string Disable_Feature = Disable + _ + Feature;
+        public const string Disable_Features = Disable + _ + Features;
+        public const string Disable_Service = Disable + _ + Service;
+        public const string Disable_Services = Disable + _ + Services;
+        public const string Disable_Widget = Disable + _ + Widget;
+        public const string Disable_Widgets = Disable + _ + Widgets;
         public const string Disabled = "Disabled";
+        public const string Discover = "Discover";
+        public const string Discover_Targets = Discover + _ + Targets;
         public const string Distributable = "Distributable";
         public const string Distributable_Size = Distributable + _ + Size;
         public const string Distributable_Version = Distributable + _ + Version;
@@ -108,6 +117,15 @@ namespace Appalachia.CI.Constants
         public const string EDITOR_ONLY_BEHAVIOUR = EDITOR + _ + ONLY + _ + BEHAVIOUR;
         public const string EDT = "EDT";
         public const string EDT_ONLY = EDT + _ + ONLY;
+        public const string Enable = "Enable";
+        public const string Enable_Feature = Enable + _ + Feature;
+        public const string Enable_Features = Enable + _ + Features;
+        public const string Enable_Service = Enable + _ + Service;
+        public const string Enable_Services = Enable + _ + Services;
+        public const string Enable_Widget = Enable + _ + Widget;
+        public const string Enable_Widgets = Enable + _ + Widgets;
+        public const string Feature = "Feature";
+        public const string Features = "Features";
         public const string File = "File";
         public const string File_Current = File + " (" + Ideal + ")";
         public const string File_Ideal = File + " (" + Current + ")";
@@ -151,6 +169,10 @@ namespace Appalachia.CI.Constants
         public const string Issue_Type_Package = Issue + _ + Type + _ + Package;
         public const string Issue_Type_Repository = Issue + _ + Type + _ + Repository;
         public const string Issues = "Issues";
+        public const string Jump = "Jump";
+        public const string Jump_To_Feature = Jump + _ + To + _ + Feature;
+        public const string Jump_To_Services = Jump + _ + To + _ + Services;
+        public const string Jump_To_Widgets = Jump + _ + To + _ + Widgets;
         public const string Keys = "Keys";
         public const string Layer = "Layer";
         public const string Level = "Level";
@@ -223,6 +245,7 @@ namespace Appalachia.CI.Constants
         public const string Rounded_Background = Rounded + _ + Background;
         public const string Runtime = "Runtime";
         public const string Scaled = "Scaled";
+        public const string Scaled_Canvas = Scaled + _ + Canvas;
         public const string Scaled_Templates = Scaled + _ + Templates;
         public const string Scaled_View = Scaled + _ + View;
         public const string Scaling = "Scaling";
@@ -236,6 +259,8 @@ namespace Appalachia.CI.Constants
         public const string Selectable = "Selectable";
         public const string SELECTABLE = "SELECTABLE";
         public const string Serialize = "Serialize";
+        public const string Service = "Service";
+        public const string Services = "Services";
         public const string Show = "Show";
         public const string Simple = "Simple";
         public const string Simple_Cursor = Simple + _ + Cursor;
@@ -277,12 +302,14 @@ namespace Appalachia.CI.Constants
         public const string SYMBOL_PERIODPERIOD = "..";
         public const string SYMBOL_PLUS = "+";
         public const string SYMBOL_UNDERSCORE = "_";
+        public const string Targets = "Targets";
         public const string Tasks = "Tasks";
         public const string Template = "Template";
         public const string Templates = "Templates";
         public const string Test = "Test";
         public const string Test_Files = Test + _ + Files;
         public const string To = "To";
+        public const string Toggle = "Toggle";
         public const string Type = "Type";
         public const string Unload = "Unload";
         public const string Unload_Behaviour = Unload + _ + Behaviour;
@@ -290,6 +317,9 @@ namespace Appalachia.CI.Constants
         public const string Unscaled_Canvas = Unscaled + _ + Canvas;
         public const string Unscaled_Templates = Unscaled + _ + Templates;
         public const string Unscaled_View = Unscaled + _ + View;
+
+        public const string Update = "Update";
+        public const string Update_Targets = Update + _ + Targets;
         public const string url = "url";
         public const string User = "User";
         public const string Validity = "Validity";
@@ -298,10 +328,10 @@ namespace Appalachia.CI.Constants
         public const string Version_All = Version + _ + All;
         public const string Versions = "Versions";
         public const string View = "View";
+        public const string Widget = "Widget";
+        public const string Widgets = "Widgets";
         public const string Width = "Width";
-
         public const string Workflow = "Workflow";
-
         private const string _ = " ";
 
         #endregion

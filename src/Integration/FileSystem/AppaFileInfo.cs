@@ -93,6 +93,7 @@ namespace Appalachia.CI.Integration.FileSystem
 
         #endregion
 
+        /// <inheritdoc />
         public override AppaDirectoryInfo Parent => _fileInfo.Directory;
 
         /// <summary>Gets a value indicating whether a file exists.</summary>
@@ -111,6 +112,7 @@ namespace Appalachia.CI.Integration.FileSystem
         /// <returns>The name of the file.</returns>
         public override string Name => _fileInfo.Name;
 
+        /// <inheritdoc />
         public override string RelativePath => FullPath.ToRelativePath();
 
         /// <summary>Gets an instance of the parent directory.</summary>
@@ -612,6 +614,7 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
+        /// <inheritdoc />
         protected override FileSystemInfo GetFileSystemInfo()
         {
             return _fileInfo;

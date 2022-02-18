@@ -177,6 +177,7 @@ namespace Appalachia.CI.SemVer
             return SemVerConverter.FromString(semVer);
         }
 
+        /// <inheritdoc />
         [DebuggerStepThrough]
         public override bool Equals(object obj)
         {
@@ -193,12 +194,14 @@ namespace Appalachia.CI.SemVer
             return (obj.GetType() == GetType()) && Equals((SemVer)obj);
         }
 
+        /// <inheritdoc />
         [DebuggerStepThrough]
         public override int GetHashCode()
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         [DebuggerStepThrough]
         public override string ToString()
         {

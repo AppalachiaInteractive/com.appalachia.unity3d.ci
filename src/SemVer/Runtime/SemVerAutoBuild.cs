@@ -67,6 +67,7 @@ namespace Appalachia.CI.SemVer
 
         private class CloudBuildNumberBuild : ReadOnly
         {
+            /// <inheritdoc />
             internal override string Get(string build)
             {
                 return CloudBuildManifest.Instance.IsLoaded
@@ -81,11 +82,13 @@ namespace Appalachia.CI.SemVer
 
         private class ManualBuild : SemVerAutoBuild
         {
+            /// <inheritdoc />
             internal override string Get(string build)
             {
                 return build;
             }
 
+            /// <inheritdoc />
             internal override string Set(string build)
             {
                 return build;
@@ -98,6 +101,7 @@ namespace Appalachia.CI.SemVer
 
         public abstract class ReadOnly : SemVerAutoBuild
         {
+            /// <inheritdoc />
             internal sealed override string Set(string build)
             {
                 Context.Log.Warn("The build metadata is read-only");
