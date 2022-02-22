@@ -113,7 +113,7 @@ namespace Appalachia.CI.Integration.Core
                 if (prependType != null)
                 {
                     builder.Append(prependType.Name);
-                    builder.Append(APPASTR.SYMBOL_HYPHEN);
+                    builder.Append(APPASTR.Symbols.SYMBOL_HYPHEN);
                 }
 
                 builder.Append(cleanFileName);
@@ -125,13 +125,13 @@ namespace Appalachia.CI.Integration.Core
 
                 if (appendType != null)
                 {
-                    builder.Append(APPASTR.SYMBOL_HYPHEN);
+                    builder.Append(APPASTR.Symbols.SYMBOL_HYPHEN);
                     builder.Append(appendType.Name);
                 }
 
                 var realExtension = DEFAULT_EXTENSION;
 
-                if (extension.IsNotNullOrWhiteSpace() && (extension != APPASTR.SYMBOL_PERIOD))
+                if (extension.IsNotNullOrWhiteSpace() && (extension != APPASTR.Symbols.Period))
                 {
                     realExtension = extension;
                 }
@@ -140,7 +140,7 @@ namespace Appalachia.CI.Integration.Core
                     var proposedExtensions = AppaPath.GetExtension(filePath);
 
                     if (proposedExtensions.IsNotNullOrWhiteSpace() &&
-                        (proposedExtensions != APPASTR.SYMBOL_PERIOD))
+                        (proposedExtensions != APPASTR.Symbols.Period))
                     {
                         realExtension = proposedExtensions;
                     }
@@ -157,7 +157,7 @@ namespace Appalachia.CI.Integration.Core
 
                 builder.Append(realExtension);
 
-                builder.Replace(APPASTR.SYMBOL_PERIODPERIOD, APPASTR.SYMBOL_PERIOD);
+                builder.Replace(APPASTR.Symbols.SYMBOL_PERIODPERIOD, APPASTR.Symbols.Period);
 
                 _name = builder.ToString();
 
