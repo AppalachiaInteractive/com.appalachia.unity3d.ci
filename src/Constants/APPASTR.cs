@@ -27,20 +27,27 @@ namespace Appalachia.CI.Constants
         public const string ASMDEFBUTTON = nameof(ASMDEFBUTTON);
         public const string Assemblies = nameof(Assemblies);
         public const string Assembly = nameof(Assembly);
-        public const string Assembly_Current = Assembly + _ + Symbols.ParenthesisOpen + Current + Symbols.ParenthesisClose;
+
+        public const string Assembly_Current =
+            Assembly + _ + Symbols.ParenthesisOpen + Current + Symbols.ParenthesisClose;
+
         public const string Assembly_Definitions = Assembly + _ + Definitions;
         public const string Assembly_Details = Assembly + _ + Details;
-        public const string Assembly_Ideal = Assembly + _ + Symbols.ParenthesisOpen + Ideal + Symbols.ParenthesisClose;
+
+        public const string Assembly_Ideal =
+            Assembly + _ + Symbols.ParenthesisOpen + Ideal + Symbols.ParenthesisClose;
+
         public const string Assembly_Review = Assembly + _ + Review;
         public const string asset = nameof(asset);
         public const string Asset = nameof(Asset);
-        public const string Generation = nameof(Generation);
         public const string Asset_Generation = Asset + Symbols.Underscore + Generation;
         public const string Asset_Review = Asset + _ + Review;
         public const string Assets = nameof(Assets);
         public const string Assets_Only = Assets + _ + Only;
         public const string Audio = nameof(Audio);
         public const string Background = nameof(Background);
+
+        public const string Bar = nameof(Bar);
         public const string Base = nameof(Base);
         public const string BASE = nameof(BASE);
         public const string Base_Layer = Base + _ + Layer;
@@ -126,8 +133,13 @@ namespace Appalachia.CI.Constants
         public const string Feature = nameof(Feature);
         public const string Features = nameof(Features);
         public const string File = nameof(File);
-        public const string File_Current = File + _ + Symbols.ParenthesisOpen + Ideal + Symbols.ParenthesisClose;
-        public const string File_Ideal = File + _ + Symbols.ParenthesisOpen + Current + Symbols.ParenthesisClose;
+
+        public const string File_Current =
+            File + _ + Symbols.ParenthesisOpen + Ideal + Symbols.ParenthesisClose;
+
+        public const string File_Ideal =
+            File + _ + Symbols.ParenthesisOpen + Current + Symbols.ParenthesisClose;
+
         public const string Files = nameof(Files);
         public const string Five = nameof(Five);
         public const string Fix = nameof(Fix);
@@ -136,9 +148,9 @@ namespace Appalachia.CI.Constants
         public const string Folders = nameof(Folders);
         public const string Four = nameof(Four);
         public const string Game = nameof(Game);
-        public const string State = nameof(State);
         public const string Game_State = Game + _ + State;
         public const string General = nameof(General);
+        public const string Generation = nameof(Generation);
         public const string GLB = nameof(GLB);
         public const string GLB_SNGT = GLB + _ + SNGT;
         public const string GLOBAL = nameof(GLOBAL);
@@ -207,12 +219,14 @@ namespace Appalachia.CI.Constants
         public const string Opportunity = nameof(Opportunity);
         public const string Opportunity_Count = Opportunity + _ + Count;
         public const string Overview = nameof(Overview);
+        public const string package = nameof(package);
         public const string Package = nameof(Package);
         public const string Package_All = Package + _ + All;
-        public const string package_json = "package.json";
+        public const string package_json = package + FileExtensions._json;
         public const string Package_Review = Package + _ + Review;
         public const string Package_Search = Package + _ + Search;
         public const string Packages = nameof(Packages);
+        public const string Part = nameof(Part);
         public const string Path = nameof(Path);
         public const string PLAY = nameof(PLAY);
         public const string PLAYABLE = nameof(PLAYABLE);
@@ -289,7 +303,10 @@ namespace Appalachia.CI.Constants
         public const string Speed = nameof(Speed);
         public const string Speed_Layer = Speed + _ + Layer;
         public const string src = nameof(src);
+        public const string State = nameof(State);
         public const string Status = nameof(Status);
+        public const string Status_Bar_Subwidget = Status + _ + Bar + _ + Subwidget;
+        public const string Subwidget = nameof(Subwidget);
 
         public const string Targets = nameof(Targets);
         public const string Tasks = nameof(Tasks);
@@ -300,8 +317,8 @@ namespace Appalachia.CI.Constants
         public const string Three = nameof(Three);
         public const string To = nameof(To);
         public const string Toggle = nameof(Toggle);
+        public const string Tooltip = nameof(Tooltip);
         public const string Two = nameof(Two);
-        public const string Part = nameof(Part);
         public const string Two_Part_Button = Two + _ + Part + _ + Button;
         public const string Type = nameof(Type);
         public const string Unload = nameof(Unload);
@@ -326,7 +343,7 @@ namespace Appalachia.CI.Constants
         public const string Widgets = nameof(Widgets);
         public const string Width = nameof(Width);
         public const string Workflow = nameof(Workflow);
-        private const string _ = " ";
+        private const string _ = Symbols.Space;
 
         #endregion
     }

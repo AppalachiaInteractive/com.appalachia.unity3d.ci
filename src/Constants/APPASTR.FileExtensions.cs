@@ -7,6 +7,7 @@ namespace Appalachia.CI.Constants
             public const string _asmdef = ".asmdef";
             public const string _dotSettings = ".dotSettings";
             public const string _git = ".git";
+            public const string _json = ".json";
         }
     }
 }

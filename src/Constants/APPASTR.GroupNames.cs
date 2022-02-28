@@ -11,7 +11,7 @@ namespace Appalachia.CI.Constants
             public const string Color = "Color";
             public const string Common = "Common";
             public const string Content = "Content";
-            public const string Dimensions = "Dimensions";
+            public const string Size = "Size";
             public const string General = "General";
             public const string Logo = "Logo";
             public const string Rendering = "Rendering";

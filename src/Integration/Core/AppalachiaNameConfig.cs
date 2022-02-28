@@ -113,7 +113,7 @@ namespace Appalachia.CI.Integration.Core
                 if (prependType != null)
                 {
                     builder.Append(prependType.Name);
-                    builder.Append(APPASTR.Symbols.SYMBOL_HYPHEN);
+                    builder.Append(APPASTR.Symbols.Hyphen);
                 }
 
                 builder.Append(cleanFileName);
@@ -125,7 +125,7 @@ namespace Appalachia.CI.Integration.Core
 
                 if (appendType != null)
                 {
-                    builder.Append(APPASTR.Symbols.SYMBOL_HYPHEN);
+                    builder.Append(APPASTR.Symbols.Hyphen);
                     builder.Append(appendType.Name);
                 }
 
@@ -157,7 +157,7 @@ namespace Appalachia.CI.Integration.Core
 
                 builder.Append(realExtension);
 
-                builder.Replace(APPASTR.Symbols.SYMBOL_PERIODPERIOD, APPASTR.Symbols.Period);
+                builder.Replace(APPASTR.Symbols.PeriodPeriod, APPASTR.Symbols.Period);
 
                 _name = builder.ToString();
 
