@@ -66,7 +66,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_DirectoryExists.Auto())
                 {
-                    return AppaDirectory.Exists(eitherPath);
+                    return AppaDirectory.Exists(EitherPath);
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_FileExists.Auto())
                 {
-                    return AppaFile.Exists(eitherPath);
+                    return AppaFile.Exists(EitherPath);
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_IsAsset.Auto())
                 {
-                    return relativePath.StartsWith(ASSETS);
+                    return RelativePath.StartsWith(ASSETS);
                 }
             }
         }
@@ -110,8 +110,8 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_IsExcluded.Auto())
                 {
-                    return eitherPath.Contains(EXCLUSION_SUBSTRING_1) ||
-                           eitherPath.Contains(EXCLUSION_SUBSTRING_2);
+                    return EitherPath.Contains(EXCLUSION_SUBSTRING_1) ||
+                           EitherPath.Contains(EXCLUSION_SUBSTRING_2);
                 }
             }
         }
@@ -122,18 +122,18 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 using (_PRF_ParentDirectoryExists.Auto())
                 {
-                    var dirInfo = new AppaDirectoryInfo(directoryName);
+                    var dirInfo = new AppaDirectoryInfo(DirectoryName);
 
                     return dirInfo.Exists;
                 }
             }
         }
 
-        public string absolutePath
+        public string AbsolutePath
         {
             get
             {
-                using (_PRF_absolutePath.Auto())
+                using (_PRF_AbsolutePath.Auto())
                 {
                     if ((_absolutePath == null) && (_relativePath != null))
                     {
@@ -145,15 +145,15 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string directoryName
+        public string DirectoryName
         {
             get
             {
-                using (_PRF_directoryName.Auto())
+                using (_PRF_DirectoryName.Auto())
                 {
                     if (_directoryName == null)
                     {
-                        _directoryName = AppaPath.GetDirectoryName(eitherPath);
+                        _directoryName = AppaPath.GetDirectoryName(EitherPath);
                     }
 
                     return _directoryName;
@@ -161,17 +161,17 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string eitherPath => _absolutePath ?? _relativePath;
+        public string EitherPath => _absolutePath ?? _relativePath;
 
-        public string extension
+        public string Extension
         {
             get
             {
-                using (_PRF_extension.Auto())
+                using (_PRF_Extension.Auto())
                 {
                     if (_extension == null)
                     {
-                        _extension = AppaPath.GetExtension(eitherPath).CleanExtension();
+                        _extension = AppaPath.GetExtension(EitherPath).CleanExtension();
                     }
 
                     return _extension;
@@ -179,15 +179,15 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string fileName
+        public string FileName
         {
             get
             {
-                using (_PRF_fileName.Auto())
+                using (_PRF_FileName.Auto())
                 {
                     if (_fileName == null)
                     {
-                        _fileName = AppaPath.GetFileName(eitherPath);
+                        _fileName = AppaPath.GetFileName(EitherPath);
                     }
 
                     return _fileName;
@@ -195,15 +195,15 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string fileNameWithoutExtension
+        public string FileNameWithoutExtension
         {
             get
             {
-                using (_PRF_fileNameWithoutExtension.Auto())
+                using (_PRF_FileNameWithoutExtension.Auto())
                 {
                     if (_fileNameWithoutExtensions == null)
                     {
-                        _fileNameWithoutExtensions = AppaPath.GetFileNameWithoutExtension(eitherPath);
+                        _fileNameWithoutExtensions = AppaPath.GetFileNameWithoutExtension(EitherPath);
                     }
 
                     return _fileNameWithoutExtensions;
@@ -211,11 +211,11 @@ namespace Appalachia.CI.Integration.FileSystem
             }
         }
 
-        public string relativePath
+        public string RelativePath
         {
             get
             {
-                using (_PRF_relativePath.Auto())
+                using (_PRF_RelativePath.Auto())
                 {
                     if ((_relativePath == null) && (_absolutePath != null))
                     {
@@ -303,7 +303,7 @@ namespace Appalachia.CI.Integration.FileSystem
             {
                 _extensionCheckFormat ??= new Utf8PreparedFormat<string>(EXTENSION_CHECK_FORMAT_STRING);
 
-                return (extension == ext) || (extension == _extensionCheckFormat.Format(ext));
+                return (Extension == ext) || (Extension == _extensionCheckFormat.Format(ext));
             }
         }
 
@@ -437,22 +437,22 @@ namespace Appalachia.CI.Integration.FileSystem
 
         private static readonly ProfilerMarker _PRF_Equals = new ProfilerMarker(_PRF_PFX + nameof(Equals));
 
-        private static readonly ProfilerMarker _PRF_directoryName =
-            new ProfilerMarker(_PRF_PFX + nameof(directoryName));
+        private static readonly ProfilerMarker _PRF_DirectoryName =
+            new ProfilerMarker(_PRF_PFX + nameof(DirectoryName));
 
         private static readonly ProfilerMarker _PRF_IsExcluded =
             new ProfilerMarker(_PRF_PFX + nameof(IsExcluded));
 
         private static readonly ProfilerMarker _PRF_IsAsset = new ProfilerMarker(_PRF_PFX + nameof(IsAsset));
 
-        private static readonly ProfilerMarker _PRF_extension =
-            new ProfilerMarker(_PRF_PFX + nameof(extension));
+        private static readonly ProfilerMarker _PRF_Extension =
+            new ProfilerMarker(_PRF_PFX + nameof(Extension));
 
-        private static readonly ProfilerMarker _PRF_fileName =
-            new ProfilerMarker(_PRF_PFX + nameof(fileName));
+        private static readonly ProfilerMarker _PRF_FileName =
+            new ProfilerMarker(_PRF_PFX + nameof(FileName));
 
-        private static readonly ProfilerMarker _PRF_fileNameWithoutExtension =
-            new ProfilerMarker(_PRF_PFX + nameof(fileNameWithoutExtension));
+        private static readonly ProfilerMarker _PRF_FileNameWithoutExtension =
+            new ProfilerMarker(_PRF_PFX + nameof(FileNameWithoutExtension));
 
         private static readonly ProfilerMarker _PRF_DirectoryDoesNotExist =
             new ProfilerMarker(_PRF_PFX + nameof(DirectoryDoesNotExist));
@@ -478,11 +478,11 @@ namespace Appalachia.CI.Integration.FileSystem
         private static readonly ProfilerMarker _PRF_FromAbsolutePath =
             new ProfilerMarker(_PRF_PFX + nameof(FromAbsolutePath));
 
-        private static readonly ProfilerMarker _PRF_relativePath =
-            new ProfilerMarker(_PRF_PFX + nameof(relativePath));
+        private static readonly ProfilerMarker _PRF_RelativePath =
+            new ProfilerMarker(_PRF_PFX + nameof(RelativePath));
 
-        private static readonly ProfilerMarker _PRF_absolutePath =
-            new ProfilerMarker(_PRF_PFX + nameof(absolutePath));
+        private static readonly ProfilerMarker _PRF_AbsolutePath =
+            new ProfilerMarker(_PRF_PFX + nameof(AbsolutePath));
 
         private static readonly ProfilerMarker _PRF_AssetPath =
             new ProfilerMarker(_PRF_PFX + nameof(AssetPath));

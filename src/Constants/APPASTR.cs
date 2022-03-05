@@ -27,6 +27,7 @@ namespace Appalachia.CI.Constants
         public const string ASMDEFBUTTON = nameof(ASMDEFBUTTON);
         public const string Assemblies = nameof(Assemblies);
         public const string Assembly = nameof(Assembly);
+        public const string Foldout = nameof(Foldout);
 
         public const string Assembly_Current =
             Assembly + _ + Symbols.ParenthesisOpen + Current + Symbols.ParenthesisClose;
@@ -276,6 +277,7 @@ namespace Appalachia.CI.Constants
         public const string Search = nameof(Search);
         public const string Select = nameof(Select);
         public const string Selectable = nameof(Selectable);
+        public const string Selectable_Button = Selectable + _ + Button;
         public const string SELECTABLE = nameof(SELECTABLE);
         public const string Serialize = nameof(Serialize);
         public const string Service = nameof(Service);

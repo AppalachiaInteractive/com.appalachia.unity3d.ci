@@ -30,7 +30,7 @@ namespace Appalachia.CI.Integration.FileSystem
         /// </exception>
         public AppaFileInfo(AssetPath fileName)
         {
-            _fileInfo = new FileInfo(fileName.relativePath);
+            _fileInfo = new FileInfo(fileName.RelativePath);
         }
 
         /// <summary>

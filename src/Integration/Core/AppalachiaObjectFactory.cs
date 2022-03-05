@@ -417,13 +417,13 @@ namespace Appalachia.CI.Integration.Core
 
                 var any = AssetDatabaseManager.FindAssets(searchString);
                 searchResults = any.Select(AssetDatabaseManager.GUIDToAssetPath)
-                                   .Select(p => p.fileNameWithoutExtension)
+                                   .Select(p => p.FileNameWithoutExtension)
                                    .ToArray();
 
                 for (var i = 0; i < any.Length; i++)
                 {
                     var path = AssetDatabaseManager.GUIDToAssetPath(any[i]);
-                    var existingName = path.fileNameWithoutExtension;
+                    var existingName = path.FileNameWithoutExtension;
 
                     if ((existingName != null) &&
                         string.Equals(cleanFileName.ToLower(), existingName.ToLower()))

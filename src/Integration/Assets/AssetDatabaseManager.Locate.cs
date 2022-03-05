@@ -91,7 +91,7 @@ namespace Appalachia.CI.Integration.Assets
 
                     foreach (var monoscriptPath in monoScriptPaths)
                     {
-                        var importer = UnityEditor.AssetImporter.GetAtPath(monoscriptPath.relativePath);
+                        var importer = UnityEditor.AssetImporter.GetAtPath(monoscriptPath.RelativePath);
 
                         if (importer is UnityEditor.MonoImporter mi)
                         {
@@ -135,9 +135,9 @@ namespace Appalachia.CI.Integration.Assets
                     _assetRepoLookup = new Dictionary<string, string>();
                 }
 
-                if (_assetRepoLookup.ContainsKey(assetPath))
+                if (_assetRepoLookup.TryGetValue(assetPath, out var result))
                 {
-                    return _assetRepoLookup[assetPath];
+                    return result;
                 }
 
                 var directoryInfo = new AppaDirectoryInfo(assetPath);
@@ -174,12 +174,12 @@ namespace Appalachia.CI.Integration.Assets
             {
                 InitializeTypeScriptLookups();
 
-                if (!_typeScriptLookup.ContainsKey(t))
+                if (_typeScriptLookup.TryGetValue(t, out var result))
                 {
-                    return null;
+                    return result;
                 }
 
-                return _typeScriptLookup[t];
+                return null;
             }
         }
 
@@ -274,12 +274,12 @@ namespace Appalachia.CI.Integration.Assets
             {
                 InitializeTypeScriptLookups();
 
-                if (!_scriptTypeLookup.ContainsKey(t))
+                if (_scriptTypeLookup.TryGetValue(t, out var result))
                 {
-                    return null;
+                    return result;
                 }
 
-                return _scriptTypeLookup[t];
+                return null;
             }
         }
 
@@ -336,13 +336,9 @@ namespace Appalachia.CI.Integration.Assets
                     PopulateAssetTypeFolderLookup();
                 }
 
-                if (_assetTypeFolderLookup.ContainsKey(type))
+                if (!_assetTypeFolderLookup.TryAdd(type, folderFunction))
                 {
                     _assetTypeFolderLookup[type] = folderFunction;
-                }
-                else
-                {
-                    _assetTypeFolderLookup.Add(type, folderFunction);
                 }
             }
         }
@@ -533,13 +529,9 @@ namespace Appalachia.CI.Integration.Assets
                             continue;
                         }
 
-                        if (_typeScriptLookup.ContainsKey(scriptType))
+                        if (!_typeScriptLookup.TryAdd(scriptType, script))
                         {
-                            _typeScriptLookup[scriptType] = script;
-                        }
-                        else
-                        {
-                            _typeScriptLookup.Add(scriptType, script);
+                            _typeScriptLookup[scriptType] = script;   
                         }
                     }
                 }

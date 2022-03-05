@@ -109,8 +109,8 @@ namespace Appalachia.CI.Integration.Assets
                 var assetPaths = GetAllAssetPaths(type);
 
                 var filteredAssetPaths = assetPaths.Where(
-                                                        p => p.relativePath.StartsWith("Assets/") &&
-                                                             p.relativePath.Contains("Appalachia")
+                                                        p => p.RelativePath.StartsWith("Assets/") &&
+                                                             p.RelativePath.Contains("Appalachia")
                                                     )
                                                    .ToArray();
 

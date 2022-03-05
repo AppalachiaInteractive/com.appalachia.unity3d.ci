@@ -26,6 +26,7 @@ namespace Appalachia.CI.Integration.Assets
             _guidsByTypeName = null;
             _pathsByTypeName = null;
             _projectPathsByExtension = null;
+            _firstLookupCache = null;
             _typesByTypeName = null;
             IntegrationStringExtensions.ClearCachedData();
         }

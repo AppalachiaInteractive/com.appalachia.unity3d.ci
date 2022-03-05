@@ -802,66 +802,23 @@ namespace Appalachia.CI.Integration.Assets
             }
         }
 
-        public static AssetPath[] GetAllAssetPaths()
+        public static List<AssetPath> GetAllAssetPaths()
         {
             ThrowIfInvalidState();
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAllAssetPaths.Auto())
             {
-                return UnityEditor.AssetDatabase.GetAllAssetPaths()
-                                  .Select(AssetPath.FromRelativePath)
-                                  .ToArray();
+                return AllAssetPaths;
             }
         }
 
-        public static AssetPath[] GetAllProjectPaths()
+        public static List<AssetPath> GetAllProjectPaths()
         {
             ThrowIfInvalidState();
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetAllProjectPaths.Auto())
             {
-                var packageLocation = ProjectLocations.GetPackagesDirectoryPath();
-                var assetsLocation = ProjectLocations.GetAssetsDirectoryPath();
-
-                var packageFilePaths = AppaDirectory.GetFiles(
-                    packageLocation,
-                    "*.*",
-                    SearchOption.AllDirectories
-                );
-                var assetFilePaths = AppaDirectory.GetFiles(
-                    assetsLocation,
-                    "*.*",
-                    SearchOption.AllDirectories
-                );
-
-                return assetFilePaths.Concat(packageFilePaths).Where(ap => !ap.IsExcluded).ToArray();
-
-                /*
-                using var set = new StringCleaningSet();
-
-                for (var sourceFileIndex = 0; sourceFileIndex < packageFilePaths'.Length; sourceFileIndex++)
-                {
-                    var sourceFile = packageFilePaths'[sourceFileIndex];
-
-                    set.Load(sourceFile);
-
-                    IntegrationStringExtensions.ToRelativePath(set);
-
-                    var finished = set.IsFinished ? set.Result : set.Finish();
-
-                    if ( || assetsLookup.Contains(finished))
-                    {
-                        continue;
-                    }
-
-                    packageFilePaths'[cleanFileCount] = finished;
-                    cleanFileCount += 1;
-                }
-
-                assets = CopyFilePathArray(assets, cleanFileCount, packageFilePaths');
-
-                //Array.Sort(assets);
-                return assets;*/
+                return AllProjectPaths;
             }
         }
 
@@ -1373,7 +1330,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_GetMainAssetTypeAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 var result = UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(relativePath);
 
                 if (result != null)
@@ -2161,7 +2118,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_IsValidFolder.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 return UnityEditor.AssetDatabase.IsValidFolder(relativePath);
             }
         }
@@ -2194,7 +2151,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllAssetRepresentationsAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 return UnityEditor.AssetDatabase.LoadAllAssetRepresentationsAtPath(relativePath);
             }
         }
@@ -2224,7 +2181,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAllAssetsAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(relativePath);
             }
         }
@@ -2284,7 +2241,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAssetAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
 
                 return UnityEditor.AssetDatabase.LoadAssetAtPath(relativePath, type);
             }
@@ -2297,7 +2254,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadAssetAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 try
                 {
                     return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(relativePath);
@@ -2366,7 +2323,7 @@ namespace Appalachia.CI.Integration.Assets
             using var scope = APPASERIALIZE.OnAssetEditing();
             using (_PRF_LoadMainAssetAtPath.Auto())
             {
-                var relativePath = path.relativePath;
+                var relativePath = path.RelativePath;
                 return UnityEditor.AssetDatabase.LoadMainAssetAtPath(relativePath);
             }
         }

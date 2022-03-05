@@ -153,10 +153,7 @@ namespace Appalachia.CI.Integration.Assets
                     _thirdPartyAssetAppaDirectory = new Dictionary<string, AppaDirectoryInfo>();
                 }
 
-                if (_thirdPartyAssetAppaDirectory.ContainsKey(partyName))
-                {
-                    return _thirdPartyAssetAppaDirectory[partyName];
-                }
+                if (_thirdPartyAssetAppaDirectory.TryGetValue(partyName, out var result)) return result;
 
                 var thirdParty = GetThirdPartyAssetsDirectoryPath(partyName);
 
@@ -182,10 +179,7 @@ namespace Appalachia.CI.Integration.Assets
                     _thirdPartyAssetDirectoryPath = new Dictionary<string, string>();
                 }
 
-                if (_thirdPartyAssetDirectoryPath.ContainsKey(partyName))
-                {
-                    return _thirdPartyAssetDirectoryPath[partyName];
-                }
+                if (_thirdPartyAssetDirectoryPath.TryGetValue(partyName, out var result)) return result;
 
                 var basePath = GetAssetsDirectoryPath();
                 var thirdPartyPath =
@@ -213,10 +207,7 @@ namespace Appalachia.CI.Integration.Assets
                     _thirdPartyAssetDirectoryPathRelative = new Dictionary<string, string>();
                 }
 
-                if (_thirdPartyAssetDirectoryPathRelative.ContainsKey(partyName))
-                {
-                    return _thirdPartyAssetDirectoryPathRelative[partyName];
-                }
+                if (_thirdPartyAssetDirectoryPathRelative.TryGetValue(partyName, out var result)) return result;
 
                 var basePath = GetAssetsDirectoryPathRelative();
                 var thirdPartyPath =
