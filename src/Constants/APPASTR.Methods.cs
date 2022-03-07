@@ -10,6 +10,7 @@ namespace Appalachia.CI.Constants
 
         private static Dictionary<string, string> _nicifyCache;
         private static Utf16ValueStringBuilder _nicifyBuilder;
+        private static bool _hasNicifyBuilder;
 
         #endregion
 
@@ -24,9 +25,11 @@ namespace Appalachia.CI.Constants
             using (_PRF_NicifyVariableName.Auto())
             {
                 _nicifyCache ??= new();
-                if (_nicifyBuilder.Equals(default))
+
+                if (!_hasNicifyBuilder)
                 {
                     _nicifyBuilder = new Utf16ValueStringBuilder(false);
+                    _hasNicifyBuilder = true;
                 }
 
                 string result;
@@ -86,6 +89,11 @@ namespace Appalachia.CI.Constants
                     {
                         var previousCharacter = variableName[i - 1];
 
+                        var currentCharacterIsLower = char.IsLower(currentCharacter);
+                        var currentCharacterIsUpper = char.IsUpper(currentCharacter);
+                        var previousCharacterIsLower = char.IsLower(previousCharacter);
+                        var previousCharacterIsUpper = char.IsUpper(previousCharacter);
+                        
                         if (currentCharacter == '_')
                         {
                             if (previousCharacter != '_')
@@ -97,10 +105,18 @@ namespace Appalachia.CI.Constants
                             continue;
                         }
 
-                        if ((previousCharacter == '_') && char.IsLower(currentCharacter))
+                        if ((previousCharacter == '_') && currentCharacterIsLower)
                         {
                             var upperCharacter = char.ToUpperInvariant(currentCharacter);
                             _nicifyBuilder.Append(upperCharacter);
+                            modified = true;
+                            continue;
+                        }
+
+                        if (previousCharacterIsLower && currentCharacterIsUpper)
+                        {
+                            _nicifyBuilder.Append(' ');
+                            _nicifyBuilder.Append(currentCharacter);
                             modified = true;
                             continue;
                         }
