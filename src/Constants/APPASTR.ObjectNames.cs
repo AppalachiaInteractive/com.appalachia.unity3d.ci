@@ -13,6 +13,7 @@ namespace Appalachia.CI.Constants
             public const string Master_Canvas_Background = Master_Canvas + " Background";
             public const string Services = "Services";
             public const string Widgets = "Widgets";
+            public const string Subwidgets = "Subwidgets";
 
             #endregion
         }
