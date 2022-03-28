@@ -717,7 +717,7 @@ namespace Appalachia.CI.Integration.FileSystem
                             "Failed to find directories at {0} with search pattern {1}.",
                             path,
                             searchPattern
-                        ),
+                        ), null,
                         ex
                     );
 
